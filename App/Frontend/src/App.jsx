@@ -9,7 +9,7 @@ function App() {
   return (
     <>
 		<div style={{ textAlign: 'center', marginTop: '20%' }}>
-			<h1>HyperTube</h1>
+			<h1>HyperTube !</h1>
 		</div>
     </>
   )

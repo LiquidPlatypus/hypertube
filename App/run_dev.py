@@ -1,19 +1,18 @@
-import subprocess, uvicorn, os, time, threading
-from pathlib import Path
+import subprocess
+import threading
+import uvicorn
+import os
+import time
 
-BASE_DIR = Path(__file__).resolve().parent
-BACKEND_DIR = BASE_DIR / "Backend"
-FRONTEND_DIR = BASE_DIR / "Frontend"
-
-def  run_front():
-	os.chdir(FRONTEND_DIR)
-	subprocess.run(["npm", "run", "dev"])
+def run_front():
+    os.chdir("./Frontend")  # change vers ton dossier frontend
+    subprocess.run(["npm", "run", "dev"], shell=True)
 
 def run_back():
-	os.chdir(BACKEND_DIR)
-	uvicorn.run("app.main:app", host="127.0.0.1", port=8000, reload=True)
+    uvicorn.run("Backend.app.main:app", host="127.0.0.1", port=8000, reload=True)
 
 if __name__ == "__main__":
-	threading.Thread(target=run_front).start()
-	time.sleep(2)
-	run_back()
+    front_thread = threading.Thread(target=run_front)
+    front_thread.start()
+    time.sleep(2)  # petit délai pour que le front démarre
+    run_back()
