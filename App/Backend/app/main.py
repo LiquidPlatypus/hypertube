@@ -1,4 +1,5 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 import os
@@ -7,12 +8,24 @@ import os
 
 app = FastAPI()
 
-frontend_dir = os.path.join(os.path.dirname(__file__), "../../Frontend/dist")
-app.mount("/assets", StaticFiles(directory=os.path.join(frontend_dir, "assets")), name="assets")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # CODE
 
-@app.get("/")
-def read_root():
-    index_path = os.path.join(frontend_dir, "index.html")
-    return FileResponse(index_path)
+@app.websocket("/ws")
+async def websocket_endpoint(ws: WebSocket):
+    await ws.accept()
+    try:
+        while True:
+            data = await ws.receive_text()
+            await ws.send_text(f"Message Receive : {data}")
+    except WebSocketDisconnect:
+        print(f"❌ Client left")
+
+# @app.get("/")
