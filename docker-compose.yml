@@ -1,0 +1,44 @@
+services:
+
+  # NGINX Web server (and naxsi as WAF)
+  nginx:
+    build: ./nginx
+    container_name: nginx
+    ports:
+      - 443:443
+    volumes:
+      - ./nginx/nginx-init:/nginx-init
+    # depends_on:
+    #   - app
+    networks:
+      - hypertube-network
+
+  # POSTGRES database
+  # postgres:
+  #   build: ./postgres
+  #   container_name: postgres
+  #   env_file:
+  #     - ./postgres/.env
+  #   volumes:
+  #     - ./postgres/postgres-init:/postgres-init
+  #     - ./postgres/data:/var/lib/postgres/data
+  #   networks:
+  #     - hypertube-network
+
+  # # Django app
+  # app:
+  #   build: ./app
+  #   container_name: app
+  #   command: ??
+  #   volumes:
+  #     - ??
+  #   env_file:
+  #     - ./web/.env
+  #   depends_on:
+  #     - postgresql
+  #   networks:
+  #     - hypertube-network
+      
+networks:
+  hypertube-network:
+    driver: bridge
