@@ -17,6 +17,7 @@ class bcolors:
 
 
 def run_front():
+    print(f"{bcolors.WARNING}Launching frontend...{bcolors.ENDC}")
     script_dir = os.path.dirname(os.path.abspath(__file__))
     frontend_path = os.path.join(script_dir, 'Frontend')
     os.chdir(frontend_path)
@@ -27,12 +28,14 @@ def run_back():
 
 def print_dev_url():
     time.sleep(3)
-    print("\n\n Dev URL :" + '\033[94m' + " http://localhost:5173/ " + '\033[0m')
+    print("\n\n Dev URL :" + bcolors.OKBLUE + " http://localhost:5173/ " + bcolors.ENDC)
 
 if __name__ == "__main__":
     print_thread = threading.Thread(target=print_dev_url)
     front_thread = threading.Thread(target=run_front)
     front_thread.start()
     print_thread.start()
-    time.sleep(2)  # petit délai pour que le front démarre
+    time.sleep(1)
+    print(f"{bcolors.WARNING}Launching backend...{bcolors.ENDC}")
+    time.sleep(1)
     run_back()

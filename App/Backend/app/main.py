@@ -28,4 +28,7 @@ async def websocket_endpoint(ws: WebSocket):
     except WebSocketDisconnect:
         print(f"❌ Client left")
 
-# @app.get("/")
+@app.get("/")
+async def get_hello():
+    return {"message": "Hello from FastAPI 👋"}
+

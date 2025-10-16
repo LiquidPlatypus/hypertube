@@ -8,10 +8,9 @@ function App() {
     const socket = new WebSocket("ws://127.0.0.1:8000/ws");
 
     socket.onopen = () => {
-      console.log("Connecté !");
-      socket.send("Salut du front !");
+      console.log("Connected !");
     };
-    socket.onmessage = (event) => console.log("Serveur:", event.data);
+    socket.onmessage = (event) => console.log("Server:", event.data);
     return () => socket.close();
   }, []);
 
