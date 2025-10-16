@@ -17,7 +17,9 @@ class bcolors:
 
 
 def run_front():
-    os.chdir("./Frontend")  # change vers ton dossier frontend
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    frontend_path = os.path.join(script_dir, 'Frontend')
+    os.chdir(frontend_path)
     subprocess.run(["npm run dev"], shell=True)
 
 def run_back():
