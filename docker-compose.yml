@@ -6,10 +6,10 @@ services:
     container_name: nginx
     ports:
       - 443:443
+    depends_on:
+      - hypertube_backend
     volumes:
-      - ./nginx/nginx-init:/nginx-init
-    # depends_on:
-    #   - app
+      - ./hypertube_apps/frontend/dist:/usr/share/nginx/html:ro
     networks:
       - hypertube-network
 
@@ -25,19 +25,18 @@ services:
   #   networks:
   #     - hypertube-network
 
-  # # Django app
-  # app:
-  #   build: ./app
-  #   container_name: app
-  #   command: ??
-  #   volumes:
-  #     - ??
-  #   env_file:
-  #     - ./web/.env
-  #   depends_on:
-  #     - postgresql
-  #   networks:
-  #     - hypertube-network
+  # Hypertube backend
+  hypertube_backend:
+    build: ./hypertube_apps/backend
+    container_name: hypertube_backend
+    ports:
+      - 8000:8000
+    volumes:
+      - ./hypertube_apps/backend/app:/app
+    # depends_on:
+    #   - postgres
+    networks:
+      - hypertube-network
       
 networks:
   hypertube-network:

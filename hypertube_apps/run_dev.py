@@ -18,12 +18,12 @@ class bcolors:
 
 def run_front():
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    frontend_path = os.path.join(script_dir, 'Frontend')
+    frontend_path = os.path.join(script_dir, 'frontend')
     os.chdir(frontend_path)
     subprocess.run(["npm run dev"], shell=True)
 
 def run_back():
-    uvicorn.run("Backend.app.main:app", host="127.0.0.1", port=8000, reload=True)
+    uvicorn.run("backend.app.main:app", host="127.0.0.1", port=8000, reload=True)
 
 def print_dev_url():
     time.sleep(3)
