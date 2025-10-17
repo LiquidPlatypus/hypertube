@@ -9,7 +9,7 @@ check-frontend:
 	@echo "$(CYA)=== Checking frontend setup...$(STOP)"
 	@if [ ! -f hypertube_apps/frontend/package.json ]; then \
 		echo "Creating React app with Vite..."; \
-		cd hypertube_apps/frontend && npm create vite@latest . -- --template react && npm install; \
+		cd hypertube_apps/frontend && npm create vite@latest . -- --template react-ts && npm install; \
 	else \
 		echo "frontend already initialized."; \
 	fi
@@ -17,7 +17,7 @@ check-frontend:
 build:
 	@echo "$(CYA)=== Building & starting containers...$(STOP)"
 	@cd hypertube_apps/frontend && sudo npm run build
-	@sudo docker-compose up --build
+#	@sudo docker-compose up --build
 
 clean: #Stops and remove all containers volumes and networks
 	@echo "$(CYA)=== Stopping and cleaning containers, volumes and networks...$(STOP)"

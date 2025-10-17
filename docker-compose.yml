@@ -5,6 +5,7 @@ services:
     build: ./nginx
     container_name: nginx
     ports:
+      - 80:80
       - 443:443
     depends_on:
       - hypertube_backend
