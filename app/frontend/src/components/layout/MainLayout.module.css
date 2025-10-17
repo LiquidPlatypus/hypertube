@@ -1,0 +1,11 @@
+.pageContainer {
+	flex: 1; /* occupe tout l'espace du main */
+	display: flex;
+	flex-direction: column;
+	overflow-y: auto; /* si le contenu depasse, scroll uniquement sur le contenu */
+}
+
+.content {
+	padding: 2rem;
+	flex: 1;
+}

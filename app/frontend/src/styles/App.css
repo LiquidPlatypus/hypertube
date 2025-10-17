@@ -1,0 +1,18 @@
+html,
+body {
+	height: 100%; /* defini la hauteur pour les enfants */
+	margin: 0;
+	padding: 0;
+}
+
+#root {
+	height: 100%; /* Prend toute la hauteur de la fenetre */
+	display: flex;
+	flex-direction: column; /* empile les elements */
+}
+
+main {
+	flex: 1; /* prend tout l'espace dispo apres que Header et Footer aient pris leur place */
+	display: flex; /* transmet flex a ses enfants */
+	flex-direction: column;
+}
