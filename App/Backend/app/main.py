@@ -18,17 +18,17 @@ app.add_middleware(
 
 # CODE
 
-@app.websocket("/ws")
-async def websocket_endpoint(ws: WebSocket):
-    await ws.accept()
-    try:
-        while True:
-            data = await ws.receive_text()
-            await ws.send_text(f"Message Receive : {data}")
-    except WebSocketDisconnect:
-        print(f"❌ Client left")
+# @app.websocket("/ws")
+# async def websocket_endpoint(ws: WebSocket):
+#     await ws.accept()
+#     try:
+#         while True:
+#             data = await ws.receive_text()
+#             await ws.send_text(f"Message Receive : {data}")
+#     except WebSocketDisconnect:
+#         print(f"❌ Client left")
 
-@app.get("/")
+@app.get("/api/hello")
 async def get_hello():
     return {"message": "Hello from FastAPI 👋"}
 
