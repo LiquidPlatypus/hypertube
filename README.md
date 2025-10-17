@@ -24,7 +24,7 @@ export default defineConfig({
   },
 })
 ```
-5) add in src/App.jsx :
+5) add in src/App.jsx : (OPTIONAL)
 ```
   useEffect(() => {
     const socket = new WebSocket("ws://127.0.0.1:8000/ws");
