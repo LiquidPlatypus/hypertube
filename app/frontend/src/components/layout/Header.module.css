@@ -12,7 +12,10 @@
 	padding: 1rem;
 	gap: 1rem;
 	background-color: rgba(0, 0, 0, 0.2);
-	border: 3px solid #8a8a8a;
+	border-left: 3px solid #8a8a8a;
+	border-right: 3px solid #8a8a8a;
+	border-top: 5px solid #8a8a8a;
+	border-bottom: 5px solid #8a8a8a;
 }
 
 #title {
@@ -25,8 +28,7 @@
 	flex: 1;
 	max-width: 500px;
 	padding: 0.5rem;
-	border-radius: 4px;
-	border: 1px solid #8a8a8a;
+	border: 2px solid #8a8a8a;
 	background-color: rgba(255, 255, 255, 0.1);
 	color: inherit;
 }

@@ -2,7 +2,10 @@
 	padding: 1rem;
 	text-align: center;
 	background-color: rgba(0, 0, 0, 0.2);
-	border: 3px solid #8a8a8a;
+	border-left: 3px solid #8a8a8a;
+	border-right: 3px solid #8a8a8a;
+	border-top: 5px solid #8a8a8a;
+	border-bottom: 5px solid #8a8a8a;
 	margin-top: auto; /* pousse l'element le plus bas possible */
 }
 

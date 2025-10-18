@@ -1,0 +1,31 @@
+.frame {
+	display: flex;
+	flex: 1;
+	background-color: #1a1a1a;
+}
+
+/* Bande gauche */
+.sideLeft {
+	width: 20px;
+	background-color: rgba(0, 0, 0, 0.2);
+	border-left: 3px solid #8a8a8a; /* bordure extérieure */
+	border-right: 5px solid #8a8a8a; /* bordure intérieure */
+	box-sizing: border-box;
+}
+
+/* Bande droite */
+.sideRight {
+	width: 20px;
+	background-color: rgba(0, 0, 0, 0.2);
+	border-right: 3px solid #8a8a8a; /* bordure extérieure */
+	border-left: 5px solid #8a8a8a; /* bordure intérieure */
+	box-sizing: border-box;
+}
+
+.content {
+	flex: 1;
+	background-color: #242424;
+	padding: 2rem;
+	box-sizing: border-box;
+	overflow-y: auto;
+}
