@@ -1,7 +1,13 @@
 .footer {
 	padding: 1rem;
 	text-align: center;
-	background-color: rgba(0, 0, 0, 0.2);
+
+	background-image:
+			linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)),
+			url("../../assets/backgrounds/BGwood.jpg");	background-size: cover;
+	background-repeat: no-repeat;
+	background-position: center center;
+
 	border-left: 3px solid #8a8a8a;
 	border-right: 3px solid #8a8a8a;
 	border-top: 5px solid #8a8a8a;
