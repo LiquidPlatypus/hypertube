@@ -16,6 +16,7 @@ function App() {
   return (
     <>
 		<div style={{ textAlign: 'center', marginTop: '20%' }}>
+      <h1>Coffeee.Tube !</h1>
       <Outlet />
 		</div>
     </>
