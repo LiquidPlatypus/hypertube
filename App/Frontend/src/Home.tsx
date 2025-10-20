@@ -25,7 +25,7 @@ export default function Home() {
 
     return (
         <div>
-            <button onClick={() => navigate("/entry")}>Connect</button>
+            <button onClick={() => navigate("/entry/login")}>Connect</button>
             <button onClick={handleMessage}>Click me</button>
             <p>{message}</p>
         </div>
