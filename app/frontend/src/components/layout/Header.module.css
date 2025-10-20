@@ -19,10 +19,10 @@
 	background-repeat: no-repeat;
 	background-position: center center;
 
-	border-left: 3px solid #8a8a8a;
-	border-right: 3px solid #8a8a8a;
-	border-top: 5px solid #8a8a8a;
-	border-bottom: 5px solid #8a8a8a;
+	border-left: 8px ridge #8a8a8a;
+	border-right: 8px ridge #8a8a8a;
+	border-top: 10px ridge #8a8a8a;
+	border-bottom: 10px ridge #8a8a8a;
 }
 
 #title {

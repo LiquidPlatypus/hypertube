@@ -10,13 +10,17 @@
 
 	background-image:
 			linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)),
-			url("../../assets/backgrounds/BGwood.jpg");	background-size: cover;
+			url("../../assets/backgrounds/BGwood.jpg");
+	background-size: cover;
 	background-repeat: no-repeat;
 	background-position: center center;
 
 	border-left: 3px solid #8a8a8a; /* bordure extérieure */
-	border-right: 5px solid #8a8a8a; /* bordure intérieure */
+	border-right: 7px ridge #8a8a8a; /* bordure intérieure */
+	box-shadow: 10px -1px 25px #1a1a1a;
 	box-sizing: border-box;
+	position: relative;
+	z-index: 1;
 }
 
 /* Bande droite */
@@ -25,13 +29,17 @@
 
 	background-image:
 			linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)),
-			url("../../assets/backgrounds/BGwood.jpg");	background-size: cover;
+			url("../../assets/backgrounds/BGwood.jpg");
+	background-size: cover;
 	background-repeat: no-repeat;
 	background-position: center center;
 
 	border-right: 3px solid #8a8a8a; /* bordure extérieure */
-	border-left: 5px solid #8a8a8a; /* bordure intérieure */
+	border-left: 7px ridge #8a8a8a; /* bordure intérieure */
+	box-shadow: -10px -1px 25px #1a1a1a;
 	box-sizing: border-box;
+	position: relative;
+	z-index: 1;
 }
 
 .content {
@@ -47,4 +55,6 @@
 	padding: 2rem;
 	box-sizing: border-box;
 	overflow-y: auto;
+	position: relative;
+	z-index: 0;
 }
