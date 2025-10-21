@@ -1,0 +1,58 @@
+.container {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	min-height: 100vh;
+}
+
+.content {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+
+	background-image:
+			linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)),
+			url("../assets/backgrounds/BGwood.jpg");
+	background-size: cover;
+	background-repeat: no-repeat;
+	background-position: center center;
+
+	padding: 0 0 1rem 0;
+	gap: 1rem;
+
+/*	border: 10px ridge #8a8a8a;
+	border-radius: 20px;
+	border-image-source: url("../assets/backgrounds/BORDERplastic.jpg");
+	border-image-slice: 203;
+	border-image-repeat: repeat; */
+
+	box-shadow: inset 0 0 20px #1a1a1a;
+	position: relative;
+}
+
+.content::before {
+	content: "";
+	position: absolute;
+	top: -30px;
+	left: -30px;
+	width: 100%;
+	z-index: -1;
+
+	background-image: url("../assets/backgrounds/BORDERplastic.jpg");
+	background-size: 250px;
+	border-radius: 20px;
+}
+
+.buttonContainer {
+	display: flex;
+	justify-content: center;
+}
+
+.form {
+	display: flex;
+	flex-direction: column;
+
+	padding: 0.5rem;
+	gap: 1rem;
+}
