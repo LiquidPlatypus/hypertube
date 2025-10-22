@@ -19,12 +19,12 @@ class bcolors:
 def run_front():
     print(f"{bcolors.WARNING}Launching Frontend...{bcolors.ENDC}")
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    frontend_path = os.path.join(script_dir, 'Frontend')
+    frontend_path = os.path.join(script_dir, 'frontend')
     os.chdir(frontend_path)
     subprocess.run(["npm run dev"], shell=True)
 
 def run_back():
-    uvicorn.run("Backend.app.main:app", host="127.0.0.1", port=8000, reload=True)
+    uvicorn.run("backend.app.main:app", host="127.0.0.1", port=8000, reload=True)
 
 def print_dev_url():
     time.sleep(3)
@@ -36,6 +36,6 @@ if __name__ == "__main__":
     front_thread.start()
     print_thread.start()
     time.sleep(1)
-    print(f"{bcolors.WARNING}Launching Backend...{bcolors.ENDC}")
+    print(f"{bcolors.WARNING}Launching backend...{bcolors.ENDC}")
     time.sleep(1)
     run_back()
