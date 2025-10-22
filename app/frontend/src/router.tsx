@@ -1,25 +1,20 @@
 import type { RouteObject } from "react-router-dom";
 import { createBrowserRouter } from "react-router-dom";
-import App from "./App"
-import Home from "./Home"
-import Entry, { Login, Register } from "./Entry";
+import App from "./App";
+import EntryPage, { LoginPage } from "./pages/LoginPage.tsx";
 
 const routes: RouteObject[] = [
-    {
-        path: "/",
-        element: <App />,
-        children: [
-            { path: "/", element: <Home /> },
-            {
-                path: "/entry",
-                element: <Entry />,
-                children: [
-                    { path: "/entry/login", element: <Login /> },
-                    { path: "/entry/register", element: <Register /> },
-                ],
-            },
-        ],
-    },
+	{
+		path: "/",
+		element: <App />,
+		children: [
+			{
+				path: "/entry",
+				element: <EntryPage />,
+				children: [{ path: "/entry/login", element: <LoginPage /> }],
+			},
+		],
+	},
 ];
 
 export const router = createBrowserRouter(routes);

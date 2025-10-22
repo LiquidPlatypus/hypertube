@@ -2,8 +2,20 @@ import Button from "../components/ui/Button.tsx";
 import { useState } from "react";
 
 import styles from "./LoginPage.module.css";
+import { Outlet, useNavigate } from "react-router-dom";
 
-export default function LoginPage() {
+export default function EntryPage() {
+	const navigate = useNavigate();
+
+	return (
+		<div>
+			<Button text="Login" onClick={() => navigate("/entry/login")} />
+			<Outlet />
+		</div>
+	);
+}
+
+export function LoginPage() {
 	const [isLogin, setIsLogin] = useState(true); // true = Login, false = Register
 
 	return (
