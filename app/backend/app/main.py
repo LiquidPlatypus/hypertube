@@ -23,8 +23,6 @@ class Storage:
         self.password = []
 
     def add_user(self, username: str, email: str, password: str):
-        if any(u["username"] == username for u in self.users):
-            raise HTTPException(status_code=400, detail="Username already exists")
 
         user = {"id": len(self.users) + 1, "username": username, "email": email}
         self.users.append(user)
@@ -66,8 +64,12 @@ class RegisterRequest(BaseModel):
 
 @app.post("/api/register")
 async def register(data: RegisterRequest):
+    users_list = storage.get_all_users()
+    for user in users_list:
+        if user["email"] == data.email:
+            return {"returnValue": False}
     user = storage.add_user(data.username, data.email, data.password)
-    return {"message": f"{user['username']} has been created!", "user": user}
+    return {"returnValue": True}
 
 class LoginRequest(BaseModel):
     username: str

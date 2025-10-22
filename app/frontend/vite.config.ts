@@ -13,5 +13,8 @@ export default defineConfig({
         rewrite: (path: string) => path,
       } as ProxyOptions,
     },
+    watch: {
+      usePolling: true,
+    },
   },
 })

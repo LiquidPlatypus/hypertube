@@ -90,10 +90,17 @@ export function Register() {
                 throw new Error("Server error");
             }
 
-            const data: { message: string } = await response.json();
-            setMessage(data.message);
+            const data: { returnValue: boolean } = await response.json();
+            if (data.returnValue === true)
+                setMessage("Profile create !");
+            else
+                throw new Error("This profile can't be created")
         } catch (error) {
-            setMessage("Register catch called");
+            if (typeof error === "string")
+                setMessage(error);
+            else if (error instanceof Error) {
+                setMessage(error.message);
+            }
         }
     };
 
