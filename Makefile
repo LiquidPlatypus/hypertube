@@ -3,21 +3,12 @@ YEL=\033[33m
 CYA=\033[36m
 STOP=\033[0m
 
-all: check-Frontend build
-
-check-Frontend:
-	@echo "$(CYA)=== Checking Frontend setup...$(STOP)"
-	@if [ ! -f App/Frontend/package.json ]; then \
-		echo "Creating React app with Vite..."; \
-		cd App/Frontend && npm create vite@latest . -- --template react-ts && npm install; \
-	else \
-		echo "Frontend already initialized."; \
-	fi
+all: build
 
 build:
 	@echo "$(CYA)=== Building & starting containers...$(STOP)"
-	@cd App/Frontend && sudo npm run build
-#	@sudo docker-compose up --build
+	@cd app/frontend && sudo npm run build
+	@sudo docker-compose up --build
 
 clean: #Stops and remove all containers volumes and networks
 	@echo "$(CYA)=== Stopping and cleaning containers, volumes and networks...$(STOP)"

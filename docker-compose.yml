@@ -2,15 +2,15 @@ services:
 
   # NGINX Web server (and naxsi as WAF)
   nginx:
-    build: ./nginx
+    build:
+      context: .
+      dockerfile: ./nginx/Dockerfile
     container_name: nginx
     ports:
       - 80:80
       - 443:443
-    depends_on:
-      - hypertube_backend
-    volumes:
-      - ./App/Frontend/dist:/usr/share/nginx/html:ro
+    # depends_on:
+    #   - hypertube_backend
     networks:
       - hypertube-network
 
@@ -28,12 +28,12 @@ services:
 
   # Hypertube backend
   hypertube_backend:
-    build: ./App/Backend
+    build: ./app/backend
     container_name: hypertube_backend
     ports:
       - 8000:8000
     volumes:
-      - ./App/Backend/app:/app
+      - ./app/backend/app:/app
     # depends_on:
     #   - postgres
     networks:
