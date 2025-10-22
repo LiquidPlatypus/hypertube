@@ -4,10 +4,10 @@ Hypertube project for 42 School
 
 ## Init new front :
 
-1) Replace the contents of the Frontend folder in the App/ for your React project
+1) Replace the contents of the frontend folder in the app/ for your React project
 2) python -v venv venv (la suite dans le venv)
 3) pip install -r requirements.txt
-    In App/Frontend
+    In app/frontend
 4) add in vite.config.js :
 ```
 export default defineConfig({

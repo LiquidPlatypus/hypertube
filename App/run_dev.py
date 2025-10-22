@@ -17,7 +17,7 @@ class bcolors:
 
 
 def run_front():
-    print(f"{bcolors.WARNING}Launching Frontend...{bcolors.ENDC}")
+    print(f"{bcolors.WARNING}Launching frontend...{bcolors.ENDC}")
     script_dir = os.path.dirname(os.path.abspath(__file__))
     frontend_path = os.path.join(script_dir, 'frontend')
     os.chdir(frontend_path)

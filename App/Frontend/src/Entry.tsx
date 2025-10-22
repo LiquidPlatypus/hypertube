@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
-import Home from "./Home";
 
 export default function Entry() {
     const navigate = useNavigate();
@@ -71,7 +70,6 @@ export function Login() {
 }
 
 export function Register() {
-    const navigate = useNavigate();
     const [username, setUsername] = useState<string>("");
     const [email, setEmail] = useState<string>("");
     const [password, setPassword] = useState<string>("");
