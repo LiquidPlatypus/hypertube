@@ -34,7 +34,7 @@ function App() {
 		<main>
 			<Header />
 			<PageFrame>
-				{isAuthenticated ? <Button text="Logout" onClick={handleLogout} /> : null}
+				{isAuthenticated && (<Button text="Logout" onClick={handleLogout} />)}
 				<Outlet />
 			</PageFrame>
 			<Footer />
