@@ -5,6 +5,7 @@ import PageFrame from "./components/layout/PageFrame.tsx";
 import Footer from "./components/layout/Footer.tsx";
 import { Outlet, useNavigate } from "react-router-dom";
 import Button from "./components/ui/Button.tsx";
+import { JSX } from "react";
 
 function App() {
 	// useEffect(() => {
@@ -19,11 +20,21 @@ function App() {
 
 	const navigate = useNavigate();
 
+	const handleLogout = () => {
+		// Supprime le token
+		localStorage.removeItem("authToken");
+		// Redirect vers login
+		navigate("/auth/login");
+	};
+
+	// Verif si user est connecte
+	const isAuthenticated = localStorage.getItem("authToken") !== null;
+
 	return (
 		<main>
 			<Header />
 			<PageFrame>
-				<Button text="Entry" onClick={() => navigate("/entry")} />
+				{isAuthenticated ? <Button text="Logout" onClick={handleLogout} /> : null}
 				<Outlet />
 			</PageFrame>
 			<Footer />

@@ -1,4 +1,5 @@
 import styles from "./PageFrame.module.css";
+import * as React from "react";
 
 interface PageFrameProps {
 	children: React.ReactNode;

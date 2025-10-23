@@ -1,7 +1,9 @@
 import type { RouteObject } from "react-router-dom";
 import { createBrowserRouter } from "react-router-dom";
 import App from "./App";
-import EntryPage, { LoginPage } from "./pages/LoginPage.tsx";
+import LoginPage from "./pages/LoginPage.tsx";
+import ProtectedRoute from "./components/ProtectedRoute.tsx";
+import HomePage from "./pages/HomePage";
 
 const routes: RouteObject[] = [
 	{
@@ -9,9 +11,31 @@ const routes: RouteObject[] = [
 		element: <App />,
 		children: [
 			{
-				path: "/entry",
-				element: <EntryPage />,
-				children: [{ path: "/entry/login", element: <LoginPage /> }],
+				// Route d'acceuil - pour les user connecte
+				index: true, // indique que c'est la route par default a "/"
+				element: (
+					<ProtectedRoute requireAuth={true}>
+						<HomePage />
+					</ProtectedRoute>
+				),
+			},
+			{
+				// Groupe des routes d'auth
+				// pour les user NON connecte
+				path: "auth",
+				children: [
+					{
+						// Route /auth/login pour la connexion
+						path: "login",
+						element:  (
+							<ProtectedRoute requireAuth={false}>
+								<LoginPage />
+							</ProtectedRoute>
+						),
+					},
+					// route "forget-password"
+					// route "reset-password"
+				],
 			},
 		],
 	},
