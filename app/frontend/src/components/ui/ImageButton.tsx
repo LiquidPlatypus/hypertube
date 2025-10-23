@@ -15,7 +15,7 @@ type ImageButtonProps = {
 	/** Classes CSS supplementaires */
 	className?: string;
 	/** Action au clic */
-	onClick?: () => void;
+	onClick?: (e: React.MouseEvent<HTMLElement>) => void;
 };
 
 export default function ImageButton({
