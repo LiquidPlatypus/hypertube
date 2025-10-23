@@ -1,7 +1,7 @@
 import Button from "../components/ui/Button.tsx";
 import { useState } from "react";
 import * as React from "react";
-import { Outlet, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import styles from "./LoginPage.module.css";
 
@@ -35,7 +35,7 @@ export default function LoginPage() {
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({
 					username: loginUsername,
-					password: registerPassword,
+					password: loginPassword,
 				}),
 			});
 
@@ -43,14 +43,12 @@ export default function LoginPage() {
 				throw new Error("Error server during login")
 			}
 
-			const data: { returnValue: boolean; token?: string } = await response.json();
+			const data: { returnValue: boolean; token?: any } = await response.json();
 
 			if (data.returnValue) {
 				// si serveur renvoie un token, on le stock
 				// TODO: adapter en fonction de l'API
-				if (data.token) {
-					localStorage.setItem("authToken", data.token);
-				}
+				localStorage.setItem("authToken", data.token);
 
 				// Redirect vers page d'acceuil
 				navigate("/");
