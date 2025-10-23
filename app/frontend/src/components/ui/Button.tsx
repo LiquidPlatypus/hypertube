@@ -9,7 +9,7 @@ type ButtonProps = {
 	imageOnly?: boolean;
 	style?: React.CSSProperties;
 	className?: string;
-	onClick?: () => void;
+	onClick?: (e: React.MouseEvent<HTMLElement>) => void;
 	alt?: string;
 };
 
