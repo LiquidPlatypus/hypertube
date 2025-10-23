@@ -1,11 +1,8 @@
 FROM node:20-alpine AS builder
-
-COPY /app/frontend/package*.json ./
-
+WORKDIR /app
+COPY app/frontend/package*.json ./
 RUN npm install
-
-COPY /app/frontend .
-
+COPY app/frontend .
 RUN npm run build
 
 FROM debian:bullseye
@@ -37,14 +34,13 @@ RUN mkdir -p /etc/nginx/ssl /var/log/nginx \
         -keyout /etc/nginx/ssl/hypertube.key \
         -subj "/C=FR/ST=MULHOUSE/L=MULHOUSE/O=42 School/OU=hypertube/CN=hypertube/"
 
-EXPOSE 80 443
+COPY nginx/nginx.conf /usr/local/nginx/conf/.
+COPY nginx/naxsi.rules /usr/local/nginx/conf/.
+COPY nginx/mime.types /etc/nginx/.
+COPY nginx/naxsi_core.rules /usr/local/nginx/conf/.
 
-COPY nginx.conf /usr/local/nginx/conf/.
-COPY naxsi.rules /usr/local/nginx/conf/.
-COPY mime.types /etc/nginx/.
-COPY naxsi_core.rules /usr/local/nginx/conf/.
-
-RUN mkdir -p /usr/local/nginx/html
 COPY --from=builder /app/dist /usr/local/nginx/html
+
+EXPOSE 80 443
 
 CMD ["/usr/local/nginx/sbin/nginx", "-g", "daemon off;"]

@@ -28,10 +28,11 @@ fclean: #Removes everything
 	@read -p "Confirm (y/n) : " confirm && [ "$$confirm" = "y" ] || (echo "$(YEL)Aborted.$(STOP)" && exit 1)
 	@echo "$(CYA)=== Cleaning data...$(STOP)"
 	@make clean
-	@sudo rm -rf \
-		postgresql/data \
-		postgresql/postgresql-init/* \
-		postgresql/tls/* \
+#	@sudo rm -rf \
+#		postgresql/data \
+#		postgresql/postgresql-init/* \
+#		postgresql/tls/*
+	@rm -rf  app/frontend/dist
 
 list: #Lists all containers, images, volumes and networks. Running or not, used or not.
 	@echo "\n$(CYA)======== CONTAINERS ========$(STOP)"
