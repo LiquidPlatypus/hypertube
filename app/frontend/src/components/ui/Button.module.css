@@ -4,10 +4,6 @@
 	cursor: pointer;
 }
 
-.button:hover {
-	background-color: #1d4ed8;
-}
-
 /* tailles */
 .small {
 	padding: 0.25rem 0.5rem;
@@ -62,10 +58,4 @@
 .imageOnly.large img {
 	width: 64px;
 	height: 64px;
-}
-
-.imageOnly:hover img {
-	opacity: 0.9;
-	transform: scale(1.05);
-	transition: all 0.2s ease;
 }
