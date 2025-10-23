@@ -1,17 +1,9 @@
 import styles from "./MainLayout.module.css";
 import type { JSX } from "react";
 
-const thumbnailsTest: Array<string> = [
-	"src/assets/test/Fw5IdJVWAAAc-c2.jpg",
-	"src/assets/test/Fw5IdJVWAAAc-c2.jpg",
-	"src/assets/test/Fw5IdJVWAAAc-c2.jpg",
-	"src/assets/test/Fw5IdJVWAAAc-c2.jpg",
-	"src/assets/test/Fw5IdJVWAAAc-c2.jpg",
-	"src/assets/test/Fw5IdJVWAAAc-c2.jpg",
-	"src/assets/test/Fw5IdJVWAAAc-c2.jpg",
-	"src/assets/test/Fw5IdJVWAAAc-c2.jpg",
-	"src/assets/test/Fw5IdJVWAAAc-c2.jpg",
-];
+import testImage from "../../assets/test/sddefault.jpg";
+
+const thumbnailsTest: Array<string> = Array(9).fill(testImage);
 
 export default function MainLayout() {
 	const listThumbnailsTest: JSX.Element[] = thumbnailsTest.map(
