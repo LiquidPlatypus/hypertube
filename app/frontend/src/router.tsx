@@ -3,7 +3,8 @@ import { createBrowserRouter } from "react-router-dom";
 import App from "./App";
 import LoginPage from "./pages/LoginPage.tsx";
 import ProtectedRoute from "./components/ProtectedRoute.tsx";
-import HomePage from "./pages/HomePage";
+import HomePage from "./pages/HomePage.tsx";
+import ProfilePage from "./pages/ProfilePage.tsx";
 
 const routes: RouteObject[] = [
 	{
@@ -27,7 +28,7 @@ const routes: RouteObject[] = [
 					{
 						// Route /auth/login pour la connexion
 						path: "login",
-						element:  (
+						element: (
 							<ProtectedRoute requireAuth={false}>
 								<LoginPage />
 							</ProtectedRoute>
@@ -36,6 +37,12 @@ const routes: RouteObject[] = [
 					// route "forget-password"
 					// route "reset-password"
 				],
+			},
+			{
+				path: "profile",
+				element: (
+					<ProfilePage />
+				),
 			},
 		],
 	},
