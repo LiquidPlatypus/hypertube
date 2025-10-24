@@ -1,9 +1,12 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, EmailStr
 import os
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import text
+from database import get_db, Base, engine
 
 # INIT
 
@@ -17,6 +20,20 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# INIT DB
+@app.on_event("startup")
+async def on_startup():
+    async with engine.begin() as conn:
+        # create all tables
+        await conn.run_sync(Base.metadata.create_all)
+
+# TEST DB CONNECTION
+@app.get("/test-db/")
+async def test_db(db: AsyncSession = Depends(get_db)):
+    result = await db.execute(text("SELECT 1"))
+    return {"db_connection": "ok", "result": result.scalar()}
+
+# DB SIMULATION
 class Storage:
     def __init__(self):
         self.users = []
@@ -43,8 +60,7 @@ class Storage:
 
 storage = Storage()
 
-# CODE
-
+# WEBSOCKET EXAMPLE (NOT USED)
 # @app.websocket("/ws")
 # async def websocket_endpoint(ws: WebSocket):
 #     await ws.accept()

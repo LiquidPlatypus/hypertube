@@ -12,10 +12,7 @@ build:
 
 clean: #Stops and remove all containers volumes and networks
 	@echo "$(CYA)=== Stopping and cleaning containers, volumes and networks...$(STOP)"
-	@sudo docker stop $$(sudo docker ps -qa);\
-	 sudo docker rm $$(sudo docker ps -qa);\
-	 sudo docker volume rm $$(sudo docker volume ls -q);\
-	 sudo docker network rm $$(sudo docker network ls -q)\
+	@sudo docker-compose down
 
 iclean: #Removes all images
 	@echo "$(RED)!!!=== Do you really want to remove all images ?$(STOP)"
@@ -28,10 +25,7 @@ fclean: #Removes everything
 	@read -p "Confirm (y/n) : " confirm && [ "$$confirm" = "y" ] || (echo "$(YEL)Aborted.$(STOP)" && exit 1)
 	@echo "$(CYA)=== Cleaning data...$(STOP)"
 	@make clean
-#	@sudo rm -rf \
-#		postgresql/data \
-#		postgresql/postgresql-init/* \
-#		postgresql/tls/*
+	@sudo rm -rf postgres/data/*
 	@rm -rf  app/frontend/dist
 
 list: #Lists all containers, images, volumes and networks. Running or not, used or not.

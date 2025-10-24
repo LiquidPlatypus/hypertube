@@ -40,3 +40,19 @@ export default defineConfig({
 6) npm install
 
 and there it is init now to launch the dev server you just have to execute the python script "run_dev.py".
+
+
+
+## se connecter au docker postgres:
+`sudo docker exec -it postgres bash`
+`psql -U hypertube_user -d hypertube`
+entrer le mdp
+`\c hypertube` Se connecter à la base hypertube
+`\dt` Lister les tables
+`\d utilisateurs` Afficher la structure de la table "utilisateurs"
+`SELECT id, nom FROM utilisateurs WHERE age > 18;` Exécuter une requête
+`\q` Quitter
+
+
+
+
