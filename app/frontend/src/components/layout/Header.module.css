@@ -1,0 +1,41 @@
+@font-face {
+	font-family: "CoffeeShop";
+	src: url("../../assets/fonts/Coffee Shop Bold_Trial Version.ttf");
+	font-weight: normal;
+	font-style: normal;
+}
+
+.container {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 1rem;
+	gap: 1rem;
+
+	background-image:
+			linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)),
+			url("../../assets/backgrounds/BGwood.jpg");
+	background-size: cover;
+	background-repeat: no-repeat;
+	background-position: center center;
+
+	border-left: 8px ridge #8a8a8a;
+	border-right: 8px ridge #8a8a8a;
+	border-top: 10px ridge #8a8a8a;
+	border-bottom: 10px ridge #8a8a8a;
+}
+
+#title {
+	font-family: "CoffeeShop", sans-serif;
+	margin: 0;
+	flex-shrink: 0;
+}
+
+.container input {
+	flex: 1;
+	max-width: 500px;
+	padding: 0.5rem;
+	border: 2px solid #8a8a8a;
+	background-color: rgba(255, 255, 255, 0.1);
+	color: inherit;
+}

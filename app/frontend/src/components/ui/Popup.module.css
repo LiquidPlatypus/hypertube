@@ -1,0 +1,50 @@
+.popup {
+	position: absolute;
+	padding: 0.5rem;
+	z-index: 1000;
+	min-width: 120px;
+
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	gap: 0.25rem;
+
+	border: 10px ridge #8a8a8a;
+	border-image-source: url("../../assets/backgrounds/BORDERplastic.jpg");
+	border-image-slice: 203;
+	border-image-repeat: repeat;
+
+	background-image:
+		linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)),
+		url("../../assets/backgrounds/BGwood.jpg");
+	background-size: cover;
+	background-repeat: no-repeat;
+	background-position: center center;
+
+	box-shadow: 0 0 20px #1a1a1a, inset 0 0 5px #1a1a1a;
+}
+
+.popup button {
+	border: 3px ridge #8a8a8a;
+	width: 7rem;
+	background-image: url("../../assets/backgrounds/BGmiddle.jpg");
+	background-size: cover;
+	background-repeat: no-repeat;
+	background-position: center center;
+
+	box-shadow: 0 5px 20px 0 #1a1a1a;
+}
+
+.popup button:hover {
+	animation: shadow 0.1s ease-in forwards;
+}
+
+@keyframes shadow {
+	from {
+		box-shadow: 0 5px 20px 0 #1a1a1a, inset 0 0 0 0 #1a1a1a;
+	}
+	to {
+		box-shadow: 0 5px 20px 0 #1a1a1a, inset 0 0 5px #1a1a1a;
+	}
+}

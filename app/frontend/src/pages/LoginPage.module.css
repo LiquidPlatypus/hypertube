@@ -1,0 +1,145 @@
+.container {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	min-height: 100vh;
+}
+
+.content {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+
+	background-image:
+			linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)),
+			url("../assets/backgrounds/BGwood.jpg");
+	background-size: cover;
+	background-repeat: no-repeat;
+	background-position: center center;
+
+	padding: 0 0 1rem 0;
+	gap: 1rem;
+
+	border: 10px ridge #8a8a8a;
+	border-image-source: url("../assets/backgrounds/BORDERplastic.jpg");
+	border-image-slice: 203;
+	border-image-repeat: repeat;
+
+	box-shadow: 0 0 20px #1a1a1a, inset 0 0 20px #1a1a1a;
+}
+
+.buttonContainer {
+	display: flex;
+	justify-content: center;
+}
+
+.buttonContainer button {
+	border: 5px ridge #8a8a8a;
+	width: 10rem;
+	background-image: url("../assets/backgrounds/BGmiddle.jpg");
+	background-size: cover;
+	background-repeat: no-repeat;
+	background-position: center center;
+
+	box-shadow: 0 5px 20px 0 #1a1a1a;
+}
+
+.buttonContainer button:hover {
+	animation: shadow 0.1s ease-in forwards;
+}
+
+@keyframes shadow {
+	from {
+		box-shadow:  0 5px 20px 0 #1a1a1a, inset 0 0 0 0 #1a1a1a;
+	}
+	to {
+		box-shadow:  0 5px 20px 0 #1a1a1a, inset 0 0 10px #1a1a1a;
+	}
+}
+
+.form {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 1.5rem;
+	width: 100%;
+	max-width: 400px;
+}
+
+.login,
+.register{
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	gap: 1rem;
+	width: 100%;
+}
+
+.login div,
+.register div {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+}
+
+.login button,
+.register button {
+	width: 50%;
+	align-self: center;
+
+	border: 5px ridge #8a8a8a;
+	background-image: url("../assets/backgrounds/BGmiddle.jpg");
+	background-size: cover;
+	background-repeat: no-repeat;
+	background-position: center center;
+
+	box-shadow: 0 0 10px #1a1a1a;
+}
+
+.login button:hover,
+.register button:hover {
+	animation: shadow-confirm 0.1s ease-in forwards;
+}
+
+@keyframes shadow-confirm {
+	from {
+		box-shadow: 0 0 10px #1a1a1a, inset 0 0 0 0 #1a1a1a;
+	}
+	to {
+		box-shadow: 0 0 10px #1a1a1a, inset 0 0 10px #1a1a1a;
+	}
+}
+
+label {
+	font-weight: bold;
+	color: white;
+	text-align: left;
+	margin-left: 0.5rem;
+}
+
+input[type="text"],
+input[type="password"],
+input[type="email"],
+input[type="file"] {
+	padding: 0.5rem;
+	margin-left: 0.5rem;
+	margin-right: 0.5rem;
+	border: 1px solid #aaa;
+	background-color: #222;
+	color: white;
+}
+
+input[type="file"] {
+	color: #ccc;
+}
+
+form {
+	width: 100%;
+}
+
+.message {
+
+}
