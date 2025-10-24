@@ -25,7 +25,7 @@ export default function Header() {
 				size="medium"
 				style={{ borderRadius: "50%" }}
 			/>
-			{open && <Popup anchor={anchor} onClose={handleClose} />}
+			{open && anchor && <Popup anchor={anchor} onClose={handleClose} />}
 		</header>
 	);
 }
