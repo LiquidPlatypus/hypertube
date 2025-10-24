@@ -6,7 +6,7 @@ import { useRef } from "react";
 import styles from "./Popup.module.css";
 
 interface PopupProps {
-	anchor: HTMLElement | null;
+	anchor: HTMLElement;
 	onClose: () => void;
 }
 
@@ -43,19 +43,6 @@ export default function Popup({ anchor, onClose }: PopupProps) {
 		setPosition({ top, left });
 	}, [anchor]);
 
-	const popupStyle: React.CSSProperties = {
-		position: "absolute",
-		top: position.top,
-		left: position.left,
-		backgroundColor: "white",
-		border: "1px solid #ccc",
-		borderRadius: "8px",
-		padding: "0.5rem",
-		boxShadow: "0 2px 10px rgba(0, 0, 0, 0.2)",
-		zIndex: 1000,
-		minWidth: "160px",
-	};
-
 	// Init + ecoute des resize/scroll
 	React.useEffect(() => {
 		updatePosition();
@@ -89,10 +76,20 @@ export default function Popup({ anchor, onClose }: PopupProps) {
 		navigate("/auth/login");
 	};
 
+	const handleProfileClick = () => {
+		// TODO: check si auth
+		navigate("/profile");
+	}
+
+	const dynamicStyle: React.CSSProperties = {
+		top: position.top,
+		left: position.left,
+	}
+
 	return (
-		<div ref={popupRef} style={popupStyle}>
-			<Button text="See profile" onClick={() => console.log("See profile")} />
-			<Button text="Logout" onClick={() => handleLogout()} />
+		<div ref={popupRef} className={styles.popup} style={dynamicStyle}>
+			<Button text="See profile" size="small" shape="square" onClick={() => handleProfileClick()} />
+			<Button text="Logout" size="small" shape="square" onClick={() => handleLogout()} />
 		</div>
 	)
 }
