@@ -3,9 +3,7 @@ import "./styles/App.css";
 import Header from "./components/layout/Header.tsx";
 import PageFrame from "./components/layout/PageFrame.tsx";
 import Footer from "./components/layout/Footer.tsx";
-import { Outlet, useNavigate } from "react-router-dom";
-import Button from "./components/ui/Button.tsx";
-import { JSX } from "react";
+import { Outlet } from "react-router-dom";
 
 function App() {
 	// useEffect(() => {
@@ -17,18 +15,6 @@ function App() {
 	//   socket.onmessage = (event) => console.log("Server:", event.data);
 	//   return () => socket.close();
 	// }, []);
-
-	const navigate = useNavigate();
-
-	const handleLogout = () => {
-		// Supprime le token
-		localStorage.removeItem("authToken");
-		// Redirect vers login
-		navigate("/auth/login");
-	};
-
-	// Verif si user est connecte
-	const isAuthenticated = localStorage.getItem("authToken") !== null;
 
 	return (
 		<main>
