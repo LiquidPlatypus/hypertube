@@ -31,13 +31,19 @@ class Storage:
 		self.users = []
 		self.password = []
 
-	def add_user(self, username: str, email: str, password: str):
+	def add_user(self, username: str, email: str, password: str, firstname: str, lastname: str):
 
-		user = {"id": len(self.users) + 1, "username": username, "email": email}
+		user = {"id": len(self.users) + 1, "username": username, "email": email, "firstname": firstname, "lastname": lastname}
 		self.users.append(user)
 
 		self.password.append({"user_id": user["id"], "password": password})
 		return user
+
+	def get_user_by_id(self, user_id: int):
+		for u in self.users:
+			if u["id"] == user_id:
+				return u
+		return None
 
 	def get_user_password(self, user_id: int):
 		for p in self.password:
@@ -66,14 +72,17 @@ class RegisterRequest(BaseModel):
 	username: str
 	password: str
 	email: EmailStr
+	firstName: str
+	lastName: str
+
 
 @app.post("/api/register")
 async def register(data: RegisterRequest):
 	users_list = storage.get_all_users()
 	for user in users_list:
-		if user["email"] == data.email:
+		if user["username"] == data.username:
 			return {"returnValue": False}
-	user = storage.add_user(data.username, data.email, data.password)
+	user = storage.add_user(data.username, data.email, data.password, data.firstName, data.lastName)
 	return {"returnValue": True}
 
 class LoginRequest(BaseModel):
@@ -86,7 +95,7 @@ async def login(data: LoginRequest):
 	for user in users_list:
 		if user["username"] == data.username and storage.get_user_password(user["id"]) == data.password:
 			access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-			access_token = create_access_token(data={"sub": user["username"]}, expires_delta=access_token_expires)
+			access_token = create_access_token(data={"sub": str(user["id"])}, expires_delta=access_token_expires)
 			return {"access_token": access_token, "token_type": "bearer"}
 
 	raise HTTPException(
@@ -107,19 +116,22 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
 def verif_access_token(token: str = Depends(oauth2_scheme)):
 	try:
 		payload = jwt.decode(token, SECRET_KEY, algorithms=ALGORITHM)
-		return payload
+		user = storage.get_user_by_id(int(payload["sub"]))
+		return user
 	except JWTError:
-		return None
-
-@app.get("/api/verify-token/{token}")
-async def verify_user_token(token: str):
-	res = verif_access_token(token)
-	if res == None:
 		raise HTTPException(
 			status_code=401,
 			detail="Unauthorized"
 		)
+
+@app.get("/api/verify-token/{token}")
+async def verify_user_token(token: str):
+	res = verif_access_token(token)
 	return {"message": "Token is valid"}
+
+@app.get("/api/me")
+async def read_user_me(current_user=Depends(verif_access_token)):
+    return {"user": current_user}
 
 @app.get("/api/hello")
 async def get_hello(current_user=Depends(verif_access_token)):
