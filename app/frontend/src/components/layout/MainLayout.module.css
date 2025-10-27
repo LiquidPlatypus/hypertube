@@ -6,7 +6,7 @@
 
 .thumbnails {
 	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+	grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
 	column-gap: 2rem;
 	row-gap: 5rem;
 	list-style: none;
@@ -17,6 +17,7 @@
 .thumbnails li {
 	position: relative;
 	overflow: hidden;
+	aspect-ratio: 16/9;
 	border: 10px ridge #8a8a8a;
 	box-shadow: 0 0 20px #1a1a1a;
 
@@ -94,6 +95,7 @@
 .thumbnails li:first-child {
 	grid-column: span 2;
 	grid-row: span 2;
+	aspect-ratio: 32/18;
 }
 
 .thumbnails img {
@@ -102,9 +104,10 @@
 	object-fit: cover;
 }
 
-@media (max-width: 800px) {
+@media (max-width: 950px) {
 	.thumbnails li:first-child {
-		grid-column: span 1;
-		grid-row: span 1;
+		grid-column: auto;
+		grid-row: auto;
+		aspect-ratio: 16/9;
 	}
 }
