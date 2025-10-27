@@ -1,10 +1,10 @@
 <svg width="100" height="100" xmlns="http://www.w3.org/2000/svg">
   <!-- Fond brun -->
-  <rect width="100" height="100" fill="#78350f"/>
+  <rect width="100" height="100" fill="#3a1804ff"/>
   
   <!-- Fleurs stylisées en orange / ocre -->
-  <circle cx="25" cy="25" r="10" fill="#b85c1b"/>
-  <circle cx="75" cy="75" r="10" fill="#b85c1b"/>
-  <circle cx="75" cy="25" r="10" fill="#f4a261"/>
-  <circle cx="25" cy="75" r="10" fill="#f4a261"/>
+  <circle cx="25" cy="25" r="10" fill="#b85c1b75"/>
+  <circle cx="75" cy="75" r="10" fill="#b85c1b95"/>
+  <circle cx="75" cy="25" r="10" fill="#f4a26175"/>
+  <circle cx="25" cy="75" r="10" fill="#f4a26175"/>
 </svg>

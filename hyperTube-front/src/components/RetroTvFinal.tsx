@@ -21,54 +21,57 @@ const RetroTvFinal: React.FC<RetroTvFinalProps> = ({
   screenWidth,
   screenHeight,
 }) => {
-  // Calcul padding %
-  const paddingLeft = (screenX / tvWidth) * 100;
-  const paddingTop = (screenY / tvHeight) * 100;
-  const paddingRight = ((tvWidth - screenX - screenWidth) / tvWidth) * 100;
-  const paddingBottom = ((tvHeight - screenY - screenHeight) / tvHeight) * 100;
+ return (
+    <div className="relative w-full h-full flex items-center justify-center">
+      {/* TV PNG */}
+      <img
+        src={tvImageSrc}
+        alt="TV rétro"
+        className="absolute w-full h-full z-20 pointer-events-none"
+      />
 
-  return (
-    <div className="relative w-[100vw] max-w-screen aspect-square flex items-center justify-center scale-100">
-      {/* Contenu de l'écran */}
+      {/* Écran */}
       <div
-        className="absolute inset-0 overflow-hidden rounded-md shadow-lg"
+        className="absolute z-10 overflow-hidden"
         style={{
-          paddingLeft: `${paddingLeft}%`,
-          paddingTop: `${paddingTop}%`,
-          paddingRight: `${paddingRight}%`,
-          paddingBottom: `${paddingBottom}%`,
+          top: `${(screenY / tvHeight) * 100}%`,
+          left: `${(screenX / tvWidth) * 100}%`,
+          width: `${(screenWidth / tvWidth) * 100}%`,
+          height: `${(screenHeight / tvHeight) * 100}%`,
         }}
       >
+        {/* Vidéo */}
         <video
           src={videoSrc}
           autoPlay
           loop
           muted
-          className="w-full h-full object-cover rounded-sm"
+          className="w-full h-full object-cover"
         />
 
-        {/* Scanlines */}
-        <div className="absolute inset-0 pointer-events-none bg-[repeating-linear-gradient(transparent,transparent_1px,rgba(255,255,255,0.05)_2px)] animate-[scan_1s_linear_infinite]"></div>
+        {/* Overlay Login / boutons */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-white">
+          <h2 className="text-lg font-bold mb-2">Bienvenue sur Hypertube</h2>
+          <input
+            className="mb-2 p-2 rounded text-black"
+            placeholder="Username"
+          />
+          <input
+            className="mb-2 p-2 rounded text-black"
+            type="password"
+            placeholder="Password"
+          />
+          <button className="px-4 py-2 bg-amber-600 rounded hover:bg-amber-500">
+            Se connecter
+          </button>
+        </div>
 
-        {/* Vignette / glow */}
-        <div className="absolute inset-0 pointer-events-none rounded-md bg-gradient-to-b from-black/40 via-black/20 to-black/40"></div>
+        {/* Scanlines overlay */}
+        <div className="absolute inset-0 pointer-events-none bg-black/10 [background-size:2px_2px]"></div>
+
+        {/* Glow autour de l'écran */}
+        <div className="absolute inset-0 pointer-events-none shadow-[0_0_20px_#ffbf00] rounded"></div>
       </div>
-
-      {/* Image TV */}
-      <img
-        src={tvImageSrc}
-        alt="TV rétro"
-        className="w-full h-full z-10 pointer-events-none select-none"
-      />
-
-      <style>
-        {`
-          @keyframes scan_1s_linear_infinite {
-            0% { background-position: 0 0; }
-            100% { background-position: 0 100%; }
-          }
-        `}
-      </style>
     </div>
   );
 };
