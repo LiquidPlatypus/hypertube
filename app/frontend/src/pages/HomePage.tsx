@@ -4,11 +4,13 @@ import MainLayout from "../components/layout/MainLayout.tsx";
 import { useState } from "react";
 
 export interface User {
-	id: number,
-	username: string,
-	email: string,
-	firstname: string,
-	lastname: string,
+	"user": {
+		"id": number,
+		"username": string,
+		"email": string,
+		"firstname": string,
+		"lastname": string,
+	}
 }
 
 export default function HomePage() {
@@ -28,7 +30,7 @@ export default function HomePage() {
 				throw new Error("Not authorized");
 			}
 			const data: User = await response.json();
-			console.log(data.firstname);
+			console.log(data.user.firstname);
 		} catch (error) {
 			setUserInfo("Error")
 		}
