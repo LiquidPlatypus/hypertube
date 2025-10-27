@@ -11,30 +11,22 @@ const routes: RouteObject[] = [
 		element: <App />,
 		children: [
 			{
-				// Route d'acceuil - pour les user connecte
-				index: true, // indique que c'est la route par default a "/"
-				element: (
-					<ProtectedRoute requireAuth={true}>
-						<HomePage />
-					</ProtectedRoute>
-				),
+				// all protected element by login system must be here
+				path: "/",
+				element: <ProtectedRoute />,
+				children: [
+					{ path: "/", element: <HomePage /> },
+				],
 			},
 			{
-				// Groupe des routes d'auth
-				// pour les user NON connecte
 				path: "auth",
 				children: [
 					{
-						// Route /auth/login pour la connexion
 						path: "login",
 						element:  (
-							<ProtectedRoute requireAuth={false}>
-								<LoginPage />
-							</ProtectedRoute>
+							<LoginPage />
 						),
 					},
-					// route "forget-password"
-					// route "reset-password"
 				],
 			},
 		],

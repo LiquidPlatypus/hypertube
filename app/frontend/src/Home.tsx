@@ -8,13 +8,16 @@ export default function Home() {
 	const handleMessage = async (e: React.MouseEvent<HTMLButtonElement>) => {
 		e.preventDefault();
 		try {
+			const token = localStorage.getItem("access_token");
 			const response = await fetch("/api/hello", {
 				method: "GET",
-				headers: { "Content-Type": "application/json" },
+				headers: {
+					Authorization: `Bearer ${token}`,
+				},
 			});
 
 			if (!response.ok) {
-				throw new Error("Communication interupt");
+				throw new Error("Not authorized");
 			}
 			const data = await response.json();
 			setMessage(data.message);

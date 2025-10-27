@@ -25,6 +25,11 @@ export default function LoginPage() {
 	// Etats pour les messages error/success
 	const [message, setMessage] = useState("");
 
+	interface LoginResponse {
+		access_token: string;
+		token_type: string; // souvent "bearer"
+	}
+
 	const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		setMessage(""); // reset le message
@@ -35,31 +40,23 @@ export default function LoginPage() {
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({
 					username: loginUsername,
-					password: registerPassword,
+					password: loginPassword,
 				}),
 			});
 
 			if (!response.ok) {
-				throw new Error("Error server during login")
+				throw new Error("Invalid Password or username")
 			}
 
-			const data: { returnValue: boolean; token?: string } = await response.json();
+			const data: LoginResponse = await response.json();
+			localStorage.setItem("access_token", data.access_token);
+			navigate("/");
 
-			if (data.returnValue) {
-				// si serveur renvoie un token, on le stock
-				// TODO: adapter en fonction de l'API
-				if (data.token) {
-					localStorage.setItem("authToken", data.token);
-				}
-
-				// Redirect vers page d'acceuil
-				navigate("/");
-			} else {
-				setMessage("Username or password incorrect");
-			}
 		} catch (error) {
-			console.error("Error during login", error);
-			setMessage("Error during login. Please try again.");
+			if (typeof error === "string") setMessage(error);
+			else if (error instanceof Error) {
+				setMessage(error.message);
+			}
 		}
 	};
 
