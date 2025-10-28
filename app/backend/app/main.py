@@ -31,11 +31,8 @@ class Storage:
 		self.users = []
 		self.password = []
 
-	def add_user(self, username: str, email: str, password: str, firstname: str, lastname: str, id: int | None = None):
-		if id = None:
-			len(self.users) + 1
-
-		user = {"id": id, "username": username, "email": email, "firstname": firstname, "lastname": lastname}
+	def add_user(self, username: str, email: str, password: str, firstname: str, lastname: str):
+		user = {"id": len(self.users) + 1, "username": username, "email": email, "firstname": firstname, "lastname": lastname}
 		self.users.append(user)
 
 		self.password.append({"user_id": user["id"], "password": password})
@@ -47,11 +44,13 @@ class Storage:
 				return u
 		return None
 
-	def remove_user(self, user_id: int):
+	def modify_user(self, username: str, email: str, firstname: str, lastname: str, user_id: int):
 		for u in self.users:
 			if u["id"] == user_id:
 				self.users.remove(u)
 				break
+		new_user = {"id": user_id, "username": username, "email": email, "firstname": firstname, "lastname": lastname}
+		self.users.append(new_user)
 
 	def get_user_password(self, user_id: int):
 		for p in self.password:
@@ -82,20 +81,6 @@ class RegisterRequest(BaseModel):
 	email: EmailStr
 	firstName: str
 	lastName: str
-
-@app.post("/api/remove-user")
-async def remove_user_db(current_user=Depends(verif_access_token)):
-	storage.remove_user(current_user["id"])
-
-@app.post("/api/modify-profile")
-async def modify_user(current_user=Depends(verif_access_token), data: RegisterRequest):
-	storage.remove_user(current_user["id"])
-	users_list = storage.get_all_users()
-	for user in users_list:
-		if user["email"] == data.email:
-			return {"returnValue": False}
-	user = storage.add_user(data.username, data.email, data.password, data.firstName, data.lastName, current_user["id"])
-	return {"returnValue": True}
 
 @app.post("/api/register")
 async def register(data: RegisterRequest):
@@ -149,6 +134,21 @@ def verif_access_token(token: str = Depends(oauth2_scheme)):
 async def verify_user_token(token: str):
 	res = verif_access_token(token)
 	return {"message": "Token is valid"}
+
+class ModifyFormRequest(BaseModel):
+	username: str
+	email: str
+	firstname: str
+	lastname: str
+
+@app.post("/api/modify-profile")
+async def modify_user(data: ModifyFormRequest, current_user=Depends(verif_access_token)):
+	users_list = storage.get_all_users()
+	for user in users_list:
+		if user["email"] == data.email:
+			return {"returnValue": False}
+	user = storage.modify_user(data.username, data.email, data.firstname, data.lastname, current_user["id"])
+	return {"returnValue": True}
 
 @app.get("/api/me")
 async def read_user_me(current_user=Depends(verif_access_token)):
