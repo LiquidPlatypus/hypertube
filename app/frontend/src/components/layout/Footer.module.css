@@ -1,0 +1,20 @@
+.footer {
+	padding: 1rem;
+	text-align: center;
+
+	background-image:
+			linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)),
+			url("../../assets/backgrounds/BGwood.jpg");	background-size: cover;
+	background-repeat: no-repeat;
+	background-position: center center;
+
+	border-left: 8px ridge #8a8a8a;
+	border-right: 8px ridge #8a8a8a;
+	border-top: 10px ridge #8a8a8a;
+	border-bottom: 10px ridge #8a8a8a;
+	margin-top: auto; /* pousse l'element le plus bas possible */
+}
+
+.footer p {
+	margin: 0;
+}
