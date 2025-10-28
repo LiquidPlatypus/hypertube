@@ -2,7 +2,7 @@ import type { RouteObject } from "react-router-dom";
 import { createBrowserRouter } from "react-router-dom";
 import App from "./App";
 import LoginPage from "./pages/LoginPage.tsx";
-import ProtectedRoute from "./components/ProtectedRoute.tsx";
+import ProtectedRoute from "./utils/ProtectedRoute.tsx";
 import HomePage from "./pages/HomePage.tsx";
 import ProfilePage from "./pages/ProfilePage.tsx";
 

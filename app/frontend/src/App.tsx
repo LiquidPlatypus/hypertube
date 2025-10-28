@@ -1,29 +1,36 @@
-import "./styles/App.css";
-
-import Header from "./components/layout/Header.tsx";
-import PageFrame from "./components/layout/PageFrame.tsx";
-import Footer from "./components/layout/Footer.tsx";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
+import Header from "./components/Header";
+import Footer from "./components/Footer";
+import LoginWrapper from "./components/RetroTv";
+import { useState } from "react";
+import ProfilInfo from "./components/ProfilInfo";
 
 function App() {
-	// useEffect(() => {
-	//   const socket = new WebSocket("ws://127.0.0.1:8000/ws");
-
-	//   socket.onopen = () => {
-	//     console.log("Connected !");
-	//   };
-	//   socket.onmessage = (event) => console.log("Server:", event.data);
-	//   return () => socket.close();
-	// }, []);
+	const location = useLocation();
+	const isAuthPage = location.pathname.startsWith("/auth");
+	const [showProfile, setShowProfile] = useState(false);
 
 	return (
-		<main>
-			<Header />
-			<PageFrame>
-				<Outlet />
-			</PageFrame>
+		<div className="flex flex-col min-h-screen items-center justify-between bg-[url('/fond.png')] bg-repeat bg-center">
+			<Header setShowProfile={setShowProfile} />
+
+			<div className="relative w-[95vw] max-w-[95rem] aspect-square flex items-center justify-center my-4">
+				<LoginWrapper
+					videoSrc="/screen2.mp4"
+					tvImageSrc="/TV.png"
+					tvWidth={6144}
+					tvHeight={6144}
+					screenX={1200}
+					screenY={1750}
+					screenWidth={2832}
+					screenHeight={2593}
+				>
+					{isAuthPage ? null : showProfile ? <ProfilInfo /> : <Outlet />}
+				</LoginWrapper>
+			</div>
+
 			<Footer />
-		</main>
+		</div>
 	);
 }
 
