@@ -31,9 +31,11 @@ class Storage:
 		self.users = []
 		self.password = []
 
-	def add_user(self, username: str, email: str, password: str, firstname: str, lastname: str):
+	def add_user(self, username: str, email: str, password: str, firstname: str, lastname: str, id: int | None = None):
+		if id = None:
+			len(self.users) + 1
 
-		user = {"id": len(self.users) + 1, "username": username, "email": email, "firstname": firstname, "lastname": lastname}
+		user = {"id": id, "username": username, "email": email, "firstname": firstname, "lastname": lastname}
 		self.users.append(user)
 
 		self.password.append({"user_id": user["id"], "password": password})
@@ -44,6 +46,12 @@ class Storage:
 			if u["id"] == user_id:
 				return u
 		return None
+
+	def remove_user(self, user_id: int):
+		for u in self.users:
+			if u["id"] == user_id:
+				self.users.remove(u)
+				break
 
 	def get_user_password(self, user_id: int):
 		for p in self.password:
@@ -75,12 +83,25 @@ class RegisterRequest(BaseModel):
 	firstName: str
 	lastName: str
 
+@app.post("/api/remove-user")
+async def remove_user_db(current_user=Depends(verif_access_token)):
+	storage.remove_user(current_user["id"])
+
+@app.post("/api/modify-profile")
+async def modify_user(current_user=Depends(verif_access_token), data: RegisterRequest):
+	storage.remove_user(current_user["id"])
+	users_list = storage.get_all_users()
+	for user in users_list:
+		if user["email"] == data.email:
+			return {"returnValue": False}
+	user = storage.add_user(data.username, data.email, data.password, data.firstName, data.lastName, current_user["id"])
+	return {"returnValue": True}
 
 @app.post("/api/register")
 async def register(data: RegisterRequest):
 	users_list = storage.get_all_users()
 	for user in users_list:
-		if user["username"] == data.username:
+		if user["email"] == data.email:
 			return {"returnValue": False}
 	user = storage.add_user(data.username, data.email, data.password, data.firstName, data.lastName)
 	return {"returnValue": True}
