@@ -22,9 +22,8 @@ class LoginRequest(BaseModel):
 class ModifyFormRequest(BaseModel):
 	"""
 	DESK: Parse Modify Form Argument \n
-	ARG: username, email, firstname, lastname
+	ARG: username, firstname, lastname
 	"""
 	username: str
-	email: str
 	firstname: str
 	lastname: str

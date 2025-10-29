@@ -1,8 +1,8 @@
 import type { RouteObject } from "react-router-dom";
 import { createBrowserRouter } from "react-router-dom";
 import App from "./App";
-import LoginPage from "./pages/LoginPage.tsx";
-import ProtectedRoute from "./components/ProtectedRoute.tsx";
+import ProtectedRoute from "./component/ProtectedRoute";
+import EntryPage from "./pages/EntryPage";
 import HomePage from "./pages/HomePage";
 
 const routes: RouteObject[] = [
@@ -24,7 +24,7 @@ const routes: RouteObject[] = [
 					{
 						path: "login",
 						element:  (
-							<LoginPage />
+							<EntryPage />
 						),
 					},
 				],

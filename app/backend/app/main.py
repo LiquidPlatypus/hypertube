@@ -4,8 +4,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
-from model import RegisterRequest, LoginRequest, ModifyFormRequest
-from database import Storage
+from .model import RegisterRequest, LoginRequest, ModifyFormRequest
+from .database import Storage
 
 # INIT
 
@@ -55,6 +55,11 @@ def verif_access_token(token: str = Depends(oauth2_scheme)):
 	try:
 		payload = jwt.decode(token, SECRET_KEY, algorithms=ALGORITHM)
 		user = storage.get_user_by_id(int(payload["sub"]))
+		if user == None:
+			raise HTTPException(
+				status_code=410,
+				detail="Account not exist"
+			)
 		return user
 	except JWTError:
 		raise HTTPException(
@@ -108,11 +113,7 @@ async def modify_user(data: ModifyFormRequest, current_user=Depends(verif_access
 	Return Value :
 	True if information was correct and changed or else False
 	"""
-	users_list = storage.get_all_users()
-	for user in users_list:
-		if user["email"] == data.email:
-			return {"returnValue": False}
-	user = storage.modify_user(data.username, data.email, data.firstname, data.lastname, current_user["id"])
+	user = storage.modify_user(data.username, current_user["email"], data.firstname, data.lastname, current_user["id"])
 	return {"returnValue": True}
 
 @app.get("/api/me")

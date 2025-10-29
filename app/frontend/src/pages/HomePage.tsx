@@ -1,6 +1,3 @@
-import styles from "./HomePage.module.css";
-
-import MainLayout from "../components/layout/MainLayout.tsx";
 import { useState } from "react";
 
 export interface User {
@@ -16,7 +13,6 @@ export interface User {
 export default function HomePage() {
 	const [user_info, setUserInfo] = useState("");
 	const [username, setUsername] = useState("");
-	const [email, setEmail] = useState("");
 	const [firstname, setFirstname] = useState("");
 	const [lastname, setLastname] = useState("");
 
@@ -34,7 +30,7 @@ export default function HomePage() {
 				throw new Error("Not authorized");
 			}
 			const data: User = await response.json();
-			console.log(data.user.firstname);
+			console.log(data.user);
 		} catch (error) {
 			setUserInfo("Error")
 		}
@@ -50,7 +46,7 @@ export default function HomePage() {
 					"Content-Type": "application/json",
 					Authorization: `Bearer ${token}`,
 				},
-				body: JSON.stringify({ username, email, firstname, lastname }),
+				body: JSON.stringify({ username, firstname, lastname }),
 			});
 			if (!response.ok) {
 				throw new Error("Not authorized");
@@ -63,7 +59,7 @@ export default function HomePage() {
 	};
 
 	return (
-		<div className={styles.homePage}>
+		<div>
 			<h1>{user_info}</h1>
 			{/* <button onClick={testGetUserInfo}>Click me</button> */}
 
@@ -77,15 +73,6 @@ export default function HomePage() {
 						placeholder="Username"
 						required
 					/>
-					<label htmlFor="email">Enter email :</label>
-					<input
-						id="email"
-						type="text"
-						value={email}
-						onChange={(e) => setEmail(e.target.value)}
-						placeholder="Email"
-						required
-					/>
 					<label htmlFor="firstname">Enter firstname :</label>
 					<input
 						id="firstname"
@@ -95,7 +82,7 @@ export default function HomePage() {
 						placeholder="firstname"
 						required
 					/>
-					<label htmlFor="email">Enter lastname :</label>
+					<label htmlFor="lastname">Enter lastname :</label>
 					<input
 						id="lastname"
 						type="text"
@@ -107,7 +94,6 @@ export default function HomePage() {
 					<button type="submit">Send</button>
 				</form>
 				<button onClick={testGetUserInfo}>Click me</button>
-			<MainLayout />
 		</div>
 	);
 }
