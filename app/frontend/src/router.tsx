@@ -1,51 +1,37 @@
-import type { RouteObject } from "react-router-dom";
 import { createBrowserRouter } from "react-router-dom";
 import App from "./App";
-import LoginPage from "./pages/LoginPage.tsx";
 import ProtectedRoute from "./utils/ProtectedRoute.tsx";
 import HomePage from "./pages/HomePage.tsx";
-import ProfilePage from "./pages/ProfilePage.tsx";
+import LoginPage from "./pages/LoginPage.tsx";
 
-const routes: RouteObject[] = [
+export const router = createBrowserRouter([
 	{
 		path: "/",
-		element: <App />,
+		element: <App />, // layout général
 		children: [
+			// Routes protégées
 			{
-				// Route d'acceuil - pour les user connecte
-				index: true, // indique que c'est la route par default a "/"
-				element: (
-					<ProtectedRoute requireAuth={true}>
-						<HomePage />
-					</ProtectedRoute>
-				),
-			},
-			{
-				// Groupe des routes d'auth
-				// pour les user NON connecte
-				path: "auth",
+				element: <ProtectedRoute />,
 				children: [
 					{
-						// Route /auth/login pour la connexion
-						path: "login",
+						path: "/",
 						element: (
-							<ProtectedRoute requireAuth={false}>
-								<LoginPage />
-							</ProtectedRoute>
+
+							<HomePage />
+
 						),
 					},
-					// route "forget-password"
-					// route "reset-password"
 				],
 			},
+			// Auth routes
 			{
-				path: "profile",
-				element: (
-					<ProfilePage />
-				),
+				path: "auth/login",
+				element: <LoginPage />,
+			},
+			{
+				path: "auth/register",
+				element: <LoginPage />,
 			},
 		],
 	},
-];
-
-export const router = createBrowserRouter(routes);
+]);

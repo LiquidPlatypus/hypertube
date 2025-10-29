@@ -2,7 +2,6 @@ import * as React from "react";
 
 import Header from "../components/Header.tsx"
 import Footer from "../components/Footer.tsx"
-import TVFrame from "../components/TVFrame.tsx"
 
 interface MainLayoutProps {
 	children: React.ReactNode
@@ -10,9 +9,9 @@ interface MainLayoutProps {
 
 export default function MainLayout({ children }: MainLayoutProps) {
 	return (
-		<div>
+		<div className="flex flex-col min-h-screen items-center justify-between bg-[url('assets/backgrounds/fond.png')] bg-repeat bg-center">
 			<Header />
-			<TVFrame>{ children }</TVFrame>
+				{children}
 			<Footer />
 		</div>
 	)

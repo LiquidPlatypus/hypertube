@@ -1,34 +1,33 @@
-import type { ReactNode } from "react";
-import { Navigate } from "react-router-dom";
+import { useEffect, useState, type ReactNode } from "react";
+import { Outlet, useNavigate } from "react-router-dom";
 
 interface ProtectedRouteProps {
-	children: ReactNode;
-	requireAuth: boolean; // true = nécessite d'être connecté, false = nécessite d'être déconnecté}
+	children?: ReactNode; // <- Permet d'accepter des enfants
 }
 
-// Simule la verification de la connexion
-function isUserAuthenticated(): boolean {
-	// TODO: a remplacer par une vraie verif du token
-	const token = localStorage.getItem("authToken");
-	return token !== null && token !== "";
-}
+export default function ProtectedRoute({ children }: ProtectedRouteProps) {
+	const navigate = useNavigate();
+	const [loading, setLoading] = useState(true);
 
-export default function ProtectedRoute({ children, requireAuth }: ProtectedRouteProps) {
-	const isAuthenticated = isUserAuthenticated();
+	useEffect(() => {
+		const verifyToken = async () => {
+			const token = localStorage.getItem('access_token');
+			try {
+				const response = await fetch(`/api/verify-token/${token}`);
+				if (!response.ok) throw new Error("Invalid token");
+				await response.json();
+			} catch (error) {
+				localStorage.removeItem('access_token');
+				navigate('/auth/login');
+			} finally {
+				setLoading(false);
+			}
+		};
+		verifyToken();
+	}, [navigate]);
 
-	// Si route necessite d'etre co mais que l'user ne l'est pas
-	if (requireAuth && !isAuthenticated) {
-		// Redirect vers la page de login
-		return <Navigate to="/auth/login" replace />;
-	}
+	if (loading) return <div><h1>Loading</h1></div>;
 
-	// Si route necessite d'etre deco mais que l'user est co
-	// ex: page de login pour un user co
-	if (!requireAuth && isAuthenticated) {
-		// redirect vers acceuil
-		return <Navigate to="/" replace />;
-	}
-
-	// Si ok, affiche composant demande
-	return <>{children}</>;
+	// Rend les enfants s'ils existent, sinon l'Outlet par défaut
+	return <>{children ?? <Outlet />}</>;
 }
