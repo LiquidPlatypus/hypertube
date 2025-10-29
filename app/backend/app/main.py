@@ -68,6 +68,10 @@ def verif_access_token(token: str = Depends(oauth2_scheme)):
 
 @app.post("/api/register")
 async def register(data: RegisterRequest):
+	"""
+	Return Value : \n
+	True if account was be created or else False
+	"""
 	users_list = storage.get_all_users()
 	for user in users_list:
 		if user["email"] == data.email:
@@ -77,6 +81,10 @@ async def register(data: RegisterRequest):
 
 @app.post("/api/login")
 async def login(data: LoginRequest):
+	"""
+	Return Value : \n
+	The access token and token type or raise 401 error
+	"""
 	users_list = storage.get_all_users()
 	for user in users_list:
 		if user["username"] == data.username and storage.get_user_password(user["id"]) == data.password:
@@ -96,6 +104,10 @@ async def verify_user_token(token: str):
 
 @app.post("/api/modify-profile")
 async def modify_user(data: ModifyFormRequest, current_user=Depends(verif_access_token)):
+	"""
+	Return Value :
+	True if information was correct and changed or else False
+	"""
 	users_list = storage.get_all_users()
 	for user in users_list:
 		if user["email"] == data.email:
@@ -105,7 +117,7 @@ async def modify_user(data: ModifyFormRequest, current_user=Depends(verif_access
 
 @app.get("/api/me")
 async def read_user_me(current_user=Depends(verif_access_token)):
-    return {"user": current_user}
+	return {"user": current_user}
 
 @app.get("/api/hello")
 async def get_hello(current_user=Depends(verif_access_token)):
