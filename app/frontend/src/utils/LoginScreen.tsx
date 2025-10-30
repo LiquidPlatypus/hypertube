@@ -2,7 +2,11 @@ import React, {useState} from "react";
 import {useNavigate} from "react-router-dom";
 import Button from "../components/ui/Button.tsx";
 
-export default function LoginScreen() {
+interface LoginScreenProps {
+	onLoginSuccess?: () => void;
+}
+
+export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 	const navigate = useNavigate();
 	const [isLogin, setIsLogin] = useState(true);
 	const [message, setMessage] = useState("");
@@ -34,6 +38,7 @@ export default function LoginScreen() {
 				throw new Error("Incorrect username or password");
 			const data = await response.json();
 			localStorage.setItem("access_token", data.access_token);
+			onLoginSuccess?.();
 			navigate("/");
 		} catch (error) {
 			setMessage(error instanceof Error ? error.message : String(error));
