@@ -79,7 +79,7 @@ export default function LoginScreen() {
 	};
 
 	return (
-		<div data-component="LoginScreen" className="flex flex-col items-center justify-center text-white bg-black/60 backdrop-blur-md p-6 rounded-lg shadow-lg">
+		<div data-component="LoginScreen" className="flex flex-col items-center justify-center text-white p-6 rounded-lg shadow-lg">
 			<h2 data-component="Login/Register" className="text-2xl font-bold mb-4">
 				{isLogin ? "Login" : "Register"}
 			</h2>
