@@ -13,7 +13,7 @@ export default function LoginPage() {
 				screenY={200}
 				screenWidth={1100}
 				screenHeight={700}
-				contentScale={1.3}
+				contentScale={1.2}
 			>
 				<LoginScreen />
 			</RetroTvFrame>
