@@ -57,14 +57,14 @@ export default function LoginScreen() {
 					username: registerUsername,
 					password: registerPassword,
 					email: registerEmail,
-					firstname: registerFirstname,
-					lastname: registerLastname,
+					firstName: registerFirstname,
+					lastName: registerLastname,
 				}),
 			});
 			if (!response.ok)
 				throw new Error("Error during registration");
 			const data = await response.json();
-			if (data.returnValue === "ok") {
+			if (data.returnValue) {
 				setMessage("Account created successfully! You can now log in.");
 				setTimeout(() => {
 					setIsLogin(true);
