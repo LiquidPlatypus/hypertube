@@ -37,10 +37,10 @@ export default function RetroTvFrame({
 				data-component="TVScreen"
 				className="absolute z-10 overflow-hidden"
 				style={{
-					top: `${(screenY / tvHeight) * 100}%`,
-					left: `${(screenX / tvWidth) * 100}%`,
+					top: `${(screenY / tvHeight) * 145}%`,
+					left: `${(screenX / tvWidth) * 63}%`,
 					width: `${(screenWidth / tvWidth) * 100}%`,
-					height: `${(screenHeight / tvHeight) * 100}%`,
+					height: `${(screenHeight / tvHeight) * 70}%`,
 				}}
 			>
 				<video
