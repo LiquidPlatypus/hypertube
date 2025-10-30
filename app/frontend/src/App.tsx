@@ -1,9 +1,12 @@
 import MainLayout from "./layout/MainLayout.tsx";
+import { Outlet } from "react-router-dom";
 
 function App() {
 	return (
 		<div>
-			<MainLayout />
+			<MainLayout>
+				<Outlet />
+			</MainLayout>
 		</div>
 	);
 }
