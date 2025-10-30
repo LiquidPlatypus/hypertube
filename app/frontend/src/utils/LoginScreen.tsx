@@ -46,7 +46,7 @@ export default function LoginScreen() {
 		setMessage("");
 
 		if (registerPassword !== registerPasswordConfirmation) {
-			setMessage("Passwords doesn\'t match");
+			setMessage("Passwords doesn't match");
 			return;
 		}
 		try {
