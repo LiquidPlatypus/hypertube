@@ -58,8 +58,29 @@ export default function HomePage() {
 		}
 	};
 
+	const testMessage = async (e: React.MouseEvent<HTMLButtonElement>) => {
+		e.preventDefault();
+		try {
+			const response = await fetch("/api/hello", {
+				method: "GET",
+				headers: {
+					"Content-Type": "application/json",
+				},
+			});
+			if (!response.ok) {
+				throw new Error("Server error");
+			}
+			const data: {message: string} = await response.json();
+			console.log(data.message);
+		} catch (error) {
+			console.error("Error server");
+		}
+	};
+
 	return (
 		<div>
+			<button onClick={testMessage}>Hello</button>
+
 			<h1>{user_info}</h1>
 			{/* <button onClick={testGetUserInfo}>Click me</button> */}
 

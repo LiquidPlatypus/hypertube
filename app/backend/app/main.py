@@ -1,7 +1,8 @@
 import os
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, Depends
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, Depends, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer
+from fastapi.responses import JSONResponse
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
 from .model import RegisterRequest, LoginRequest, ModifyFormRequest
@@ -24,6 +25,16 @@ app.add_middleware(
 	allow_methods=["*"],
 	allow_headers=["*"],
 )
+
+@app.middleware("http")
+async def verif_header(request: Request, call_next):
+	headers = request.scope['headers']
+	element = request.headers.get('sec-fetch-user')
+	if element is not None:
+		return JSONResponse(status_code=403, content={'reason': "Forbidden"})
+	# print(f"Middleware LOG: {headers}") # this header : (b'sec-fetch-user', b'?1')
+	response = await call_next(request)
+	return response
 
 storage = Storage()
 
@@ -121,5 +132,5 @@ async def read_user_me(current_user=Depends(verif_access_token)):
 	return {"user": current_user}
 
 @app.get("/api/hello")
-async def get_hello(current_user=Depends(verif_access_token)):
+async def get_hello():
 	return {"message": "Hello from FastAPI 👋"}
