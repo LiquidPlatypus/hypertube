@@ -9,7 +9,7 @@ interface MainLayoutProps {
 
 export default function MainLayout({ children }: MainLayoutProps) {
 	return (
-		<div className="flex flex-col min-h-screen items-center justify-between bg-[url('assets/backgrounds/fond.png')] bg-repeat bg-center">
+		<div className="flex flex-col min-h-screen items-center justify-between bg-[url('/assets/backgrounds/fond.png')] bg-repeat bg-center">
 			<Header />
 				{children}
 			<Footer />

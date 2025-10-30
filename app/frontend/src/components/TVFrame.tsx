@@ -1,4 +1,4 @@
-import { type ReactNode } from "react";
+import { type ReactNode, useLayoutEffect, useRef, useState } from "react";
 
 interface RetroTvFrameProps {
 	videoSrc: string;
@@ -9,6 +9,7 @@ interface RetroTvFrameProps {
 	screenY: number;
 	screenWidth: number;
 	screenHeight: number;
+	contentScale: number;
 	children?: ReactNode;
 }
 
@@ -21,10 +22,36 @@ export default function RetroTvFrame({
 	screenY,
 	screenWidth,
 	screenHeight,
+	contentScale = 1,
 	children,
 }: RetroTvFrameProps) {
+	const screenRef = useRef<HTMLDivElement>(null);
+	const [scale, setScale] = useState(0);
+
+	useLayoutEffect(() => {
+		const updateScale = () => {
+			if (!screenRef.current)
+				return;
+			const rect = screenRef.current.getBoundingClientRect();
+
+			const baseWidth = 800;
+			const baseHeight = 600;
+
+			const newScale = Math.min(rect.width / baseWidth, rect.height / baseHeight);
+			setScale(newScale);
+		};
+
+		updateScale();
+		window.addEventListener("resize", updateScale);
+		return () => window.removeEventListener("resize", updateScale);
+	}, []);
+
 	return (
-		<div data-component="TV" className="relative w-full h-full flex items-center justify-center">
+		<div
+			data-component="TV"
+			className="relative w-full h-full flex items-center justify-center"
+			style={{ aspectRatio: `${tvWidth} / ${tvHeight}` }}
+		>
 			{/* TV */}
 			<img
 				src={tvImageSrc}
@@ -34,13 +61,14 @@ export default function RetroTvFrame({
 
 			{/* Écran */}
 			<div
+				ref={screenRef}
 				data-component="TVScreen"
 				className="absolute z-10 overflow-hidden"
 				style={{
-					top: `${(screenY / tvHeight) * 145}%`,
-					left: `${(screenX / tvWidth) * 63}%`,
-					width: `${(screenWidth / tvWidth) * 100}%`,
-					height: `${(screenHeight / tvHeight) * 70}%`,
+					top: `${(screenY / tvHeight) * 132}%`,
+					left: `${(screenX / tvWidth) * 91}%`,
+					width: `${(screenWidth / tvWidth) * 80}%`,
+					height: `${(screenHeight / tvHeight) * 80}%`,
 				}}
 			>
 				<video
@@ -48,12 +76,26 @@ export default function RetroTvFrame({
 					autoPlay
 					loop
 					muted
+					disablePictureInPicture={true}
 					className="w-full h-full object-cover"
 				/>
 
 				{/* Contenu dynamique (login, profil, etc.) */}
-				<div data-component="TVDynamicContent" className="absolute inset-0 flex flex-col items-center justify-center p-4 overflow-auto">
-					{children}
+				<div data-component="TVDynamicContent" className="absolute inset-0 flex flex-col items-center justify-center p-4 overflow-hidden">
+					<div
+						className="origin-center"
+						style={{
+							transform: `scale(${scale * contentScale})`,
+							transformOrigin: `center center`,
+							width: "800px",
+							height: "600px",
+							display: "flex",
+							alignItems: "center",
+							justifyContent: "center",
+						}}
+					>
+						{children}
+					</div>
 				</div>
 
 				{/* Effets CRT */}
