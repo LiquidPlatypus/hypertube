@@ -1,6 +1,8 @@
+import styles from "./HomePage.module.css";
+
 export default function HomePage() {
 	return (
-		<div className="w-full h-full flex items-center justify-center">
+		<div className={styles.tmp}>
 			<video
 				src="/videos/screen2.mp4" // tu peux mettre n'importe quelle vidéo temporaire
 				autoPlay
