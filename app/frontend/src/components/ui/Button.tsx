@@ -1,4 +1,5 @@
 import * as React from "react";
+import styles from "./Button.module.css";
 
 type ButtonProps = {
 	text?: string;
@@ -13,53 +14,37 @@ type ButtonProps = {
 };
 
 export default function Button({
-	                               text = "Button",
-	                               size = "medium",
-	                               shape = "rounded",
-	                               icon,
-	                               imageOnly = false,
-	                               style,
-	                               className = "",
-	                               onClick,
-	                               alt = "",
-                               }: ButtonProps) {
-	// Tailwind classes dynamiques
-	const sizeClasses = {
-		small: "px-3 py-1 text-sm",
-		medium: "px-4 py-2 text-base",
-		large: "px-6 py-3 text-lg",
-	};
-
-	const shapeClasses = {
-		rounded: "rounded-md",
-		square: "rounded-none",
-		pill: "rounded-full",
-	};
-
-	const baseClasses =
-		"font-bold transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none";
-
-	const colorClasses = imageOnly
-		? ""
-		: "bg-yellow-400 text-black hover:bg-yellow-500";
-
-	const finalClasses = [
-		baseClasses,
-		sizeClasses[size],
-		shapeClasses[shape],
-		colorClasses,
+	text = "Button",
+	size = "medium",
+	shape = "rounded",
+	icon,
+	imageOnly = false,
+	style,
+	className = "",
+	onClick,
+	alt = "",
+}: ButtonProps) {
+	const classNames = [
+		styles.button,
+		styles[size],
+		styles[shape],
+		!imageOnly && styles.colored,
 		className,
 	]
 		.filter(Boolean)
 		.join(" ");
 
 	return (
-		<button onClick={onClick} className={finalClasses} style={!imageOnly ? style : undefined}>
+		<button
+			onClick={onClick}
+			className={classNames}
+			style={!imageOnly ? style : undefined}
+		>
 			{icon && (
 				<img
 					src={icon}
 					alt={alt}
-					className={imageOnly ? "w-full h-full" : "inline-block mr-2 w-5 h-5"}
+					className={imageOnly ? styles.iconOnly : styles.icon}
 					style={imageOnly ? style : undefined}
 				/>
 			)}

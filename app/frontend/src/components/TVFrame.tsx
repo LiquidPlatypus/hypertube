@@ -1,5 +1,7 @@
 import { type ReactNode, useLayoutEffect, useRef, useState } from "react";
 
+import styles from "./TVFrame.module.css";
+
 interface RetroTvFrameProps {
 	videoSrc: string;
 	tvImageSrc: string;
@@ -48,22 +50,20 @@ export default function RetroTvFrame({
 
 	return (
 		<div
-			data-component="TV"
-			className="relative w-full h-full flex items-center justify-center"
+			className={styles.TV}
 			style={{ aspectRatio: `${tvWidth} / ${tvHeight}` }}
 		>
 			{/* TV */}
 			<img
 				src={tvImageSrc}
 				alt="TV rétro"
-				className="absolute w-full h-full z-20 pointer-events-none"
+				className={styles.TVImage}
 			/>
 
 			{/* Écran */}
 			<div
 				ref={screenRef}
-				data-component="TVScreen"
-				className="absolute z-10 overflow-hidden"
+				className={styles.TVScreen}
 				style={{
 					top: `${(screenY / tvHeight) * 132}%`,
 					left: `${(screenX / tvWidth) * 91}%`,
@@ -77,13 +77,13 @@ export default function RetroTvFrame({
 					loop
 					muted
 					disablePictureInPicture={true}
-					className="w-full h-full object-cover"
+					className={styles.TVVideo}
 				/>
 
 				{/* Contenu dynamique (login, profil, etc.) */}
-				<div data-component="TVDynamicContent" className="absolute inset-0 flex flex-col items-center justify-center p-4 overflow-hidden">
+				<div className={styles.TVDynamicContent}>
 					<div
-						className="origin-center"
+						className={styles.DynamicContentCenter}
 						style={{
 							transform: `scale(${scale * contentScale})`,
 							transformOrigin: `center center`,
@@ -97,10 +97,6 @@ export default function RetroTvFrame({
 						{children}
 					</div>
 				</div>
-
-				{/* Effets CRT */}
-				<div className="absolute inset-0 pointer-events-none bg-black/10 [background-size:2px_2px]"></div>
-				<div className="absolute inset-0 pointer-events-none shadow-[0_0_20px_#ffbf00] rounded"></div>
 			</div>
 		</div>
 	);

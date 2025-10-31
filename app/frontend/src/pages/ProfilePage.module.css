@@ -1,0 +1,19 @@
+.Loading {
+	font-size: 1.125rem;
+	line-height: 1.75rem;
+	color: rgb(255,255,255);
+}
+
+.InfosTab {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+	text-align: center;
+	color: rgb(255,255,255);
+}
+
+.Identity {
+	font-size: 1.25rem;
+	line-height: 1.75rem;
+	font-weight: 700;
+}

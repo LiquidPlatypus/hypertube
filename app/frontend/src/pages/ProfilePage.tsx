@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 
+import styles from "./ProfilePage.module.css";
+
 export default function ProfilInfo() {
 	const [user, setUser] = useState<{ username: string; email: string; firstname: string; lastname: string } | null>(null);
 
@@ -22,11 +24,11 @@ export default function ProfilInfo() {
 		fetchUser();
 	}, []);
 
-	if (!user) return <p className="text-white text-lg">Chargement des infos...</p>;
+	if (!user) return <p className={styles.Login}>Chargement des infos...</p>;
 
 	return (
-		<div className="text-white text-center flex flex-col gap-2">
-			<h2 className="text-xl font-bold">{user.firstname} {user.lastname}</h2>
+		<div className={styles.InfosTab}>
+			<h2 className={styles.Identity}>{user.firstname} {user.lastname}</h2>
 			<p>Username: {user.username}</p>
 			<p>Email: {user.email}</p>
 		</div>

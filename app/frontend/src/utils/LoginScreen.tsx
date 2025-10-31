@@ -2,6 +2,8 @@ import React, {useState} from "react";
 import {useNavigate} from "react-router-dom";
 import Button from "../components/ui/Button.tsx";
 
+import styles from "./LoginScreen.module.css";
+
 interface LoginScreenProps {
 	onLoginSuccess?: () => void;
 }
@@ -84,36 +86,37 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 	};
 
 	return (
-		<div data-component="LoginScreen" className="flex flex-col items-center justify-center text-white p-6 rounded-lg shadow-lg">
-			<h2 data-component="Login/Register" className="text-2xl font-bold mb-4">
+		<div className={styles.LoginScreen}>
+			<h2 className={"styles.Login-Register"}>
 				{isLogin ? "Login" : "Register"}
 			</h2>
 
 			{message && (
-				<p className={`mb-4 text-center ${message.includes("create") ? "text-green-400" : "text-red-400"}`}>
+				<p className={`message ${message.includes("create") ? "message-success" : "message-error"}`}>
 					{message}
 				</p>
+
 			)}
 
-			<div data-component="Buttons" className="flex gap-3 mb-4">
+			<div className={styles.LoginRegisterBtn}>
 				<Button text="Login" size="medium" shape="pill" onClick={() => {setIsLogin(true); setMessage(""); }} />
 				<Button text="Register" size="medium" shape="pill" onClick={() => {setIsLogin(false); setMessage(""); }} />
 			</div>
 
 			{isLogin? (
-				<form data-component="LoginForm" className="flex flex-col gap-3 w-72" onSubmit={handleLogin}>
-					<input type="text" placeholder="Username" value={loginUsername} onChange={(e) => setLoginUsername(e.target.value)} className="p-2 rounded border-2 border-yellow-400 bg-black text-white focus:outline-none focus:border-yellow-500" required />
-					<input type="password" placeholder="Password" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} className="p-2 rounded border-2 border-yellow-400 bg-black text-white focus:outline-none focus:border-yellow-500" required />
+				<form className={styles.LoginForm} onSubmit={handleLogin}>
+					<input type="text" placeholder="Username" value={loginUsername} onChange={(e) => setLoginUsername(e.target.value)} className={styles.Inputs} required />
+					<input type="password" placeholder="Password" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} className={styles.Inputs} required />
 					<Button text="Login" size="large" shape="pill" />
 				</form>
 			) : (
-				<form data-component="RegisterForm" className="flex flex-col gap-3 w-72" onSubmit={handleRegister}>
-					<input type="text" placeholder="First Name" value={registerFirstname} onChange={(e) => setRegisterFirstname(e.target.value)} className="p-2 rounded border-2 border-yellow-400 bg-black text-white focus:outline-none focus:border-yellow-500" required />
-					<input type="text" placeholder="Last Name" value={registerLastname} onChange={(e) => setRegisterLastname(e.target.value)} className="p-2 rounded border-2 border-yellow-400 bg-black text-white focus:outline-none focus:border-yellow-500" required />
-					<input type="text" placeholder="Username" value={registerUsername} onChange={(e) => setRegisterUsername(e.target.value)} className="p-2 rounded border-2 border-yellow-400 bg-black text-white focus:outline-none focus:border-yellow-500" required />
-					<input type="email" placeholder="Email" value={registerEmail} onChange={(e) => setRegisterEmail(e.target.value)} className="p-2 rounded border-2 border-yellow-400 bg-black text-white focus:outline-none focus:border-yellow-500" required />
-					<input type="password" placeholder="Password" value={registerPassword} onChange={(e) => setRegisterPassword(e.target.value)} className="p-2 rounded border-2 border-yellow-400 bg-black text-white focus:outline-none focus:border-yellow-500" required />
-					<input type="password" placeholder="Confirm Password" value={registerPasswordConfirmation} onChange={(e) => setRegisterPasswordConfirmation(e.target.value)} className="p-2 rounded border-2 border-yellow-400 bg-black text-white focus:outline-none focus:border-yellow-500" required />
+				<form className={styles.RegisterForm} onSubmit={handleRegister}>
+					<input type="text" placeholder="First Name" value={registerFirstname} onChange={(e) => setRegisterFirstname(e.target.value)} className={styles.Inputs} required />
+					<input type="text" placeholder="Last Name" value={registerLastname} onChange={(e) => setRegisterLastname(e.target.value)} className={styles.Inputs} required />
+					<input type="text" placeholder="Username" value={registerUsername} onChange={(e) => setRegisterUsername(e.target.value)} className={styles.Inputs} required />
+					<input type="email" placeholder="Email" value={registerEmail} onChange={(e) => setRegisterEmail(e.target.value)} className={styles.Inputs} required />
+					<input type="password" placeholder="Password" value={registerPassword} onChange={(e) => setRegisterPassword(e.target.value)} className={styles.Inputs} required />
+					<input type="password" placeholder="Confirm Password" value={registerPasswordConfirmation} onChange={(e) => setRegisterPasswordConfirmation(e.target.value)} className={styles.Inputs} required />
 					<Button text="Register" size="large" shape="pill" />
 				</form>
 			)}

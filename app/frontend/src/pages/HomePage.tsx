@@ -8,7 +8,7 @@ export default function HomePage() {
 				autoPlay
 				loop
 				muted
-				className="w-full h-full object-cover rounded-lg shadow-lg"
+				className={styles.TMPVideo}
 			/>
 		</div>
 	);
