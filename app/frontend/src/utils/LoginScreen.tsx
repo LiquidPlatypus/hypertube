@@ -1,6 +1,7 @@
 import React, {useState} from "react";
 import {useNavigate} from "react-router-dom";
 import Button from "../components/ui/Button.tsx";
+import Input from "../components/ui/Input.tsx";
 
 import styles from "./LoginScreen.module.css";
 
@@ -105,18 +106,18 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 
 			{isLogin? (
 				<form className={styles.LoginForm} onSubmit={handleLogin}>
-					<input type="text" placeholder="Username" value={loginUsername} onChange={(e) => setLoginUsername(e.target.value)} className={styles.Inputs} required />
-					<input type="password" placeholder="Password" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} className={styles.Inputs} required />
+					<Input type="text" placeholder="Username" value={loginUsername} onChange={(e) => setLoginUsername(e.target.value)} className={styles.Inputs} required />
+					<Input type="password" placeholder="Password" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} className={styles.Inputs} required />
 					<Button text="Login" size="large" shape="pill" />
 				</form>
 			) : (
 				<form className={styles.RegisterForm} onSubmit={handleRegister}>
-					<input type="text" placeholder="First Name" value={registerFirstname} onChange={(e) => setRegisterFirstname(e.target.value)} className={styles.Inputs} required />
-					<input type="text" placeholder="Last Name" value={registerLastname} onChange={(e) => setRegisterLastname(e.target.value)} className={styles.Inputs} required />
-					<input type="text" placeholder="Username" value={registerUsername} onChange={(e) => setRegisterUsername(e.target.value)} className={styles.Inputs} required />
-					<input type="email" placeholder="Email" value={registerEmail} onChange={(e) => setRegisterEmail(e.target.value)} className={styles.Inputs} required />
-					<input type="password" placeholder="Password" value={registerPassword} onChange={(e) => setRegisterPassword(e.target.value)} className={styles.Inputs} required />
-					<input type="password" placeholder="Confirm Password" value={registerPasswordConfirmation} onChange={(e) => setRegisterPasswordConfirmation(e.target.value)} className={styles.Inputs} required />
+					<Input type="text" placeholder="First Name" value={registerFirstname} onChange={(e) => setRegisterFirstname(e.target.value)} className={styles.Inputs} required />
+					<Input type="text" placeholder="Last Name" value={registerLastname} onChange={(e) => setRegisterLastname(e.target.value)} className={styles.Inputs} required />
+					<Input type="text" placeholder="Username" value={registerUsername} onChange={(e) => setRegisterUsername(e.target.value)} className={styles.Inputs} required />
+					<Input type="email" placeholder="Email" value={registerEmail} onChange={(e) => setRegisterEmail(e.target.value)} className={styles.Inputs} required />
+					<Input type="password" placeholder="Password" value={registerPassword} onChange={(e) => setRegisterPassword(e.target.value)} className={styles.Inputs} required />
+					<Input type="password" placeholder="Confirm Password" value={registerPasswordConfirmation} onChange={(e) => setRegisterPasswordConfirmation(e.target.value)} className={styles.Inputs} required />
 					<Button text="Register" size="large" shape="pill" />
 				</form>
 			)}
