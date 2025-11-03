@@ -31,7 +31,7 @@ async def verif_header(request: Request, call_next):
 	headers = request.scope['headers']
 	element = request.headers.get('sec-fetch-user')
 	if element is not None:
-		return JSONResponse(status_code=403, content={'reason': "Forbidden"})
+		return Response(status_code=403)
 	# print(f"Middleware LOG: {headers}") # this header : (b'sec-fetch-user', b'?1')
 	response = await call_next(request)
 	return response
