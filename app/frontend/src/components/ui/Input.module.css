@@ -1,11 +1,8 @@
 .wrapper {
 	position: relative;
-	display: inline-flex;
-	align-items: center;
 }
 
 .input {
-	font-family: inherit;
 	border: 2px solid #ccc;
 	padding: 0.5rem 1rem;
 	outline: none;
