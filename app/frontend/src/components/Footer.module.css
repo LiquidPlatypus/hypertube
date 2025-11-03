@@ -3,7 +3,7 @@
 	display: flex;
 	width: 100%;
 	align-items: center;
-	justify-content: center;
+	justify-content: flex-end;
 	background-color: rgb(0,0,0,0.9);
 	padding: 1rem;
 	font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
@@ -21,6 +21,9 @@
 
 
 .Title {
+	position: absolute;
+	left: 50%;
+	transform: translateX(-50%);
 	font-size: 1.5rem;
 	line-height: 2rem;
 }
@@ -31,4 +34,9 @@
 	inset: 0;
 	border-radius: 0.25rem;
 	box-shadow: 0 0 #0000, 0 0 #0000, 0 0 15px #ffbf00;
+}
+
+.Freepik {
+	margin-right: 1rem;
+	font-size: 0.4rem;
 }

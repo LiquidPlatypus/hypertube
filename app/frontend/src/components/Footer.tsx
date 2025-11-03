@@ -10,6 +10,21 @@ export default function Footer() {
 
 			{/* Glow */}
 			<div className={styles.Glow}></div>
+
+			<div className={styles.Freepik}>
+				<p>
+					TV Designed by{" "}
+					<a
+						href="http://www.freepik.com/"
+						target="_blank"
+						rel="noopener noreferrer"
+						className="text-blue-500 hover:underline"
+					>
+						Freepik
+					</a>
+				</p>
+			</div>
+
 		</footer>
 	);
 }
