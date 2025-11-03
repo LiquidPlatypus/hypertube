@@ -16,14 +16,14 @@ export default function LoginPage() {
 		<div className={styles.TVWrapper}>
 			<RetroTvFrame
 				videoSrc="/videos/screen2.mp4"
-				tvImageSrc="/assets/TV2.png"
+				tvImageSrc="/assets/TV4.png"
 				tvWidth={1920}
 				tvHeight={1080}
-				screenX={400}
-				screenY={200}
+				screenX={560}
+				screenY={215}
 				screenWidth={1100}
-				screenHeight={700}
-				contentScale={1.2}
+				screenHeight={500}
+				contentScale={1}
 			>
 				<LoginScreen onLoginSuccess={handleLoginSuccess} />
 			</RetroTvFrame>
