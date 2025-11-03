@@ -4,6 +4,7 @@ import styles from "./Input.module.css";
 type InputProps = {
 	type?: string;
 	placeholder?: string;
+	accept?: string;
 	value?: string;
 	onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
 	size?: "small" | "medium" | "large";
@@ -18,6 +19,7 @@ type InputProps = {
 export default function Input({
 	type = "text",
 	placeholder = "",
+	accept,
 	value = "",
 	onChange,
 	size = "medium",
@@ -44,6 +46,7 @@ export default function Input({
 				type={type}
 				placeholder={placeholder}
 				value={value}
+				accept={accept}
 				onChange={onChange}
 				className={classNames}
 				style={style}
