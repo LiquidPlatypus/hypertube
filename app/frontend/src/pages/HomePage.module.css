@@ -27,7 +27,7 @@
 	overflow: hidden;
 	padding: 2rem;
 	max-width: 5000px;
-	margin: 0 auto;
+	margin: auto 2rem;
 }
 
 .thumbnails {
