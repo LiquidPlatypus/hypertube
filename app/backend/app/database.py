@@ -54,3 +54,15 @@ class Storage:
 		Return list of user (without password)
 		"""
 		return self.users
+	
+
+	def modify_password(self, new_password: str, user_id: int):
+		"""
+		DESK:
+		Remove old password and replace it by the new
+		"""
+		for p in self.password:
+			if p["user_id"] == user_id:
+				self.password.remove(p)
+				return p["password"]
+		self.password.append({"user_id": user_id, "password": new_password})

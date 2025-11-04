@@ -5,7 +5,7 @@ from fastapi.security import OAuth2PasswordBearer
 from fastapi.responses import JSONResponse
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
-from .model import RegisterRequest, LoginRequest, ModifyFormRequest
+from .model import RegisterRequest, LoginRequest, ModifyFormRequest, PasswordForm
 from .database import Storage
 
 # INIT
@@ -31,8 +31,7 @@ async def verif_header(request: Request, call_next):
 	headers = request.scope['headers']
 	element = request.headers.get('sec-fetch-user')
 	if element is not None:
-		return Response(status_code=403)
-	# print(f"Middleware LOG: {headers}") # this header : (b'sec-fetch-user', b'?1')
+		return Response(status_code=403) # , content={'reason': "Forbidden"}
 	response = await call_next(request)
 	return response
 
@@ -126,6 +125,17 @@ async def modify_user(data: ModifyFormRequest, current_user=Depends(verif_access
 	"""
 	user = storage.modify_user(data.username, current_user["email"], data.firstname, data.lastname, current_user["id"])
 	return {"returnValue": True}
+
+@app.post("/api/reset-password")
+async def reset_password(data: PasswordForm, current_user=Depends(verif_access_token)):
+	"""
+	Return Value :
+	True if information was correct and changed or else False
+	"""
+	if storage.get_user_password(current_user["id"]) == data.old_password:
+		storage.modify_password(data.new_password, current_user["id"])
+		return {"returnValue": True}
+	return {"returnValue": False}
 
 @app.get("/api/me")
 async def read_user_me(current_user=Depends(verif_access_token)):

@@ -27,3 +27,11 @@ class ModifyFormRequest(BaseModel):
 	username: str
 	firstname: str
 	lastname: str
+
+class PasswordForm(BaseModel):
+	"""
+	DESK: Parse Password Form argument \n
+	ARG: new_password, old_password
+	"""
+	new_password: str
+	old_password: str

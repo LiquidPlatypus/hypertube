@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export interface User {
 	"user": {
@@ -15,6 +16,7 @@ export default function HomePage() {
 	const [username, setUsername] = useState("");
 	const [firstname, setFirstname] = useState("");
 	const [lastname, setLastname] = useState("");
+	const navigate = useNavigate();
 
 	const testGetUserInfo = async (e: React.MouseEvent<HTMLButtonElement>) => {
 		e.preventDefault();
@@ -77,6 +79,16 @@ export default function HomePage() {
 		}
 	};
 
+	const logout = async (e: React.MouseEvent<HTMLButtonElement>) => {
+		e.preventDefault();
+		try {
+			localStorage.removeItem("access_token");
+			navigate('/auth/login');
+		} catch (error) {
+			console.error("Error server");
+		}
+	};
+
 	return (
 		<div>
 			<button onClick={testMessage}>Hello</button>
@@ -115,6 +127,7 @@ export default function HomePage() {
 					<button type="submit">Send</button>
 				</form>
 				<button onClick={testGetUserInfo}>Click me</button>
+				<button onClick={logout}>Logout</button>
 		</div>
 	);
 }
