@@ -3,7 +3,7 @@ import { type ReactNode, useLayoutEffect, useRef, useState } from "react";
 import styles from "./TVFrame.module.css";
 
 interface RetroTvFrameProps {
-	videoSrc: string;
+	videoSrc?: string;
 	tvImageSrc: string;
 	tvWidth: number;
 	tvHeight: number;
