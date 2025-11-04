@@ -6,6 +6,7 @@ from fastapi.responses import JSONResponse
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
 from .model import RegisterRequest, LoginRequest, ModifyFormRequest, PasswordForm
+from fastapi_mail import FastMail, MessageSchema, ConnectionConfig
 from .database import Storage
 
 # INIT
@@ -17,6 +18,16 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="access_token")
+
+conf = ConnectionConfig(
+	MAIL_USERNAME="test@example.com",
+	MAIL_PASSWORD="password",
+	MAIL_PORT=1025,
+	MAIL_SERVER="localhost",
+	MAIL_TLS=False,
+	MAIL_SSL=False,
+	USE_CREDENTIALS=False,
+)
 
 app.add_middleware(
 	CORSMiddleware,
