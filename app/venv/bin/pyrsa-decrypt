@@ -1,5 +1,5 @@
 #!/bin/sh
-'''exec' "/home/estosche/Desktop/hypertube estosche/apps/venv/bin/python3" "$0" "$@"
+'''exec' "/home/estosche/Desktop/hypertube estosche/app/venv/bin/python3" "$0" "$@"
 ' '''
 # -*- coding: utf-8 -*-
 import re

@@ -4,6 +4,7 @@ import RetroTvLoginWrapper from "./components/RetroTv";
 import ProtectedRoute from "./components/ProtectedRoute";
 import HomePage from "./components/HomePage";
 
+
 const tvProps = {
   videoSrc: "/screen2.mp4",
   tvImageSrc: "/TV.png",
@@ -26,12 +27,9 @@ export const router = createBrowserRouter([
         children: [
           {
             path: "/",
-            element: (
-              
-                <HomePage />
-             
-            ),
+            element: (<HomePage />),
           },
+         
         ],
       },
       // Auth routes

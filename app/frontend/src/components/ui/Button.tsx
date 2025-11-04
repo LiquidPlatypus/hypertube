@@ -10,6 +10,7 @@ type ButtonProps = {
   className?: string;
   onClick?: () => void;
   alt?: string;
+  type?: "button" | "submit" | "reset";
 };
 
 export default function Button({
@@ -22,6 +23,7 @@ export default function Button({
   className = "",
   onClick,
   alt = "",
+  type = "button",
 }: ButtonProps) {
   // Tailwind classes dynamiques
   const sizeClasses = {
@@ -54,7 +56,7 @@ export default function Button({
     .join(" ");
 
   return (
-    <button onClick={onClick} className={finalClasses} style={!imageOnly ? style : undefined}>
+    <button type={type} onClick={onClick} className={finalClasses} style={!imageOnly ? style : undefined}>
       {icon && (
         <img
           src={icon}

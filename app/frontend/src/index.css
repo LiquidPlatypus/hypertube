@@ -2,3 +2,27 @@
 @tailwind components;
 @tailwind utilities;
 
+@keyframes tvPower {
+  0% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+  60% {
+    transform: scaleY(0.05);
+    opacity: 0.8;
+  }
+  80% {
+    transform: scaleY(0.02);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scaleY(0);
+    opacity: 0;
+  }
+}
+
+.animate-tv-power {
+  animation: tvPower 1.2s ease-in-out forwards;
+  transform-origin: center;
+}
+
