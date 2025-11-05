@@ -1,7 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-export default function RegisterPage() {
+interface RegisterPageProps {
+  setIsLoggedIn: (value: boolean) => void;
+  switchToLogin: () => void;
+}
+
+export default function RegisterPage({ setIsLoggedIn, switchToLogin }: RegisterPageProps) {
   const [username, setUsername] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -45,7 +50,7 @@ export default function RegisterPage() {
   return (
     <div className="flex flex-col items-center justify-center gap-4 p-6 bg-black/70 border-2 border-[#eaad5a] rounded-lg shadow-[0_0_20px_#ffbf00] max-w-sm w-full text-[#401d17] font-mono">
       <h2 className="text-2xl mb-2 text-[#fce5bf] drop-shadow-[0_0_5px_#ffbf00]">Inscription</h2>
-      {message && <p className="text-red-500">{message}</p>}
+      {message && <p className="text-[#401d17]">{message}</p>}
 
       <form onSubmit={handleRegister} className="flex flex-col gap-3 w-full">
         <input
@@ -106,7 +111,7 @@ export default function RegisterPage() {
           </button>
           <button
             type="button"
-            onClick={() => navigate("/auth/login")}
+            onClick={switchToLogin}
             className="flex-1 bg-[#fce5bf] border border-[#fce5bf] text-[#401d17] font-bold rounded py-2 hover:bg-[#FA8072] transition"
           >
             Retour
