@@ -1,10 +1,9 @@
 import type { RouteObject } from "react-router-dom";
 import { createBrowserRouter } from "react-router-dom";
 import App from "./App";
-import LoginPage from "./pages/LoginPage.tsx";
-import ProtectedRoute from "./components/ProtectedRoute.tsx";
-import HomePage from "./pages/HomePage.tsx";
-import ProfilePage from "./pages/ProfilePage.tsx";
+import ProtectedRoute from "./component/ProtectedRoute";
+import EntryPage from "./pages/EntryPage";
+import HomePage from "./pages/HomePage";
 
 const routes: RouteObject[] = [
 	{
@@ -12,37 +11,23 @@ const routes: RouteObject[] = [
 		element: <App />,
 		children: [
 			{
-				// Route d'acceuil - pour les user connecte
-				index: true, // indique que c'est la route par default a "/"
-				element: (
-					<ProtectedRoute requireAuth={true}>
-						<HomePage />
-					</ProtectedRoute>
-				),
-			},
-			{
-				// Groupe des routes d'auth
-				// pour les user NON connecte
-				path: "auth",
+				// all protected element by login system must be here
+				path: "/",
+				element: <ProtectedRoute />,
 				children: [
-					{
-						// Route /auth/login pour la connexion
-						path: "login",
-						element: (
-							<ProtectedRoute requireAuth={false}>
-								<LoginPage />
-							</ProtectedRoute>
-						),
-					},
-					// route "forget-password"
-					// route "reset-password"
+					{ path: "/", element: <HomePage /> },
 				],
 			},
 			{
-				path: "profile",
-				element: (
-					<ProfilePage />
-				),
+				path: "auth",
+				children: [
+					{
+						path: "login",
+						element:  (
+							<EntryPage />
+						),
+					},
+				],
 			},
 		],
 	},

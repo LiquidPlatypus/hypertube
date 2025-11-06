@@ -1,11 +1,6 @@
-import "./styles/App.css";
-
-import Header from "./components/layout/Header.tsx";
-import PageFrame from "./components/layout/PageFrame.tsx";
-import Footer from "./components/layout/Footer.tsx";
-import { Outlet, useNavigate } from "react-router-dom";
-import Button from "./components/ui/Button.tsx";
-import type { JSX } from "react";
+import { useState } from 'react'
+import { Outlet } from 'react-router-dom'
+import './App.css'
 
 function App() {
 	// useEffect(() => {
@@ -18,27 +13,11 @@ function App() {
 	//   return () => socket.close();
 	// }, []);
 
-	const navigate = useNavigate();
-
-	const handleLogout = () => {
-		// Supprime le token
-		localStorage.removeItem("authToken");
-		// Redirect vers login
-		navigate("/auth/login");
-	};
-
-	// Verif si user est connecte
-	const isAuthenticated = localStorage.getItem("authToken") !== null;
-
-	return (
-		<main>
-			<Header />
-			<PageFrame>
-				<Outlet />
-			</PageFrame>
-			<Footer />
-		</main>
-	);
+  return (
+    <>
+    <Outlet/>
+    </>
+  )
 }
 
-export default App;
+export default App
