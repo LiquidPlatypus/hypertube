@@ -5,7 +5,7 @@ import PageFrame from "./components/layout/PageFrame.tsx";
 import Footer from "./components/layout/Footer.tsx";
 import { Outlet, useNavigate } from "react-router-dom";
 import Button from "./components/ui/Button.tsx";
-import { JSX } from "react";
+import type { JSX } from "react";
 
 function App() {
 	// useEffect(() => {

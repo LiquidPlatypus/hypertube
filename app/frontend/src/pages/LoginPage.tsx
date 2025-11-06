@@ -20,7 +20,7 @@ export default function LoginPage() {
 	const [registerEmail, setRegisterEmail] = useState("");
 	const [registerPassword, setRegisterPassword] = useState("");
 	const [registerPasswordConfirmation, setRegisterPasswordConfirmation] = useState("");
-	const [registerProfilePic, setRegisterProfilePic] = useState<File | null>(null)
+	const [/*registerProfilePic*/, setRegisterProfilePic] = useState<File | null>(null)
 
 	// Etats pour les messages error/success
 	const [message, setMessage] = useState("");

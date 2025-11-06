@@ -26,19 +26,17 @@ services:
     volumes:
       - ./app/backend/app:/app
     depends_on:
-      - postgres
+      - mariadb
     networks:
       - hypertube-network
-      
-  # POSTGRES database
-  postgres:
-    build: ./postgres
-    container_name: postgres
+
+  mariadb:
+    image: mariadb:latest
+    container_name: mariadb
+    restart: always
     env_file: .env
-    ports:
-      - 5432:5432
     volumes:
-      - ./postgres/data:/var/lib/postgres/data
+      - ./mariadb/data:/var/lib/mysql
     networks:
       - hypertube-network
 

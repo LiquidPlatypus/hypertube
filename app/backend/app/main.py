@@ -1,15 +1,16 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, EmailStr
+from sqlalchemy.orm import Session
+from database import get_db, DB, engine, init_db
+from models import User
+
 import os
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import text
-from database import get_db, Base, engine
+from database import get_db, DB, engine
 
 # INIT
-
 app = FastAPI()
 
 app.add_middleware(
@@ -22,16 +23,26 @@ app.add_middleware(
 
 # INIT DB
 @app.on_event("startup")
-async def on_startup():
-    async with engine.begin() as conn:
-        # create all tables
-        await conn.run_sync(Base.metadata.create_all)
+def on_startup():
+    init_db()
 
-# TEST DB CONNECTION
-@app.get("/test-db/")
-async def test_db(db: AsyncSession = Depends(get_db)):
-    result = await db.execute(text("SELECT 1"))
-    return {"db_connection": "ok", "result": result.scalar()}
+#CRUD DB TEST
+@app.post("/create_user")
+def create_user(username: str, email: str, password: str, db: Session = Depends(get_db)):
+    try:
+        db_user = User(username=username, email=email, password=password)
+        db.add(db_user)
+        db.commit()
+        db.refresh(db_user)
+        return {"message": "User created", "user_id": db_user.id}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.get("/get_users")
+def get_users(db: Session = Depends(get_db)):
+    users = db.query(User).all()
+    return {"status": "success", "users": users}
 
 # DB SIMULATION
 class Storage:
