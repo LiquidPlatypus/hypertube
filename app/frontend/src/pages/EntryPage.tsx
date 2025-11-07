@@ -106,9 +106,35 @@ export default function EntryPage() {
 		}
 	};
 
+	const autoLog = async (e: React.MouseEvent<HTMLButtonElement>) => {
+		e.preventDefault();
+		try {
+			const response = await fetch("/api/auto-log", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({
+					username: registerUsername,
+					password: registerPassword,
+					email: registerEmail,
+					firstName: registerFirstname,
+					lastName: registerLastname,
+					// rajouter profilePic avec FormData
+				}),
+			});
+			if (!response.ok)
+				throw new Error("Error during register");
+			const data: LoginResponse = await response.json();
+			localStorage.setItem("access_token", data.access_token);
+			navigate("/");
+		} catch (err) {
+			console.error(err);
+		}
+	};
+
 	return (
 		<div>
 			<div>
+				<button onClick={autoLog}>auto-log</button>
 				<div>
                     <button onClick={() => {
 							setIsLogin(true);
