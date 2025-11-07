@@ -1,12 +1,12 @@
-import MainLayout from "./layout/MainLayout.tsx";
 import { Outlet } from "react-router-dom";
+import LoginLayout from "./layout/LoginLayout.tsx";
 
 function App() {
 	return (
 		<div>
-			<MainLayout>
+			<LoginLayout>
 				<Outlet />
-			</MainLayout>
+			</LoginLayout>
 		</div>
 	);
 }
