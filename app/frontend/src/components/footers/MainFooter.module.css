@@ -1,0 +1,16 @@
+.Footer {
+	position: relative;
+	display: flex;
+	width: 100%;
+	align-items: center;
+	justify-content: center;
+	padding: 1rem;
+
+	background-image: url("/assets/TVBottomFrame.png");
+	background-repeat: no-repeat;
+}
+
+.Wrapper {
+	display: flex;
+	align-items: center;
+}

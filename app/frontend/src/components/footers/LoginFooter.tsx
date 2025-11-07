@@ -1,6 +1,6 @@
-import styles from "./Footer.module.css";
+import styles from "./LoginFooter.module.css";
 
-export default function Footer() {
+export default function LoginFooter() {
 	return (
 		<footer className={styles.Footer}>
 			<h1 className={styles.Title}>RetroTube TV</h1>

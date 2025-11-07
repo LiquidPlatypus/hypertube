@@ -1,0 +1,36 @@
+.Header {
+	position: relative;
+	width: 100%;
+	overflow: hidden;
+
+	display: flex;
+	align-items: center;
+	justify-content: center;
+
+	background-image: url("/assets/TVUpFrame.png.png");
+	background-repeat: no-repeat;
+	background-size: cover;
+	background-position: center top;
+
+	aspect-ratio: 16 / 3; /* à ajuster selon ton image */
+	min-height: 100px; /* évite qu’elle disparaisse sur écrans très petits */
+
+	z-index: 10;
+}
+
+
+.Wrapper {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	height: 100%;
+}
+
+
+.Title {
+	font-family: "Press Start 2P", monospace;
+	color: #fff;
+	text-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
+	font-size: 1.5rem;
+}

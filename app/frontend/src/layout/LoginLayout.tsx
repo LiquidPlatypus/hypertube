@@ -1,7 +1,7 @@
 import * as React from "react";
 
-import Header from "../components/Header.tsx"
-import Footer from "../components/Footer.tsx"
+import LoginHeader from "../components/headers/LoginHeader.tsx"
+import LoginFooter from "../components/footers/LoginFooter.tsx"
 
 import styles from "./LoginLayout.module.css";
 
@@ -12,9 +12,9 @@ interface LoginLayoutProps {
 export default function LoginLayout({ children }: LoginLayoutProps) {
 	return (
 		<div className={styles.LoginLayout}>
-			<Header />
+			<LoginHeader />
 				{children}
-			<Footer />
+			<LoginFooter />
 		</div>
 	)
 }

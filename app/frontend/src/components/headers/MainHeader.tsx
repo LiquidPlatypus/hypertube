@@ -1,6 +1,6 @@
-import styles from "./Header.module.css";
+import styles from "./MainHeader.module.css";
 
-export default function Header() {
+export default function MainHeader() {
 	return (
 		<header className={styles.Header}>
 			<div className={styles.Wrapper}>
