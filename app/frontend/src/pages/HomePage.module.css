@@ -8,10 +8,11 @@
 .thumbnails {
 	width: 100%;
 	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+	grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
 	gap: 2rem;
 	list-style: none;
-	padding: 0;
+	padding-left: 50px;
+	padding-right: 50px;
 	margin: 0 auto;
 	place-items: center;
 	scrollbar-width: thin;
