@@ -7,13 +7,12 @@
 	align-items: center;
 	justify-content: center;
 
-	background-image: url("/assets/TV4UpFrame.png");
-	background-repeat: no-repeat;
+	background-image: url("/public/assets/TV4UpFrame.png");
+	background-repeat: round;
 	background-size: cover;
 	background-position: center top;
 
-	aspect-ratio: 16 / 3; /* à ajuster selon ton image */
-	min-height: 100px; /* évite qu’elle disparaisse sur écrans très petits */
+	min-height: 100px;
 
 	z-index: 10;
 }
