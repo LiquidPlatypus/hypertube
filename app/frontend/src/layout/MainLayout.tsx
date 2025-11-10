@@ -25,6 +25,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
 				muted
 				loop
 				playsInline
+				disablePictureInPicture={true}
 			/>
 			<header className={styles.MainHeader}>
 				<MainHeader />
