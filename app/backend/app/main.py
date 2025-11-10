@@ -9,7 +9,7 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, Depe
 from fastapi.security import OAuth2PasswordBearer
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
-from model import RegisterRequest, LoginRequest, ModifyFormRequest, PasswordForm
+from .model import RegisterRequest, LoginRequest, ModifyFormRequest, PasswordForm, EmailRequest, NewPasswordRequest
 from fastapi_mail import FastMail, MessageSchema, ConnectionConfig
 
 # INIT
@@ -26,8 +26,9 @@ conf = ConnectionConfig(
 	MAIL_PASSWORD="password",
 	MAIL_PORT=1025,
 	MAIL_SERVER="localhost",
-	MAIL_TLS=False,
-	MAIL_SSL=False,
+	MAIL_FROM="test@example.com",
+	MAIL_STARTTLS = True,
+	MAIL_SSL_TLS = False,
 	USE_CREDENTIALS=False,
 )
 
@@ -202,6 +203,38 @@ async def reset_password(data: PasswordForm, current_user=Depends(verif_access_t
 		return {"returnValue": True}
 	return {"returnValue": False}
 
+@app.post("/api/reset-forgot-password")
+async def reset_forgot_password(data: NewPasswordRequest, current_user=Depends(verif_access_token)):
+	storage.modify_password(data.newpassword, current_user["id"])
+	return {"returnValue": True}
+
+@app.post("/api/forgot-password")
+async def forgot_password(current_user=Depends(verif_access_token)):
+	username = current_user["username"]
+	print(f"{username} load forgot password form\n")
+	return {"returnValue": True}
+
+@app.post("/api/send-email")
+async def send_email(data: EmailRequest):
+	access_token = None
+	user_list = storage.get_all_users()
+	for u in user_list:
+		if u["email"] == data.email:
+			access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+			access_token = create_access_token(data={"sub": str(u["id"])}, expires_delta=access_token_expires)
+	if access_token == None:
+		return {"returnValue": False}
+	contenthtml = f"""<p>PAYLOAD: \n\n\nlocalhost:5173/reset/{access_token}\n\n\n:END PAYLOAD</p>"""
+	message = MessageSchema(
+		subject="Reset Password Mail",
+		recipients=[data.email],
+		body=contenthtml,
+		subtype="html"
+	)
+
+	print(message)
+	return {"returnValue": True}
+
 @app.get("/api/me")
 async def read_user_me(current_user=Depends(verif_access_token)):
 	return {"user": current_user}
@@ -209,3 +242,23 @@ async def read_user_me(current_user=Depends(verif_access_token)):
 @app.get("/api/hello")
 async def get_hello():
 	return {"message": "Hello from FastAPI 👋"}
+
+# DEV/DEBUG REQUEST
+
+@app.post("/api/auto-log")
+async def auto_log():
+	"""
+	Print all profile value and return Login token
+	"""
+	username = "debug"
+	password = "debug"
+	email = "email@debug.com"
+	firstName = "debug"
+	lastName = "debug"
+	user = storage.add_user(username, email, password, firstName, lastName)
+	print(f"username: {username}\npassword: {password}\nemail: {email}\nfirstname: {firstName}\nlastname: {lastName}")
+	access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+	access_token = create_access_token(data={"sub": str(user["id"])}, expires_delta=access_token_expires)
+	return {"access_token": access_token, "token_type": "bearer"}
+
+# OFFICIAL PUBLIC REQUEST

@@ -106,9 +106,71 @@ export default function EntryPage() {
 		}
 	};
 
+	const autoLog = async (e: React.MouseEvent<HTMLButtonElement>) => {
+		e.preventDefault();
+		try {
+			const response = await fetch("/api/auto-log", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({
+					username: registerUsername,
+					password: registerPassword,
+					email: registerEmail,
+					firstName: registerFirstname,
+					lastName: registerLastname,
+					// rajouter profilePic avec FormData
+				}),
+			});
+			if (!response.ok)
+				throw new Error("Error during register");
+			const data: LoginResponse = await response.json();
+			localStorage.setItem("access_token", data.access_token);
+			navigate("/");
+		} catch (err) {
+			console.error(err);
+		}
+	};
+
+	const emailSend = async (e: React.FormEvent<HTMLFormElement>) => {
+		e.preventDefault();
+		try {
+			const response = await fetch(`/api/send-email`, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					email: registerEmail,
+				}),
+			});
+			if (!response.ok)
+				throw new Error("Server error");
+			const data: {returnValue: boolean} = await response.json();
+			if (data.returnValue === false)
+				setMessage("email not exist");
+			else
+				setMessage("email send");
+		} catch (err) {
+			console.error(err);
+		}
+	};
+
 	return (
 		<div>
 			<div>
+				<form onSubmit={emailSend}>
+					<label htmlFor="email">Email: </label>
+					<input
+						type="text"
+						name="email"
+						id="email"
+						value={registerEmail}
+						onChange={(e) => setRegisterEmail(e.target.value)}
+						required
+					/>
+					<button type="submit">Send reset password email</button>
+				</form>
+				<button onClick={autoLog}>auto-log</button>
 				<div>
                     <button onClick={() => {
 							setIsLogin(true);
@@ -234,4 +296,4 @@ export default function EntryPage() {
 			</div>
 		</div>
 	);
-}
+};

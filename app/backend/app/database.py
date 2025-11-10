@@ -107,5 +107,5 @@ class Storage:
 		for p in self.password:
 			if p["user_id"] == user_id:
 				self.password.remove(p)
-				return p["password"]
-		self.password.append({"user_id": user_id, "password": new_password})
+				self.password.append({"user_id": user_id, "password": new_password})
+		return None

@@ -35,3 +35,10 @@ class PasswordForm(BaseModel):
 	"""
 	new_password: str
 	old_password: str
+
+
+class EmailRequest(BaseModel):
+    email: EmailStr
+
+class NewPasswordRequest(BaseModel):
+	newpassword: str
