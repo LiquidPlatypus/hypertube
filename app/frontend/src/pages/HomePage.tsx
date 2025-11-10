@@ -11,6 +11,12 @@ export default function HomePage() {
 		(path, index) => (
 			<li key={index}>
 				<img src={path} alt={`Thumbnail ${index + 1}`} />
+				<div className={styles.Infos}>
+					<h1>Title</h1>
+					<p>Year</p>
+					<p>90%</p>
+					<img className={styles.Cover} src="/assets/elementor-placeholder-image.png" alt="Cover"/>
+				</div>
 			</li>
 		),
 	);
