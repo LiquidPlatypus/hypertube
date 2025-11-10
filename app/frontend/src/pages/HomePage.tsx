@@ -4,7 +4,7 @@ import styles from "./HomePage.module.css";
 
 import testThumbnail from "/assets/elementor-placeholder-image.png";
 
-const thumbnailsTest: Array<string> = Array(20).fill(testThumbnail);
+const thumbnailsTest: Array<string> = Array(100).fill(testThumbnail);
 
 export default function HomePage() {
 	const listThumbnailsTest: JSX.Element[] = thumbnailsTest.map(

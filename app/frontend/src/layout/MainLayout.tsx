@@ -11,10 +11,24 @@ interface MainLayoutProps {
 
 export default function MainLayout({ children }: MainLayoutProps) {
 	return (
-		<div className={styles.MainLayout}>
-			<MainHeader />
+		<div
+			className={styles.MainLayout}
+			style={{
+				"--header-height": "150px",
+				"--footer-height": "100px",
+			} as React.CSSProperties}
+		>
+			<header className={styles.MainHeader}>
+				<MainHeader />
+			</header>
+
+			<main className={styles.ScrollArea}>
 				{children}
-			<MainFooter />
+			</main>
+
+			<footer className={styles.MainFooter}>
+				<MainFooter />
+			</footer>
 		</div>
-	)
+	);
 }

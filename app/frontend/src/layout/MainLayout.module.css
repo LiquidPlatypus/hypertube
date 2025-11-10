@@ -1,10 +1,38 @@
 .MainLayout {
+	position: relative;
 	display: flex;
-	min-height: 100vh;
+	height: 100vh;
 	flex-direction: column;
-	align-items: center;
-	justify-content: space-between;
 	background-image: url("../../public/assets/backgrounds/fond.png");
 	background-position: center;
 	background-repeat: repeat;
+	overflow: hidden;
+}
+
+.ScrollArea {
+	flex: 1;
+	overflow-y: auto;
+	scroll-behavior: smooth;
+	z-index: 0;
+	padding-top: var(--header-height);
+	padding-bottom: var(--footer-height);
+}
+
+.MainHeader,
+.MainFooter {
+	position: fixed;
+	left: 0;
+	width: 100%;
+	z-index: 10;
+	pointer-events: none;
+}
+
+.MainHeader {
+	top: 0;
+	height: var(--header-height);
+}
+
+.MainFooter {
+	bottom: 0;
+	height: var(--footer-height);
 }
