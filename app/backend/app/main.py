@@ -5,7 +5,7 @@ from fastapi.security import OAuth2PasswordBearer
 from fastapi.responses import JSONResponse
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
-from .model import RegisterRequest, LoginRequest, ModifyFormRequest, PasswordForm
+from .model import RegisterRequest, LoginRequest, ModifyFormRequest, PasswordForm, EmailRequest, NewPasswordRequest
 from fastapi_mail import FastMail, MessageSchema, ConnectionConfig
 from .database import Storage
 
@@ -149,12 +149,31 @@ async def reset_password(data: PasswordForm, current_user=Depends(verif_access_t
 		return {"returnValue": True}
 	return {"returnValue": False}
 
-@app.get("/api/send-email")
-async def send_email(current_user=Depends(verif_access_token)):
-	contenthtml = f"""<p>PAYLOAD: TempContent</p>"""
+@app.post("/api/reset-forgot-password")
+async def reset_forgot_password(data: NewPasswordRequest, current_user=Depends(verif_access_token)):
+	storage.modify_password(data.newpassword, current_user["id"])
+	return {"returnValue": True}
+
+@app.post("/api/forgot-password")
+async def forgot_password(current_user=Depends(verif_access_token)):
+	username = current_user["username"]
+	print(f"{username} load forgot password form\n")
+	return {"returnValue": True}
+
+@app.post("/api/send-email")
+async def send_email(data: EmailRequest):
+	access_token = None
+	user_list = storage.get_all_users()
+	for u in user_list:
+		if u["email"] == data.email:
+			access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+			access_token = create_access_token(data={"sub": str(u["id"])}, expires_delta=access_token_expires)
+	if access_token == None:
+		return {"returnValue": False}
+	contenthtml = f"""<p>PAYLOAD: \n\n\nlocalhost:5173/reset/{access_token}\n\n\n:END PAYLOAD</p>"""
 	message = MessageSchema(
 		subject="Reset Password Mail",
-		recipients=["user@example.com"],
+		recipients=[data.email],
 		body=contenthtml,
 		subtype="html"
 	)

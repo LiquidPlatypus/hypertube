@@ -4,6 +4,8 @@ import App from "./App";
 import ProtectedRoute from "./component/ProtectedRoute";
 import EntryPage from "./pages/EntryPage";
 import HomePage from "./pages/HomePage";
+import IdentifyForReset from "./component/IdentifyForReset";
+import ForgotPassword from "./pages/ForgotPassword";
 
 const routes: RouteObject[] = [
 	{
@@ -16,6 +18,7 @@ const routes: RouteObject[] = [
 				element: <ProtectedRoute />,
 				children: [
 					{ path: "/", element: <HomePage /> },
+					{ path: "/forgot-password", element: <ForgotPassword /> }
 				],
 			},
 			{
@@ -29,6 +32,12 @@ const routes: RouteObject[] = [
 					},
 				],
 			},
+			{
+				path: `reset/:token`,
+				element: (
+					<IdentifyForReset />
+				),
+			}
 		],
 	},
 ];

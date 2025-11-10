@@ -89,29 +89,8 @@ export default function HomePage() {
 		}
 	};
 
-	const testEmailSend = async (e: React.MouseEvent<HTMLButtonElement>) => {
-		e.preventDefault();
-		try {
-			const token = localStorage.getItem("access_token");
-			const response = await fetch("/api/send-email", {
-				method: "GET",
-				headers: {
-					"Content-Type": "application/json",
-					Authorization: `Bearer ${token}`,
-				},
-			});
-			if (!response.ok)
-				throw new Error("Server error");
-			const data: {returnValue: boolean} = await response.json();
-			console.log(data.returnValue);
-		} catch (err) {
-			console.error(err);
-		}
-	};
-
 	return (
 		<div>
-			<button onClick={testEmailSend}>TestEmail</button>
 			<button onClick={testMessage}>Hello</button>
 
 			<h1>{user_info}</h1>
