@@ -25,8 +25,6 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 	const [registerEmail, setRegisterEmail] = useState("");
 	const [registerPassword, setRegisterPassword] = useState("");
 	const [registerPasswordConfirmation, setRegisterPasswordConfirmation] = useState("");
-	const [registerProfilePic, setRegisterProfilePic] = useState<File | null>(null);
-	const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
 	// Login Handler
 	const handleLogin = async (e: React.FormEvent) => {
@@ -69,7 +67,6 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 					email: registerEmail,
 					firstName: registerFirstname,
 					lastName: registerLastname,
-					// TODO: PROFILE PIC
 				}),
 			});
 			if (!response.ok)
@@ -121,30 +118,6 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 					<Input type="email" placeholder="Email" value={registerEmail} onChange={(e) => setRegisterEmail(e.target.value)} className={styles.Inputs} required />
 					<Input type="password" placeholder="Password" value={registerPassword} onChange={(e) => setRegisterPassword(e.target.value)} className={styles.Inputs} required />
 					<Input type="password" placeholder="Confirm Password" value={registerPasswordConfirmation} onChange={(e) => setRegisterPasswordConfirmation(e.target.value)} className={styles.Inputs} required />
-					<div className={styles.ProfilePicInput}>
-						<label className={styles.fileLabel}>
-							<span>{registerProfilePic ? registerProfilePic.name : "Choose a profile picture"}</span>
-							<input
-								type="file"
-								accept="image/*"
-								onChange={(e) => {
-									const file = e.target.files?.[0] || null;
-									setRegisterProfilePic(file);
-									setPreviewUrl(file ? URL.createObjectURL(file) : null);
-								}}
-								className={styles.hiddenFileInput}
-							/>
-						</label>
-
-						<img
-							src={previewUrl || "/assets/whitenoise.gif"}
-							alt="Profile preview"
-							className={styles.previewImage}
-							style={{ opacity: previewUrl ? 1 : 0.8 }}
-						/>
-
-					</div>
-
 					<Button text="Register" size="large" shape="pill" />
 				</form>
 			)}
