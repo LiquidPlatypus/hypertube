@@ -16,6 +16,7 @@ export default function HomePage() {
 	const [username, setUsername] = useState("");
 	const [firstname, setFirstname] = useState("");
 	const [lastname, setLastname] = useState("");
+	const [email, setEmail] = useState("");
 	const navigate = useNavigate();
 
 	const testGetUserInfo = async (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -48,7 +49,7 @@ export default function HomePage() {
 					"Content-Type": "application/json",
 					Authorization: `Bearer ${token}`,
 				},
-				body: JSON.stringify({ username, firstname, lastname }),
+				body: JSON.stringify({ username, email, firstname, lastname }),
 			});
 			if (!response.ok) {
 				throw new Error("Not authorized");
@@ -104,6 +105,15 @@ export default function HomePage() {
 						value={username}
 						onChange={(e) => setUsername(e.target.value)}
 						placeholder="Username"
+						required
+					/>
+					<label htmlFor="email">Enter email :</label>
+					<input
+						id="email"
+						type="text"
+						value={email}
+						onChange={(e) => setEmail(e.target.value)}
+						placeholder="Email"
 						required
 					/>
 					<label htmlFor="firstname">Enter firstname :</label>

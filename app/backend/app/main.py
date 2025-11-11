@@ -135,7 +135,7 @@ async def modify_user(data: ModifyFormRequest, current_user=Depends(verif_access
 	Return Value :
 	True if information was correct and changed or else False
 	"""
-	user = storage.modify_user(data.username, current_user["email"], data.firstname, data.lastname, current_user["id"])
+	user = storage.modify_user(data.username, data.email, data.firstname, data.lastname, current_user["id"])
 	return {"returnValue": True}
 
 @app.post("/api/reset-password")
