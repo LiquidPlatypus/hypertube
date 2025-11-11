@@ -6,3 +6,10 @@ body {
 	margin: 0;
 	text-align: center;
 }
+
+@font-face {
+	font-family: CommodoreRounded;
+	src: url("/assets/fonts/Commodore Rounded v1.2.ttf");
+	font-weight: normal;
+	font-style: normal;
+}

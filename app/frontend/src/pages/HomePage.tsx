@@ -1,24 +1,32 @@
-import type { JSX } from "react";
+import Thumbnail from "../components/ui/Thumbnail.tsx";
 
 import styles from "./HomePage.module.css";
 
 import testThumbnail from "/assets/elementor-placeholder-image.png";
-import Thumbnail from "../components/ui/Thumbnail.tsx";
 
-const thumbnailsTest: Array<string> = Array(100).fill(testThumbnail);
+const thumbnailsTest = Array.from({ length: 35 }, (_, i) => ({
+	src: testThumbnail,
+	title: `Film ${i + 1}`,
+	year: 2000 + (i % 20),
+	rating: (60 + Math.random() * 3).toFixed(0),
+}));
 
 export default function HomePage() {
-	const listThumbnailsTest: JSX.Element[] = thumbnailsTest.map(
-		(path, index) => (
-			<li key={index}>
-				<Thumbnail thumbnailSrc={path} thumbnailAlt={`Thumbnail ${index + 1}`} />
-			</li>
-		),
-	);
-
 	return (
 		<div className={styles.content}>
-			<ul className={styles.thumbnails}>{listThumbnailsTest}</ul>
+			<ul className={styles.thumbnails}>
+				{thumbnailsTest.map((thumb, index) => (
+					<li key={index}>
+						<Thumbnail
+							thumbnailSrc={thumb.src}
+							thumbnailAlt={`Thumbnail ${index + 1}`}
+							title={thumb.title}
+							year={thumb.year}
+							rating={thumb.rating}
+						/>
+					</li>
+				))}
+			</ul>
 		</div>
 	);
 }

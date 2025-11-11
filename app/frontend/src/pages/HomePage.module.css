@@ -11,50 +11,9 @@
 	grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
 	gap: 2rem;
 	list-style: none;
-	padding-left: 50px;
-	padding-right: 50px;
+	padding: 0 50px;
 	margin: 0 auto;
 	place-items: center;
 	scrollbar-width: thin;
 	scrollbar-color: #aaa transparent;
-}
-
-.thumbnails li {
-	position: relative;
-	aspect-ratio: 16/9;
-	width: 100%;
-	border-radius: 2rem;
-	box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.6);
-	transition: transform 0.25s ease, box-shadow 0.25s ease;
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-}
-
-.thumbnails .Infos {
-	display: flex;
-	color: #e9e9e9;
-}
-
-.thumbnails .Cover {
-	aspect-ratio: 9/16;
-	width: 50%;
-	height: 50%;
-}
-
-.thumbnails li:hover {
-	transform: scale(1.08);
-	box-shadow:
-			inset 0 3px 6px rgba(255, 255, 255, 0.8),
-			0 10px 20px rgba(0, 0, 0, 0.25);
-}
-
-.thumbnails img {
-	width: 100%;
-	height: 100%;
-	object-fit: cover;
-	border-radius: inherit;
-	filter: brightness(0.95) contrast(1.05);
-	transition: filter 0.25s ease;
 }
