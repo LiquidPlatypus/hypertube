@@ -46,3 +46,17 @@
 	bottom: 0;
 	height: var(--footer-height);
 }
+
+.TVRemoteContainer {
+	position: fixed;
+	bottom: -270px;
+	right: 20px;
+	z-index: 50;
+	transition: transform 0.3s ease, opacity 0.3s ease;
+	transform: translateY(80px);
+}
+
+.TVRemoteContainer:hover {
+	transform: translateY(0);
+	opacity: 1;
+}

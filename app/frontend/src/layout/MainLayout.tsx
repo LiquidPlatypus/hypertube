@@ -4,6 +4,7 @@ import MainHeader from "../components/headers/MainHeader.tsx";
 import MainFooter from "../components/footers/MainFooter.tsx";
 
 import styles from "./MainLayout.module.css";
+import TVRemote from "../components/TVRemote.tsx";
 
 interface MainLayoutProps {
 	children: React.ReactNode
@@ -31,6 +32,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
 				<MainHeader />
 			</header>
 
+
 			<main className={styles.ScrollArea}>
 				{children}
 			</main>
@@ -38,6 +40,10 @@ export default function MainLayout({ children }: MainLayoutProps) {
 			<footer className={styles.MainFooter}>
 				<MainFooter />
 			</footer>
+
+			<div className={styles.TVRemoteContainer}>
+				<TVRemote />
+			</div>
 		</div>
 	);
 }
