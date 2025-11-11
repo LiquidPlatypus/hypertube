@@ -2,12 +2,13 @@ import os
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, Depends, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
 from .model import RegisterRequest, LoginRequest, ModifyFormRequest, PasswordForm, EmailRequest, NewPasswordRequest
 from fastapi_mail import FastMail, MessageSchema, ConnectionConfig
 from .database import Storage
+from fastapi import UploadFile, File
 
 # INIT
 
@@ -43,12 +44,16 @@ async def verif_header(request: Request, call_next):
 	headers = request.scope['headers']
 	element = request.headers.get('sec-fetch-user')
 	if element is not None:
-		return Response(status_code=403) # , content={'reason': "Forbidden"}
+		return JSONResponse(status_code=403, content={'reason': "Forbidden"})
 	response = await call_next(request)
 	return response
 
 storage = Storage()
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+UPLOAD_DIR = os.path.join(BASE_DIR, "../profile-pic")
+
+os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 # CODE
 
@@ -92,7 +97,6 @@ def verif_access_token(token: str = Depends(oauth2_scheme)):
 
 # ROUTER
 
-
 @app.post("/api/register")
 async def register(data: RegisterRequest):
 	"""
@@ -103,6 +107,7 @@ async def register(data: RegisterRequest):
 	for user in users_list:
 		if user["email"] == data.email:
 			return {"returnValue": False}
+	
 	user = storage.add_user(data.username, data.email, data.password, data.firstName, data.lastName)
 	return {"returnValue": True}
 
@@ -181,6 +186,25 @@ async def send_email(data: EmailRequest):
 	print(message)
 	return {"returnValue": True}
 
+@app.post("/api/upload-picture")
+async def upload_picture(
+	file: UploadFile = File(...),
+	current_user=Depends(verif_access_token)
+):
+	file_path = os.path.join(UPLOAD_DIR, file.filename)
+
+	with open(file_path, "wb") as buffer:
+		buffer.write(file.file.read())
+	storage.add_profile_pic(current_user["id"], file_path)
+	return {"returnValue": True}
+
+@app.get("/api/me/profile-pic")
+async def get_current_profile_pic(current_user=Depends(verif_access_token)):
+	url = storage.get_profile_pic(current_user["id"])
+	if url == None:
+		return None
+	return FileResponse(url)
+
 @app.get("/api/me")
 async def read_user_me(current_user=Depends(verif_access_token)):
 	return {"user": current_user}
@@ -201,6 +225,12 @@ async def auto_log():
 	email = "email@debug.com"
 	firstName = "debug"
 	lastName = "debug"
+	Ulist = storage.get_all_users()
+	for u in Ulist:
+		if u["email"] == email:
+			access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+			access_token = create_access_token(data={"sub": str(u["id"])}, expires_delta=access_token_expires)
+			return {"access_token": access_token, "token_type": "bearer"}			
 	user = storage.add_user(username, email, password, firstName, lastName)
 	print(f"username: {username}\npassword: {password}\nemail: {email}\nfirstname: {firstName}\nlastname: {lastName}")
 	access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)

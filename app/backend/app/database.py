@@ -2,6 +2,7 @@ class Storage:
 	def __init__(self):
 		self.users = []
 		self.password = []
+		self.profile_pic = []
 
 	def add_user(self, username: str, email: str, password: str, firstname: str, lastname: str):
 		"""
@@ -65,4 +66,24 @@ class Storage:
 			if p["user_id"] == user_id:
 				self.password.remove(p)
 				self.password.append({"user_id": user_id, "password": new_password})
+		return None
+	
+	def add_profile_pic(self, user_id: int, image_url: str):
+		"""
+		DESK:
+		Set in db new image profile and replace old by new
+		"""
+		for i in self.profile_pic:
+			if i["user_id"] == user_id:
+				self.profile_pic.remove(i)
+		self.profile_pic.append({"user_id": user_id, "image_url": image_url})
+	
+	def get_profile_pic(self, user_id: int):
+		"""
+		DESK:
+		Return URL of user image or None if he haven't
+		"""
+		for i in self.profile_pic:
+			if i["user_id"] == user_id:
+				return i["image_url"]
 		return None

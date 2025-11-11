@@ -76,8 +76,8 @@ export default function EntryPage() {
 					email: registerEmail,
 					firstName: registerFirstname,
 					lastName: registerLastname,
-					// rajouter profilePic avec FormData
 				}),
+
 			});
 
 			if (!response.ok) {
@@ -112,14 +112,6 @@ export default function EntryPage() {
 			const response = await fetch("/api/auto-log", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({
-					username: registerUsername,
-					password: registerPassword,
-					email: registerEmail,
-					firstName: registerFirstname,
-					lastName: registerLastname,
-					// rajouter profilePic avec FormData
-				}),
 			});
 			if (!response.ok)
 				throw new Error("Error during register");
