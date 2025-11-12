@@ -3,6 +3,7 @@ import App from "./App";
 import ProtectedRoute from "./utils/ProtectedRoute.tsx";
 import HomePage from "./pages/HomePage.tsx";
 import LoginPage from "./pages/LoginPage.tsx";
+import ProfilInfo from "./pages/ProfilePage.tsx";
 
 export const router = createBrowserRouter([
 	{
@@ -17,6 +18,12 @@ export const router = createBrowserRouter([
 						path: "/",
 						element: (
 							<HomePage />
+						),
+					},
+					{
+						path: "/profile",
+						element: (
+							<ProfilInfo />
 						),
 					},
 				],
