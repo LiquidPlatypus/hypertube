@@ -7,13 +7,21 @@ export default function TVRemote() {
 			<Button
 				text="Search"
 				size="small"
-				shape="pill"
+				shape="square"
 				style={{backgroundColor: "#000000", color: "#FFFFFF"}}
 				className={styles.SearchBtn}
 			/>
 			<Button
+				text="Profile"
+				size="small"
+				shape="square"
+				style={{backgroundColor: "#000000", color: "#FFFFFF"}}
+				className={styles.ProfileBtn}
+			/>
+			<Button
 				text="Logout"
-				size="small" shape="pill"
+				size="small"
+				shape="square"
 				style={{backgroundColor: "#000000", color: "#FFFFFF"}}
 				className={styles.LogoutBtn}
 			/>
