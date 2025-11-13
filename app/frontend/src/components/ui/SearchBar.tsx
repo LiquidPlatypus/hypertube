@@ -8,8 +8,10 @@ export default function SearchBar() {
 			<Input
 				type="text"
 				placeholder="Search"
-				size="large"
+				size="medium"
 				shape="square"
+				style={{borderRadius: "7px"}}
+				className={styles.SearchBar}
 				required
 			/>
 		</div>
