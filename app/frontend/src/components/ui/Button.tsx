@@ -9,6 +9,7 @@ type ButtonProps = {
 	imageOnly?: boolean;
 	style?: React.CSSProperties;
 	className?: string;
+	variant?: "default" | "dark" | "remote"
 	onClick?: () => void;
 	alt?: string;
 };
@@ -21,6 +22,7 @@ export default function Button({
 	imageOnly = false,
 	style,
 	className = "",
+	variant = "default",
 	onClick,
 	alt = "",
 }: ButtonProps) {
@@ -28,6 +30,7 @@ export default function Button({
 		styles.button,
 		styles[size],
 		styles[shape],
+		styles[variant || "default"],
 		!imageOnly && styles.colored,
 		className,
 	]
