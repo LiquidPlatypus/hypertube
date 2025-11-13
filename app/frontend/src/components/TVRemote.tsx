@@ -1,4 +1,3 @@
-import {useState} from "react";
 import {useNavigate} from "react-router-dom";
 
 import Button from "./ui/Button.tsx";
@@ -8,14 +7,13 @@ import styles from "./TVRemote.module.css";
 
 export default function TVRemote() {
 	const navigate = useNavigate();
-	const [showSearch, setShowSearch] = useState(false);
 
 	const goHome = () => {
 		navigate("/");
 	}
 
-	const showSearchBar = () => {
-		setShowSearch((prev) => !prev);
+	const handleSearch = () => {
+
 	};
 
 	const goToProfile = () => {
@@ -37,40 +35,38 @@ export default function TVRemote() {
 				text="Home"
 				size="small"
 				shape="square"
-				style={{backgroundColor: "#000000", color: "#FFFFFF"}}
 				className={styles.HomeBtn}
+				variant="remote"
 				onClick={goHome}
 			/>
 			<Button
 				text="Search"
 				size="small"
 				shape="square"
-				style={{backgroundColor: "#000000", color: "#FFFFFF"}}
 				className={styles.SearchBtn}
-				onClick={showSearchBar}
+				variant="remote"
+				onClick={handleSearch}
 			/>
 			<Button
 				text="Profile"
 				size="small"
 				shape="square"
-				style={{backgroundColor: "#000000", color: "#FFFFFF"}}
 				className={styles.ProfileBtn}
+				variant="remote"
 				onClick={goToProfile}
 			/>
 			<Button
 				text="Logout"
 				size="small"
 				shape="square"
-				style={{backgroundColor: "#000000", color: "#FFFFFF"}}
 				className={styles.LogoutBtn}
+				variant="remote"
 				onClick={handleLogout}
 			/>
 
-			{showSearch && (
-				<div className={styles.SearchContainer}>
-					<SearchBar />
-				</div>
-			)}
+			<div className={styles.SearchContainer}>
+				<SearchBar />
+			</div>
 		</div>
 	);
 }
