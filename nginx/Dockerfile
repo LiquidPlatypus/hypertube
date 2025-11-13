@@ -5,9 +5,9 @@ RUN npm install
 COPY app/frontend .
 RUN npm run build
 
-FROM debian:bullseye
+FROM debian:bullseye-slim
 
-RUN apt-get update -y && apt-get upgrade -y && apt-get install -y \
+RUN apt-get update -y && apt-get install -y \
     build-essential \
     libpcre3 \
     libpcre3-dev \

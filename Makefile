@@ -3,11 +3,12 @@ YEL=\033[33m
 CYA=\033[36m
 STOP=\033[0m
 
-all: build
-
-build:
+all: 
 	@echo "$(CYA)=== Building & starting containers...$(STOP)"
-	@cd app/frontend && sudo npm run build
+	@sudo docker-compose up
+
+build: #Builds all containers
+	@echo "$(CYA)=== Building containers...$(STOP)"
 	@sudo docker-compose up --build
 
 clean: #Stops and remove all containers volumes and networks
@@ -31,6 +32,7 @@ fclean: #Removes everything
 	@read -p "Confirm (y/n) : " confirm && [ "$$confirm" = "y" ] || (echo "$(YEL)Aborted.$(STOP)" && exit 1)
 	@echo "$(CYA)=== Cleaning data...$(STOP)"
 	@make clean
+	@sudo docker system prune -a --volumes
 	@echo "$(CYA)=== Removing files...$(STOP)"
 	@sudo rm -rf mariadb/data
 	@sudo rm -rf  app/frontend/dist 

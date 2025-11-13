@@ -1,7 +1,9 @@
-from sqlalchemy import create_engine, inspect
+from sqlalchemy import create_engine, text
 from os import getenv
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+import time
+from sqlalchemy.exc import OperationalError
 
 
 MARIADB_USER = getenv("MARIADB_USER")
@@ -18,9 +20,31 @@ engine = create_engine(
     echo=True           #affiche les requetes sql (debug)
 )
 
-SessionLocal = sessionmaker(autocomit=False, autoflush=False, bind=engine)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 DB = declarative_base()
+
+
+def init_db():
+    max_attempts = 10
+    attempt = 0
+    while attempt < max_attempts:
+        try:
+            # Teste la connexion
+            with engine.connect() as conn:
+                conn.execute(text("SELECT 1"))
+            # Si la connexion réussit, crée les tables
+            DB.metadata.create_all(bind=engine)
+            print("Database tables created.")
+            break
+        except OperationalError:
+            attempt += 1
+            print(f"MariaDB not ready, retrying in 5 seconds... (attempt {attempt}/{max_attempts})")
+            time.sleep(5)
+    else:
+        print("Failed to connect to MariaDB after several attempts.")
+
+init_db()
 
 def get_db():
     db = SessionLocal()
@@ -29,18 +53,8 @@ def get_db():
     finally:
         db.close()
 
-def init_db():
-    inspector = inspect(engine)
-    tables_exists = inspector.get_table_names()
 
-    if not tables_exists:
-        print("Creating database tables...")
-        DB.metadata.create_all(bind=engine)
-        print("Database tables created.")
-    else:
-        print("Database tables already exist.")
 
-		
 class Storage:
 	def __init__(self):
 		self.users = []

@@ -15,6 +15,7 @@ services:
      - hypertube_backend
     networks:
       - hypertube-network
+    restart: on-failure
 
   # Hypertube backend
   hypertube_backend:
@@ -29,16 +30,17 @@ services:
       - mariadb
     networks:
       - hypertube-network
+    restart: on-failure
 
   mariadb:
     image: mariadb:latest
     container_name: mariadb
-    restart: always
     env_file: .env
     volumes:
       - ./mariadb/data:/var/lib/mysql
     networks:
       - hypertube-network
+    restart: on-failure
 
 networks:
   hypertube-network:

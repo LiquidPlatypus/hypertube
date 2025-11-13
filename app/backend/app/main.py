@@ -1,111 +1,66 @@
-from fastapi.middleware.cors import CORSMiddleware
-# from fastapi.staticfiles import StaticFiles
-# from fastapi.responses import FileResponse, JSONResponse
-from pydantic import BaseModel, EmailStr
-# from sqlalchemy.orm import Session
-from database import get_db, DB, engine, init_db, Storage
 import os
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, Depends, Request, Response
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, Depends, Request, Response, status
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer
+from fastapi.responses import JSONResponse
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
-from .model import RegisterRequest, LoginRequest, ModifyFormRequest, PasswordForm, EmailRequest, NewPasswordRequest
+from pydantic import EmailStr
+from sqlalchemy.orm import Session
+from typing import Optional
 from fastapi_mail import FastMail, MessageSchema, ConnectionConfig
+
+# Models Pydantic
+from model import RegisterRequest, LoginRequest, ModifyFormRequest, PasswordForm, EmailRequest, NewPasswordRequest
+# Models SQLAlchemy et Repository
+from models_db import User, Password
+from repositories.user_repository import UserRepository
+from database import get_db, DB, engine 
 
 # INIT
 app = FastAPI()
-
-SECRET_KEY = "super_secret_key" # Ben faut proteger sa niveau sécurité sinon t'es pas gentil
-ALGORITHM = "HS256"
+SECRET_KEY = os.getenv("SECRET_KEY")
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
-
+ALGORITHM = "HS256"
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="access_token")
 
 conf = ConnectionConfig(
-	MAIL_USERNAME="test@example.com",
-	MAIL_PASSWORD="password",
-	MAIL_PORT=1025,
-	MAIL_SERVER="localhost",
-	MAIL_FROM="test@example.com",
-	MAIL_STARTTLS = True,
-	MAIL_SSL_TLS = False,
-	USE_CREDENTIALS=False,
+    MAIL_USERNAME="test@example.com",
+    MAIL_PASSWORD="password",
+    MAIL_PORT=1025,
+    MAIL_SERVER="localhost",
+    MAIL_FROM="test@example.com",
+    MAIL_STARTTLS=True,
+    MAIL_SSL_TLS=False,
+    USE_CREDENTIALS=False,
 )
 
 app.add_middleware(
-	CORSMiddleware,
-	allow_origins=["http://localhost:5173"],
-	allow_credentials=True,
-	allow_methods=["*"],
-	allow_headers=["*"],
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
-@app.middleware("http")
-async def verif_header(request: Request, call_next):
-	headers = request.scope['headers']
-	element = request.headers.get('sec-fetch-user')
-	if element is not None:
-		return Response(status_code=403) # , content={'reason': "Forbidden"}
-	response = await call_next(request)
-	return response
-
-
-
-
-# INIT DB
+# Init DB
 @app.on_event("startup")
 def on_startup():
-    init_db()
+    DB.metadata.create_all(bind=engine)
 
-#CRUD DB TEST
-# @app.post("/create_user")
-# def create_user(username: str, email: str, password: str, db: Session = Depends(get_db)):
-#     try:
-#         db_user = User(username=username, email=email, password=password)
-#         db.add(db_user)
-#         db.commit()
-#         db.refresh(db_user)
-#         return {"message": "User created", "user_id": db_user.id}
-#     except Exception as e:
-#         db.rollback()
-#         raise HTTPException(status_code=400, detail=str(e))
-
-# @app.get("/get_users")
-# def get_users(db: Session = Depends(get_db)):
-#     users = db.query(User).all()
-#     return {"status": "success", "users": users}
-
-# DB SIMULATION
-class Storage:
-    def __init__(self):
-        self.users = []
-        self.password = []
-
-    def add_user(self, username: str, email: str, password: str):
-
-        user = {"id": len(self.users) + 1, "username": username, "email": email}
-        self.users.append(user)
-
-        self.password.append({"user_id": user["id"], "password": password})
-        return user
-
-    def get_user_password(self, user_id: int):
-        for p in self.password:
-            if p["user_id"] == user_id:
-                return p["password"]
-        return None
-
-    def get_all_users(self):
-        return self.users
-
-storage = Storage()
-
-    
+# Middleware
+@app.middleware("http")
+async def verif_header(request: Request, call_next):
+    headers = request.scope['headers']
+    element = request.headers.get('sec-fetch-user')
+    if element is not None:
+        return Response(status_code=status.HTTP_403_FORBIDDEN)
+    response = await call_next(request)
+    return response
 
 
 
 # CODE
-
 
 # @app.websocket("/ws")
 # async def websocket_endpoint(ws: WebSocket):
@@ -117,148 +72,148 @@ storage = Storage()
 #     except WebSocketDisconnect:
 #         print(f"❌ Client left")
 
-def create_access_token(data: dict, expires_delta: timedelta | None = None):
-	to_encode = data.copy()
-	if expires_delta:
-		expire = datetime.utcnow() + expires_delta
-	else:
-		expire = datetime.utcnow() + timedelta(minutes=15)
-	to_encode.update({"exp": expire})
-	encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-	return encoded_jwt
 
-def verif_access_token(token: str = Depends(oauth2_scheme)):
-	try:
-		payload = jwt.decode(token, SECRET_KEY, algorithms=ALGORITHM)
-		user = storage.get_user_by_id(int(payload["sub"]))
-		if user == None:
-			raise HTTPException(
-				status_code=410,
-				detail="Account not exist"
-			)
-		return user
-	except JWTError:
-		raise HTTPException(
-			status_code=401,
-			detail="Unauthorized"
-		)
+def create_access_token(data: dict, expires_delta: timedelta | None = None):
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(minutes=15)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+def verif_access_token(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> User:
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id = int(payload["sub"])
+        repo = UserRepository(db)
+        user = repo.get_user_by_id(user_id)
+        if user is None:
+            raise HTTPException(
+                status_code=410,
+                detail="Account not exist"
+            )
+        return user
+    except JWTError:
+        raise HTTPException(
+            status_code=401,
+            detail="Unauthorized"
+        )
 
 
 # ROUTER
 
 
 @app.post("/api/register")
-async def register(data: RegisterRequest):
-	"""
-	Return Value : \n
-	True if account was be created or else False
-	"""
-	users_list = storage.get_all_users()
-	for user in users_list:
-		if user["email"] == data.email:
-			return {"returnValue": False}
-	user = storage.add_user(data.username, data.email, data.password, data.firstName, data.lastName)
-	return {"returnValue": True}
+async def register(data: RegisterRequest, db: Session = Depends(get_db)):
+    repo = UserRepository(db)
+    existing_user = repo.get_user_by_email(data.email)
+    if existing_user:
+        return {"returnValue": False}
+    repo.add_user(data.username, data.email, data.password, data.firstName, data.lastName)
+    return {"returnValue": True}
 
 @app.post("/api/login")
-async def login(data: LoginRequest):
-	"""
-	Return Value : \n
-	The access token and token type or raise 401 error
-	"""
-	users_list = storage.get_all_users()
-	for user in users_list:
-		if user["username"] == data.username and storage.get_user_password(user["id"]) == data.password:
-			access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-			access_token = create_access_token(data={"sub": str(user["id"])}, expires_delta=access_token_expires)
-			return {"access_token": access_token, "token_type": "bearer"}
-
-	raise HTTPException(
-		status_code=401,
-		detail="Invalid username or password",
-	)
+async def login(data: LoginRequest, db: Session = Depends(get_db)):
+    repo = UserRepository(db)
+    user = repo.get_user_by_username(data.username)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid username or password"
+        )
+    password_hash = repo.get_user_password(user.id)
+    if not password_hash or not repo.verify_password(data.password, password_hash):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid username or password"
+        )
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(data={"sub": str(user.id)}, expires_delta=access_token_expires)
+    return {"access_token": access_token, "token_type": "bearer"}
 
 @app.get("/api/verify-token/{token}")
-async def verify_user_token(token: str):
-	res = verif_access_token(token)
-	return {"message": "Token is valid"}
+async def verify_user_token(token: str, db: Session = Depends(get_db)):
+    user = verif_access_token(token, db)
+    return {"message": "Token is valid"}
 
 @app.post("/api/modify-profile")
-async def modify_user(data: ModifyFormRequest, current_user=Depends(verif_access_token)):
-	"""
-	Return Value :
-	True if information was correct and changed or else False
-	"""
-	user = storage.modify_user(data.username, current_user["email"], data.firstname, data.lastname, current_user["id"])
-	return {"returnValue": True}
+async def modify_user(
+    data: ModifyFormRequest,
+    current_user: User = Depends(verif_access_token),
+    db: Session = Depends(get_db)
+):
+    repo = UserRepository(db)
+    repo.modify_user(current_user.id, data.username, data.firstname, data.lastname)
+    return {"returnValue": True}
 
 @app.post("/api/reset-password")
-async def reset_password(data: PasswordForm, current_user=Depends(verif_access_token)):
-	"""
-	Return Value :
-	True if information was correct and changed or else False
-	"""
-	if storage.get_user_password(current_user["id"]) == data.old_password:
-		storage.modify_password(data.new_password, current_user["id"])
-		return {"returnValue": True}
-	return {"returnValue": False}
+async def reset_password(
+    data: PasswordForm,
+    current_user: User = Depends(verif_access_token),
+    db: Session = Depends(get_db)
+):
+    repo = UserRepository(db)
+    password_hash = repo.get_user_password(current_user.id)
+    if not password_hash or not repo.verify_password(data.old_password, password_hash):
+        return {"returnValue": False}
+    repo.modify_password(current_user.id, data.new_password)
+    return {"returnValue": True}
 
 @app.post("/api/reset-forgot-password")
-async def reset_forgot_password(data: NewPasswordRequest, current_user=Depends(verif_access_token)):
-	storage.modify_password(data.newpassword, current_user["id"])
-	return {"returnValue": True}
+async def reset_forgot_password(
+    data: NewPasswordRequest,
+    current_user: User = Depends(verif_access_token),
+    db: Session = Depends(get_db)
+):
+    repo = UserRepository(db)
+    repo.modify_password(current_user.id, data.newpassword)
+    return {"returnValue": True}
 
 @app.post("/api/forgot-password")
-async def forgot_password(current_user=Depends(verif_access_token)):
-	username = current_user["username"]
-	print(f"{username} load forgot password form\n")
-	return {"returnValue": True}
+async def forgot_password(current_user: User = Depends(verif_access_token)):
+    print(f"{current_user.username} loaded forgot password form")
+    return {"returnValue": True}
 
 @app.post("/api/send-email")
-async def send_email(data: EmailRequest):
-	access_token = None
-	user_list = storage.get_all_users()
-	for u in user_list:
-		if u["email"] == data.email:
-			access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-			access_token = create_access_token(data={"sub": str(u["id"])}, expires_delta=access_token_expires)
-	if access_token == None:
-		return {"returnValue": False}
-	contenthtml = f"""<p>PAYLOAD: \n\n\nlocalhost:5173/reset/{access_token}\n\n\n:END PAYLOAD</p>"""
-	message = MessageSchema(
-		subject="Reset Password Mail",
-		recipients=[data.email],
-		body=contenthtml,
-		subtype="html"
-	)
-
-	print(message)
-	return {"returnValue": True}
+async def send_email(data: EmailRequest, db: Session = Depends(get_db)):
+    repo = UserRepository(db)
+    user = repo.get_user_by_email(data.email)
+    if not user:
+        return {"returnValue": False}
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(data={"sub": str(user.id)}, expires_delta=access_token_expires)
+    contenthtml = f"""<p>PAYLOAD: \n\n\nlocalhost:5173/reset/{access_token}\n\n\n:END PAYLOAD</p>"""
+    message = MessageSchema(
+        subject="Reset Password Mail",
+        recipients=[data.email],
+        body=contenthtml,
+        subtype="html"
+    )
+    print(message)
+    return {"returnValue": True}
 
 @app.get("/api/me")
-async def read_user_me(current_user=Depends(verif_access_token)):
-	return {"user": current_user}
+async def read_user_me(current_user: User = Depends(verif_access_token)):
+    return {"user": current_user}
 
 @app.get("/api/hello")
 async def get_hello():
-	return {"message": "Hello from FastAPI 👋"}
+    return {"message": "Hello from FastAPI 👋"}
 
-# DEV/DEBUG REQUEST
-
+# Route de debug
 @app.post("/api/auto-log")
-async def auto_log():
-	"""
-	Print all profile value and return Login token
-	"""
-	username = "debug"
-	password = "debug"
-	email = "email@debug.com"
-	firstName = "debug"
-	lastName = "debug"
-	user = storage.add_user(username, email, password, firstName, lastName)
-	print(f"username: {username}\npassword: {password}\nemail: {email}\nfirstname: {firstName}\nlastname: {lastName}")
-	access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-	access_token = create_access_token(data={"sub": str(user["id"])}, expires_delta=access_token_expires)
-	return {"access_token": access_token, "token_type": "bearer"}
+async def auto_log(db: Session = Depends(get_db)):
+    repo = UserRepository(db)
+    username = "debug"
+    password = "debug"
+    email = "email@debug.com"
+    firstName = "debug"
+    lastName = "debug"
+    user = repo.add_user(username, email, password, firstName, lastName)
+    print(f"username: {username}\npassword: {password}\nemail: {email}\nfirstname: {firstName}\nlastname: {lastName}")
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(data={"sub": str(user.id)}, expires_delta=access_token_expires)
+    return {"access_token": access_token, "token_type": "bearer"}
 
-# OFFICIAL PUBLIC REQUEST
