@@ -27,6 +27,7 @@ class ModifyFormRequest(BaseModel):
 	username: str
 	firstname: str
 	lastname: str
+	email: EmailStr
 
 class PasswordForm(BaseModel):
 	"""

@@ -16,6 +16,9 @@ export default function HomePage() {
 	const [username, setUsername] = useState("");
 	const [firstname, setFirstname] = useState("");
 	const [lastname, setLastname] = useState("");
+	const [email, setEmail] = useState("");
+	const [file, setFile] = useState<File | null>(null);
+	const [profilePic, setProfilePic] = useState<string | null>(null);
 	const navigate = useNavigate();
 
 	const testGetUserInfo = async (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -48,7 +51,7 @@ export default function HomePage() {
 					"Content-Type": "application/json",
 					Authorization: `Bearer ${token}`,
 				},
-				body: JSON.stringify({ username, firstname, lastname }),
+				body: JSON.stringify({ username, email, firstname, lastname }),
 			});
 			if (!response.ok) {
 				throw new Error("Not authorized");
@@ -79,6 +82,58 @@ export default function HomePage() {
 		}
 	};
 
+	const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		if (e.target.files)
+			setFile(e.target.files[0]);
+	};
+
+	const handleProfilePic = async (e: React.FormEvent<HTMLFormElement>) => {
+		e.preventDefault();
+		if (!file) return;
+		const formData = new FormData();
+		formData.append("file", file);
+		const token = localStorage.getItem("access_token");
+
+		try {
+			const response = await fetch("/api/upload-picture", {
+				method: "POST",
+				headers: {
+					Authorization: `Bearer ${token}`,
+				},
+				body: formData,
+			});
+			if (!response.ok)
+				throw new Error("Server error");
+			const data: {returnValue: boolean} = await response.json();
+			if (data.returnValue === true)
+				setUserInfo("Profile Picture Uploaded !")
+		} catch (error) {
+			console.error(error);
+		}
+	};
+
+	const getProfilePicture = async (e: React.MouseEvent<HTMLButtonElement>) => {
+		e.preventDefault();
+		const token = localStorage.getItem("access_token");
+
+		try {
+			const response = await fetch("/api/me/profile-pic", {
+				headers: { Authorization: `Bearer ${token}` },
+			});
+			if (!response.ok)
+				throw new Error("Server Error");
+			const blob = await response.blob();
+			if (blob.type === "application/json") {
+				setUserInfo("Have not profile pic");
+				return;
+			}
+			const imageURL = URL.createObjectURL(blob);
+			setProfilePic(imageURL);
+		} catch (error) {
+			console.error(error);
+		}
+	};
+
 	const logout = async (e: React.MouseEvent<HTMLButtonElement>) => {
 		e.preventDefault();
 		try {
@@ -93,9 +148,19 @@ export default function HomePage() {
 		<div>
 			<button onClick={testMessage}>Hello</button>
 
-			<h1>{user_info}</h1>
+			{profilePic && <img src={profilePic} alt="Profile" />}
+			<button onClick={getProfilePicture}>Get IMG</button>
+
+			<h3>{user_info}</h3>
 			{/* <button onClick={testGetUserInfo}>Click me</button> */}
 
+				<div>
+					<form onSubmit={handleProfilePic}>
+						<label htmlFor="profile-pic">Select image :</label>
+						<input type="file" accept="image/*" onChange={handleFileChange} required />
+						<button type="submit">Upload</button>
+					</form>
+				</div>
 				<form onSubmit={testModifyProfile}>
 					<label htmlFor="username">Enter username :</label>
 					<input
@@ -104,6 +169,15 @@ export default function HomePage() {
 						value={username}
 						onChange={(e) => setUsername(e.target.value)}
 						placeholder="Username"
+						required
+					/>
+					<label htmlFor="email">Enter email :</label>
+					<input
+						id="email"
+						type="text"
+						value={email}
+						onChange={(e) => setEmail(e.target.value)}
+						placeholder="Email"
 						required
 					/>
 					<label htmlFor="firstname">Enter firstname :</label>
