@@ -60,6 +60,15 @@
 	height: 20px;
 }
 
+.LangBtn {
+	position: absolute;
+	top: 145px;
+	right: 125px;
+
+	width: 50px;
+	height: 20px;
+}
+
 .LogoutBtn {
 	position: absolute;
 	top: 145px;
