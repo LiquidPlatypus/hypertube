@@ -15,7 +15,7 @@ type ButtonProps = {
 };
 
 export default function Button({
-	text = "Button",
+	text,
 	size = "medium",
 	shape = "rounded",
 	icon,
