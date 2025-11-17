@@ -33,6 +33,14 @@
 	background-color: black;
 }
 
+.TVRemote button img {
+	width: 12px;
+	height: 12px;
+	object-fit: contain;
+	display: block;
+	margin: 0 auto;
+}
+
 .HomeBtn {
 	position: absolute;
 	top: 115px;
