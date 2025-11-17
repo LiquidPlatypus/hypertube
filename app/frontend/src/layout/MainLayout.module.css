@@ -15,7 +15,7 @@
 	height: 100%;
 	object-fit: cover;
 	z-index: 0;
-	opacity: 0.4;
+	opacity: 0.2;
 	filter: brightness(0.9) saturate(1.1);
 }
 
