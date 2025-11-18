@@ -56,7 +56,7 @@ export default function TVRemote() {
 				text=""
 				size="small"
 				shape="square"
-				icon="assets/ProfileW.svg"
+				icon="assets/Profil.png"
 				className={styles.ProfileBtn}
 				variant="remote"
 				onClick={goToProfile}
@@ -78,10 +78,6 @@ export default function TVRemote() {
 				variant="remote"
 				onClick={handleLogout}
 			/>
-
-			<div className={styles.SearchContainer}>
-				<SearchBar />
-			</div>
 		</div>
 	);
 }

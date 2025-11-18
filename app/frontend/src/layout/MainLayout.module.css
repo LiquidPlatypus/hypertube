@@ -53,12 +53,12 @@
 	right: 20px;
 	z-index: 50;
 	transition: transform 0.3s ease, opacity 0.3s ease;
-	transform: translateY(80px);
+	transform: translateY(230px);
 
 	filter: drop-shadow(0px 1px 4px black);
 }
 
 .TVRemoteContainer:hover {
-	transform: translateY(0);
+	transform: translateY(140px);
 	opacity: 1;
 }
