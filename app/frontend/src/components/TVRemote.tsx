@@ -1,7 +1,6 @@
 import {useNavigate} from "react-router-dom";
 
 import Button from "./ui/Button.tsx";
-import SearchBar from "./ui/SearchBar.tsx";
 
 import styles from "./TVRemote.module.css";
 
