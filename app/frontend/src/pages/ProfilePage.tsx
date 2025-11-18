@@ -28,7 +28,6 @@ export default function ProfilInfo() {
 
 	return (
 		<div className={styles.InfosTab}>
-			<img src="assets/whitenoise.gif" alt="Profile" />
 			<h2 className={styles.Identity}>{user.firstname} {user.lastname}</h2>
 			<p>Username: {user.username}</p>
 			<p>Email: {user.email}</p>
