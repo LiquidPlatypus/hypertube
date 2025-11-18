@@ -6,14 +6,6 @@ var defaultParseOptions = {
   silent: false,
 };
 
-function isForbiddenKey(key) {
-  return typeof key !== "string" || key in {};
-}
-
-function createNullObj() {
-  return Object.create(null);
-}
-
 function isNonEmptyString(str) {
   return typeof str === "string" && !!str.trim();
 }
@@ -30,35 +22,30 @@ function parseString(setCookieValue, options) {
     ? Object.assign({}, defaultParseOptions, options)
     : defaultParseOptions;
 
-  if (isForbiddenKey(name)) {
-    return null;
-  }
-
   try {
     value = options.decodeValues ? decodeURIComponent(value) : value; // decode cookie value
   } catch (e) {
     console.error(
-      "set-cookie-parser: failed to decode cookie value. Set options.decodeValues=false to disable decoding.",
+      "set-cookie-parser encountered an error while decoding a cookie with value '" +
+        value +
+        "'. Set options.decodeValues to false to disable this feature.",
       e
     );
   }
 
-  var cookie = createNullObj();
-  cookie.name = name;
-  cookie.value = value;
+  var cookie = {
+    name: name,
+    value: value,
+  };
 
   parts.forEach(function (part) {
     var sides = part.split("=");
     var key = sides.shift().trimLeft().toLowerCase();
-    if (isForbiddenKey(key)) {
-      return;
-    }
     var value = sides.join("=");
     if (key === "expires") {
       cookie.expires = new Date(value);
     } else if (key === "max-age") {
-      var n = parseInt(value, 10);
-      if (!Number.isNaN(n)) cookie.maxAge = n;
+      cookie.maxAge = parseInt(value, 10);
     } else if (key === "secure") {
       cookie.secure = true;
     } else if (key === "httponly") {
@@ -67,7 +54,7 @@ function parseString(setCookieValue, options) {
       cookie.sameSite = value;
     } else if (key === "partitioned") {
       cookie.partitioned = true;
-    } else if (key) {
+    } else {
       cookie[key] = value;
     }
   });
@@ -100,7 +87,7 @@ function parse(input, options) {
     if (!options.map) {
       return [];
     } else {
-      return createNullObj();
+      return {};
     }
   }
 
@@ -110,7 +97,7 @@ function parse(input, options) {
       // but getSetCookie returns an uncombined array
       input = input.headers.getSetCookie();
     } else if (input.headers["set-cookie"]) {
-      // fast-path for node.js (which automatically normalizes header names to lower-case)
+      // fast-path for node.js (which automatically normalizes header names to lower-case
       input = input.headers["set-cookie"];
     } else {
       // slow-path for other environments - see #25
@@ -134,19 +121,14 @@ function parse(input, options) {
   }
 
   if (!options.map) {
-    return input
-      .filter(isNonEmptyString)
-      .map(function (str) {
-        return parseString(str, options);
-      })
-      .filter(Boolean);
+    return input.filter(isNonEmptyString).map(function (str) {
+      return parseString(str, options);
+    });
   } else {
-    var cookies = createNullObj();
+    var cookies = {};
     return input.filter(isNonEmptyString).reduce(function (cookies, str) {
       var cookie = parseString(str, options);
-      if (cookie && !isForbiddenKey(cookie.name)) {
-        cookies[cookie.name] = cookie;
-      }
+      cookies[cookie.name] = cookie;
       return cookies;
     }, cookies);
   }

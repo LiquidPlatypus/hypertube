@@ -1,0 +1,41 @@
+/* Wrapper TV responsive */
+.TVWrapper {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 90%;
+	height: 90%;
+	overflow: hidden;
+	transition: transform 1.5s ease, opacity 1.5s ease;
+	z-index: 0;
+}
+
+/* Zoom animation */
+.zoomOut {
+	transform: scale(3);
+	opacity: 0;
+}
+
+/* TV image responsive */
+.TVWrapper img {
+	width: 90%;
+	height: 90%;
+	max-width: 100%;
+	object-fit: contain;
+}
+
+/* Media queries pour petits écrans */
+@media (max-width: 1200px) {
+	.TVWrapper {
+		width: 90%;
+		height: auto;
+	}
+}
+
+@media (max-width: 768px) {
+	.TVWrapper {
+		width: 90%;
+		height: auto;
+	}
+}

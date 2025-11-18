@@ -1,0 +1,79 @@
+.Thumbnail {
+    position: relative;
+    aspect-ratio: 2 / 3; /* Portrait style Netflix */
+    width: 100%; /* Prend toute la largeur disponible dans la grille */
+    max-width: 300px; /* Limite la largeur maximale */
+    border-radius: 1rem;
+    box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.6);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    cursor: pointer;
+    background: #000;
+    overflow: hidden;
+}
+
+.Thumbnail:hover {
+    transform: scale(1.08);
+    box-shadow:
+        inset 0 3px 6px rgba(255, 255, 255, 0.8),
+        0 10px 20px rgba(0, 0, 0, 0.25);
+}
+
+.CoverWrapper {
+    width: 100%;
+    height: 70%; /* prend 70% de la hauteur de la vignette */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: inherit;
+    overflow: hidden;
+}
+
+.Image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: inherit;
+    filter: brightness(0.95) contrast(1.05);
+    transition: filter 0.25s ease;
+}
+
+.Thumbnail:hover .Image {
+    filter: brightness(1.05) contrast(1.1);
+}
+
+.Infos {
+    padding: 0.6rem 1rem 1rem;
+    text-align: left;
+    color: #e9e9e9;
+    width: 100%;
+}
+
+.Title {
+    font-family: CommodoreRounded, serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0.4rem 0 0.2rem 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.Meta {
+    font-family: CommodoreRounded, serif;
+    display: flex;
+    justify-content: flex-start;
+    gap: 1rem;
+    font-size: 0.9rem;
+    color: #cfcfcf;
+}
+
+.Year,
+.Rating {
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
+}

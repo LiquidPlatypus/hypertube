@@ -1,0 +1,87 @@
+.TVRemote {
+	width: 300px;
+	height: 450px;
+
+	background-image: url("/assets/TVRemoteBlank.png");
+	background-repeat: no-repeat;
+	background-size: cover;
+}
+
+.TVRemote button {
+	padding: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 0.75rem;
+
+	background-color: #312f2f;
+	color: white;
+
+	border-right: 3px solid #4b4949;
+	border-bottom: 4px solid #000000;
+	border-left: 0;
+	border-top: 0;
+
+	border-radius: 3px;
+}
+
+.TVRemote button:hover {
+	transform: scale(1);
+}
+
+.TVRemote button:active {
+	background-color: black;
+}
+
+.TVRemote button img {
+	width: 12px;
+	height: 12px;
+	object-fit: contain;
+	display: block;
+	margin: 0 auto;
+}
+
+.HomeBtn {
+	position: absolute;
+	top: 115px;
+	right: 189px;
+
+	width: 50px;
+	height: 20px;
+}
+
+.SearchBtn {
+	position: absolute;
+	top: 115px;
+	right: 125px;
+
+	width: 50px;
+	height: 20px;
+}
+
+.ProfileBtn {
+	position: absolute;
+	top: 115px;
+	right: 60px;
+
+	width: 50px;
+	height: 20px;
+}
+
+.LangBtn {
+	position: absolute;
+	top: 145px;
+	right: 125px;
+
+	width: 50px;
+	height: 20px;
+}
+
+.LogoutBtn {
+	position: absolute;
+	top: 145px;
+	right: 60px;
+
+	width: 50px;
+	height: 20px;
+}

@@ -102,7 +102,7 @@ async def login(data: LoginRequest):
 		status_code=401,
 		detail="Invalid username or password",
 	)
-	
+
 def create_access_token(data: dict, expires_delta: timedelta | None = None):
 	to_encode = data.copy()
 	if expires_delta:

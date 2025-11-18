@@ -1,17 +1,24 @@
-.button {
-	color: white;
-	border: none;
-	cursor: pointer;
+/* .button {
+	font-weight: bold;
+	transition: all 0.2s ease;
 }
 
 .button:hover {
-	background-color: #1d4ed8;
+	transform: scale(1.05);
 }
 
-/* tailles */
+.button:active {
+	transform: scale(0.95);
+}
+
+.button:focus {
+	outline: none;
+}
+
+
 .small {
-	padding: 0.25rem 0.5rem;
-	font-size: 0.8rem;
+	padding: 0.25rem 0.75rem;
+	font-size: 0.875rem;
 }
 
 .medium {
@@ -21,12 +28,12 @@
 
 .large {
 	padding: 0.75rem 1.5rem;
-	font-size: 1.2rem;
+	font-size: 1.125rem;
 }
 
-/* formes */
+
 .rounded {
-	border-radius: 8px;
+	border-radius: 0.375rem;
 }
 
 .square {
@@ -37,35 +44,117 @@
 	border-radius: 9999px;
 }
 
+
+.colored {
+	background-color: #facc15;
+	color: black;
+}
+
+.colored:hover {
+	background-color: #eab308;
+}
+
+
 .icon {
-	width: 20px;
-	height: 20px;
+	display: inline-block;
+	width: 1.25rem;
+	height: 1.25rem;
+	margin-right: 0.5rem;
+	vertical-align: middle;
 }
 
-.imageOnly {
-	padding: 0;
-	background: none;
-	border: none;
-	cursor: pointer;
-}
+.iconOnly {
+	width: 100%;
+	height: 100%;
+} */
 
-.imageOnly.small img {
-	width: 32px;
-	height: 32px;
-}
-
-.imageOnly.medium img {
-	width: 48px;
-	height: 48px;
-}
-
-.imageOnly.large img {
-	width: 64px;
-	height: 64px;
-}
-
-.imageOnly:hover img {
-	opacity: 0.9;
-	transform: scale(1.05);
+.button {
+	font-weight: bold;
 	transition: all 0.2s ease;
+}
+
+.button:hover {
+	transform: scale(1.05);
+}
+
+.button:active {
+	transform: scale(0.95);
+}
+
+.button:focus {
+	outline: none;
+}
+
+/* ----- Taille ----- */
+.small {
+	padding: 0.25rem 0.75rem;
+	font-size: 0.875rem;
+}
+
+.medium {
+	padding: 0.5rem 1rem;
+	font-size: 1rem;
+}
+
+.large {
+	padding: 0.75rem 1.5rem;
+	font-size: 1.125rem;
+}
+
+/* ----- Forme ----- */
+.rounded {
+	border-radius: 0.375rem;
+}
+
+.square {
+	border-radius: 0;
+}
+
+.pill {
+	border-radius: 9999px;
+}
+
+/* ----- Couleur (si pas imageOnly) ----- */
+.colored {
+	background-color: #facc15;
+	color: black;
+}
+
+.colored:hover {
+	background-color: #eab308;
+}
+
+/* ----- Icône ----- */
+.icon {
+	display: inline-block;
+	width: 1.25rem;
+	height: 1.25rem;
+	margin-right: 0.5rem;
+	vertical-align: middle;
+}
+
+.iconOnly {
+	width: 100%;
+	height: 100%;
+}
+
+/* ----- Remote Variant ----- */
+.remote {
+	background-color: #312f2f;
+	color: white;
+	border-right: 3px solid #4b4949;
+	border-bottom: 4px solid #000000;
+}
+
+.remote:hover {
+	background-color: #312f2f;
+	transform: none;
+}
+
+.remote:active {
+	background-color: black;
+	border-right: 0;
+	border-bottom: 0;
+	border-left: 3px solid #2a2929;
+	border-top: 4px solid #4b4949;
 }

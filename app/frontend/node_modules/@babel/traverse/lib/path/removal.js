@@ -13,9 +13,12 @@ var _removalHooks = require("./lib/removal-hooks.js");
 var _cache = require("../cache.js");
 var _replacement = require("./replacement.js");
 var _index = require("./index.js");
-var t = require("@babel/types");
+var _t = require("@babel/types");
 var _modification = require("./modification.js");
 var _context = require("./context.js");
+const {
+  getBindingIdentifiers
+} = _t;
 function remove() {
   var _this$opts;
   _assertUnremoved.call(this);
@@ -32,7 +35,7 @@ function remove() {
   _markRemoved.call(this);
 }
 function _removeFromScope() {
-  const bindings = t.getBindingIdentifiers(this.node, false, false, true);
+  const bindings = getBindingIdentifiers(this.node, false, false, true);
   Object.keys(bindings).forEach(name => this.scope.removeBinding(name));
 }
 function _callRemovalHooks() {

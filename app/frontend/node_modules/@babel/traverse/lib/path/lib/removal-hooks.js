@@ -28,7 +28,6 @@ const hooks = exports.hooks = [function (self, parent) {
   if (parent.isIfStatement() && self.key === "consequent" || self.key === "body" && (parent.isLoop() || parent.isArrowFunctionExpression())) {
     self.replaceWith({
       type: "BlockStatement",
-      directives: [],
       body: []
     });
     return true;

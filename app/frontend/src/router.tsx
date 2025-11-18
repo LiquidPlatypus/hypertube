@@ -1,45 +1,73 @@
+// import { createBrowserRouter } from "react-router-dom";
+// import App from "./App";
+// import ProtectedRoute from "./utils/ProtectedRoute.tsx";
+// import HomePage from "./pages/HomePage.tsx";
+// import LoginPage from "./pages/LoginPage.tsx";
+
+
+// export const router = createBrowserRouter([
+// 	{
+// 		path: "/",
+// 		element: <App />, // layout général
+// 		children: [
+// 			// Routes protégées
+// 			{
+// 				element: <ProtectedRoute />,
+// 				children: [
+// 					{
+// 						path: "/",
+// 						element: (
+// 							<HomePage />
+// 						),
+// 					},
+// 				],
+// 			},
+// 			// Auth routes
+// 			{
+// 				path: "auth/login",
+// 				element: <LoginPage />,
+// 			},
+// 			{
+// 				path: "auth/register",
+// 				element: <LoginPage />,
+// 			},
+// 		],
+// 	},
+// ]);
+
 import { createBrowserRouter } from "react-router-dom";
 import App from "./App";
-import RetroTvLoginWrapper from "./components/RetroTv";
-import ProtectedRoute from "./components/ProtectedRoute";
-import HomePage from "./components/HomePage";
-
-
-const tvProps = {
-  videoSrc: "/screen2.mp4",
-  tvImageSrc: "/TV.png",
-  tvWidth: 6144,
-  tvHeight: 6144,
-  screenX: 1200,
-  screenY: 1750,
-  screenWidth: 2832,
-  screenHeight: 2593,
-};
+import ProtectedRoute from "./utils/ProtectedRoute.tsx";
+import HomePage from "./pages/HomePage.tsx";
+import LoginPage from "./pages/LoginPage.tsx";
+import ProfilInfo from "./pages/ProfilePage.tsx"; // <-- importe la page profil
 
 export const router = createBrowserRouter([
   {
     path: "/",
-    element: <App />, // layout général
+    element: <App />, 
     children: [
-      // Routes protégées
       {
         element: <ProtectedRoute />,
         children: [
           {
             path: "/",
-            element: (<HomePage />),
+            element: <HomePage />,
           },
-         
+          {
+            path: "/profile",
+            element: <ProfilInfo />,  // <-- route profil ajoutée
+          },
         ],
       },
       // Auth routes
       {
         path: "auth/login",
-        element: <RetroTvLoginWrapper {...tvProps} />,
+        element: <LoginPage />,
       },
       {
         path: "auth/register",
-        element: <RetroTvLoginWrapper {...tvProps} />,
+        element: <LoginPage />,
       },
     ],
   },

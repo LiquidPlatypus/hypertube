@@ -116,7 +116,7 @@ function getParentConditionalPath(binding, path, name) {
       return parentPath;
     }
     if (parentPath.isFunction()) {
-      if (name == null || parentPath.parentPath.scope.getBinding(name) !== binding) return;
+      if (parentPath.parentPath.scope.getBinding(name) !== binding) return;
     }
     path = parentPath;
   }

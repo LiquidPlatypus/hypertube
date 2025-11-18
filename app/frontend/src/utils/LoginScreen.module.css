@@ -1,0 +1,180 @@
+/* Container principal */
+.LoginScreen {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding: 2rem;
+	color: white;
+	border-radius: 1rem;
+	width: 80%;
+	max-width: 700px;
+	min-height: 500px;
+	background: radial-gradient(circle at center, #111 0%, #000 100%);
+	box-shadow:
+		0 0 30px rgba(255, 220, 100, 0.5),
+		0 0 60px rgba(255, 170, 0, 0.3),
+		inset 0 0 25px rgba(255, 255, 150, 0.15);
+	border: 2px solid rgba(255, 215, 0, 0.4);
+	overflow: hidden;
+	box-sizing: border-box;
+}
+
+/* Titre */
+.LoginTitle {
+	font-size: 2.6rem;
+	text-shadow: 0 0 8px #ffe600, 0 0 20px #ff8800;
+	margin-bottom: 1rem;
+	text-align: center;
+}
+
+/* Paragraphe sous le login */
+p {
+	font-size: 1.8rem;
+	text-shadow: 0 0 6px #ffe600, 0 0 15px #ff8800;
+	margin-bottom: 0.3rem;
+	text-align: center;
+	white-space: nowrap;
+}
+
+/* Messages */
+.Message {
+	margin-bottom: 1rem;
+	text-align: center;
+	font-size: 1.7rem;
+	white-space: nowrap;
+}
+.MessageSuccess { color: #4ade80; }
+.MessageError { color: #f87171; }
+
+/* Inputs */
+.Inputs {
+	border-radius: 0.25rem;
+	border: 2px solid #eab308;
+	background-color: black;
+	padding: 0.6rem;
+	color: white;
+	outline: none;
+	transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+	width: 100%;
+	box-sizing: border-box;
+	font-size: 1.5rem;
+}
+
+.Inputs:focus {
+	border-color: #fd8578;
+	box-shadow: 0 0 8px rgba(250, 128, 114, 0.6);
+}
+
+/* Formulaires */
+.LoginForm{
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 1rem;
+	width: 60%;    
+	max-width: 180px;
+	box-sizing: border-box;
+}
+
+.RegisterForm {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 1rem;
+	width: 100%;
+	max-width: 600px;
+	box-sizing: border-box;
+}
+
+/* Containers de boutons */
+.LoginRegisterBtn,
+.OAuthButtons {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 1rem;
+	width: 60%;
+	max-width: 180px;
+	margin-top: 2rem;
+	box-sizing: border-box;
+}
+
+/* Boutons */
+.LoginForm button,
+.RegisterForm button,
+.OAuthButtons button,
+.LoginRegisterBtn button {
+	width: 110%;
+	max-width: 400px;
+	padding: 1rem;
+	border-radius: 9999px;
+	border: 2px solid rgb(234,179,8);
+	background: linear-gradient(180deg, #000000 0%, #1a1a1a 100%);
+	color: #ffe600;
+	text-shadow: 0 0 4px #ffe600, 0 0 10px #ff8800;
+	box-shadow: 0 0 15px rgba(255, 230, 0, 0.5);
+	font-weight: bold;
+	letter-spacing: 1px;
+	cursor: pointer;
+	transition: all 0.2s ease-in-out;
+	text-align: center;
+	font-size: 1.5rem;
+	white-space: nowrap;
+}
+
+.LoginForm button:hover,
+.RegisterForm button:hover,
+.OAuthButtons button:hover,
+.LoginRegisterBtn button:hover {
+	background: linear-gradient(180deg, #1a1a1a 0%, #333333 100%);
+	color: #ffffff;
+	box-shadow: 0 0 20px rgba(255, 200, 0, 0.7);
+	transform: scale(1.05);
+}
+
+/* Responsive : tablettes */
+@media (max-width: 1024px) {
+	.LoginScreen {
+		width: 90%;
+		padding: 2rem;
+		min-height: 450px;
+	}
+	.LoginForm,
+	.RegisterForm,
+	.LoginRegisterBtn,
+	.OAuthButtons {
+		width: 90%;
+	}
+	.LoginForm button,
+	.RegisterForm button,
+	.OAuthButtons button,
+	.LoginRegisterBtn button {
+		font-size: 1.15rem;
+		padding: 0.9rem;
+	}
+}
+
+/* Responsive : mobile */
+@media (max-width: 768px) {
+	.LoginScreen {
+		width: 95%;
+		padding: 1.5rem;
+		min-height: auto;
+	}
+	.LoginForm,
+	.RegisterForm,
+	.LoginRegisterBtn,
+	.OAuthButtons {
+		width: 95%;
+	}
+	.LoginForm button,
+	.RegisterForm button,
+	.OAuthButtons button,
+	.LoginRegisterBtn button {
+		font-size: 1rem;
+		padding: 0.8rem;
+	}
+}
+

@@ -1,0 +1,131 @@
+.MainLayout {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.BackgroundWrapper {
+  position: fixed;
+  top: var(--header-height, 70px);
+  bottom: var(--footer-height, 40px);
+  left: 0;
+  right: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.Background {
+  position: absolute;
+  inset: 0;
+  background-image: url('/assets/screen4.png');
+  background-size: cover;
+  background-position: center;
+  /* filter: brightness(0.8) saturate(1.1); */
+  /* filter: brightness(1.15) contrast(1.2) saturate(1.2); */
+  image-rendering: auto;
+}
+
+.Background::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.096); /* légère lumière */
+  pointer-events: none;
+}
+
+
+.CRT,
+.Scanline {
+  position: absolute;
+  top: var(--header-height, 70px);
+  bottom: var(--footer-height, 40px);
+  left: 0;
+  right: 0;
+  pointer-events: none;
+}
+
+.CRT {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(to bottom, rgba(255, 255, 255, 0.062) 0px, rgba(255, 255, 255, 0.055) 1px, rgba(0, 0, 0, 0.062) 3px);
+}
+
+.Scanline {
+  height: 4vh;
+  background: rgba(19, 18, 18, 0.24);
+  animation: Scan 6s linear infinite;
+}
+
+/* Header et footer */
+.MainHeader,
+.MainFooter {
+  position: fixed;
+  left: 0;
+  width: 100%;
+  z-index: 15;
+}
+
+.MainHeader {
+  top: 0;
+  height: var(--header-height);
+}
+
+.MainFooter {
+  bottom: 0;
+  height: var(--footer-height);
+}
+
+/* Contenu scrollable */
+.ScrollArea {
+  position: absolute;
+  z-index: 0;
+  width: 100%;
+  /* padding-top: var(--header-height);
+  padding-bottom: var(--footer-height); */
+  top: 110px;
+  bottom: 120px;
+  overflow-y: auto;
+  max-height: 90%;
+  display: flex;
+  justify-content: center;
+}
+
+
+@keyframes Scan {
+  0% { top: var(--header-height, 70px); }
+  100% { top: calc(100% - var(--footer-height, 40px)); }
+}
+.Scanline::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(255,255,255,0.4);
+  opacity: 0;
+  pointer-events: none;
+  animation: electricShock 3s infinite;
+}
+
+@keyframes electricShock {
+  0%, 80%, 100% { opacity: 0; transform: translateY(0); }
+  81% { opacity: 1; transform: translateY(-1px) scaleX(1.02); }
+  82% { opacity: 0; transform: translateY(2px) scaleX(1); }
+  85% { opacity: 0.6; transform: translateY(-2px) scaleX(1.01); }
+  87% { opacity: 0; transform: translateY(0); }
+}
+
+.TVRemoteContainer {
+	position: fixed;
+	bottom: -270px;
+	right: 20px;
+	z-index: 50;
+	transition: transform 0.3s ease, opacity 0.3s ease;
+	transform: translateY(80px);
+
+	filter: drop-shadow(0px 1px 4px black);
+}
+
+.TVRemoteContainer:hover {
+	transform: translateY(0);
+	opacity: 1;
+}

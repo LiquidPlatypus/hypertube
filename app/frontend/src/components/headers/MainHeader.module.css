@@ -1,0 +1,81 @@
+.Header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0 2rem;
+	height: 100%;
+	background-color: rgba(0, 0, 0, 0.959);
+	color: white;
+	position: relative;
+	z-index: 0;
+}
+
+.Left {
+	flex: 1;
+}
+
+.Title {
+	font-size: 1.8rem;
+	margin: 0;
+	font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+	color: rgb(253,230,138);
+}
+
+.Center {
+	flex: 2;
+	display: flex;
+	justify-content: center;
+}
+
+.SearchInput {
+	width: 60%;
+	padding: 0.5rem 1rem;
+	border-radius: 20px;
+	border: none;
+	outline: none;
+	font-size: 1rem;
+}
+
+.Right {
+	flex: 1;
+	display: flex;
+	justify-content: flex-end;
+	position: relative;
+}
+
+.Avatar {
+	width: 50px;
+	height: 50px;
+	border-radius: 50%;
+	cursor: pointer;
+	 z-index: 51; 
+}
+
+.DropdownMenu {
+	position: absolute;
+	top: 50px; /* sous l’avatar */
+	right: 0;
+	background-color: #222;
+	color: rgb(253,230,138);
+	border-radius: 8px;
+	box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+	overflow: hidden;
+	z-index: 21;
+	font-size: 1.2rem;
+	font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+.DropdownMenu ul {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+
+.DropdownMenu li {
+	padding: 0.8rem 1.2rem;
+	cursor: pointer;
+}
+
+.DropdownMenu li:hover {
+	background-color: #444;
+}
