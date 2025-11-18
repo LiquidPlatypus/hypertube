@@ -9,6 +9,9 @@ from .model import RegisterRequest, LoginRequest, ModifyFormRequest, PasswordFor
 from fastapi_mail import FastMail, MessageSchema, ConnectionConfig
 from .database import Storage
 from fastapi import UploadFile, File
+from google.oauth2 import id_token
+from google.auth.transport import requests
+import jwt
 
 # INIT
 
@@ -17,6 +20,8 @@ app = FastAPI()
 SECRET_KEY = "super_secret_key" # Ben faut proteger sa niveau sécurité sinon t'es pas gentil
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
+
+GOOGLE_CLIENT_ID = "504765868462-ssreveurjgq1i8tuoinem6fcp0g8kv90.apps.googleusercontent.com"
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="access_token")
 
@@ -129,6 +134,34 @@ async def login(data: LoginRequest):
 		detail="Invalid username or password",
 	)
 
+@app.post("/api/google-auth")
+async def google_login(token: str):
+	try:
+		idinfo = id_token.verify_oauth2_token(token, requests.Request(), GOOGLE_CLIENT_ID)
+		google_id = idinfo["sub"]
+		username = idinfo["name"]
+		lastname = idinfo["family_name"]
+		firstname = idinfo["given_name"]
+		email = idinfo["email"]
+		users = storage.get_all_users()
+
+		print(idinfo["picture"])
+
+		for user in users:
+			if user["email"] == email:
+				access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+				access_token = create_access_token(data={"sub": str(user["id"])}, expires_delta=access_token_expires)
+				return {"access_token": access_token, "token_type": "bearer"}
+		user = storage.add_user(username, email, google_id, firstname, lastname)
+		access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+		access_token = create_access_token(data={"sub": str(user["id"])}, expires_delta=access_token_expires)
+		return {"access_token": access_token, "token_type": "bearer"}
+	except Exception:
+		raise HTTPException(
+			status_code=400,
+			detail="Invalid Google Token"
+		)
+
 @app.get("/api/verify-token/{token}")
 async def verify_user_token(token: str):
 	res = verif_access_token(token)
@@ -238,3 +271,4 @@ async def auto_log():
 	return {"access_token": access_token, "token_type": "bearer"}
 
 # OFFICIAL PUBLIC REQUEST
+
