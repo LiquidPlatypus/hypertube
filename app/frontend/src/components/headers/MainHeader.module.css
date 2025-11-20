@@ -1,25 +1,72 @@
-.Header {
+/* .Header {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
 	padding: 0 2rem;
 	height: 100%;
-	background-color: rgba(0, 0, 0, 0.87);
+	background-color: black;
+	 background: repeating-linear-gradient(
+    to bottom,
+    rgba(255,255,255,0.1),
+    rgba(255,255,255,0.1) 1px,
+    rgba(0,0,0,0.1) 1px,
+    rgba(0,0,0,0.1) 3px
+  );
 	color: white;
 	position: relative;
 	z-index: 0;
+	opacity: 1.5;
+} */
+.Header {
+  position: relative;
+  width: 100%;
+  height: 20px; /* ajustable */
+  background-color: rgba(0, 0, 0, 0.880);
+  overflow: hidden;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: bold;
+
+  /* scanlines CRT */
+  background-image: 
+    repeating-linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0.05) 0px,
+      rgba(255, 255, 255, 0.05) 1px,
+      rgba(0,0,0,0.3) 4px
+    );
+  mix-blend-mode: overlay;
 }
 
-.Left {
-	flex: 1;
+
+.Header::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, rgba(0,0,0,0) 50%, rgba(0,0,0,0.3) 100%);
+  pointer-events: none;
+  z-index: 0;
+
+  transform: scaleY(1.2) perspective(500px);
+  transform-origin: center top;
 }
 
 .Title {
-	font-size: 1.8rem;
+	font-size: 1.5rem;
 	margin: 0;
 	font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 	color: rgb(253,230,138);
+	text-shadow: 0 0 6px #ffe600, 0 0 15px #ff8800;
 }
+
+/* .Left {
+	flex: 1;
+}
+
+
 
 .Center {
 	flex: 2;
@@ -53,7 +100,7 @@
 
 .DropdownMenu {
 	position: absolute;
-	top: 50px; /* sous l’avatar */
+	top: 50px;
 	right: 0;
 	background-color: #222;
 	color: rgb(253,230,138);
@@ -78,4 +125,4 @@
 
 .DropdownMenu li:hover {
 	background-color: #444;
-}
+} */

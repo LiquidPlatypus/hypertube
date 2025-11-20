@@ -1,14 +1,40 @@
 .Footer {
 	position: relative;
-	display: flex;
 	width: 100%;
+	height: 20px; /* ajustable */
+	background-color: rgba(0, 0, 0, 0.880);
+	overflow: hidden;
+	color: white;
+	display: flex;
 	align-items: center;
-	justify-content: flex-end;
-	background-color: rgba(0, 0, 0, 0.87);
-	padding: 2rem;
-	font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-	color: rgb(253,230,138);
+	justify-content: center;
+	font-size: 2rem;
+	font-weight: bold;
+
+	/* scanlines CRT */
+	background-image: 
+		repeating-linear-gradient(
+		to bottom,
+		rgba(255, 255, 255, 0.05) 0px,
+		rgba(255, 255, 255, 0.05) 1px,
+		rgba(0,0,0,0.3) 4px
+		);
+	mix-blend-mode: overlay;
+
 }
+
+.Footer::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, rgba(0,0,0,0) 50%, rgba(0,0,0,0.3) 100%);
+  pointer-events: none;
+  z-index: 0;
+
+  transform: scaleY(1.2) perspective(500px);
+  transform-origin: center top;
+}
+
 
 .Wrapper {
 	display: flex;
@@ -17,4 +43,12 @@
 	width: 100%;
 	height: 100%;
 	text-align: center
+}
+
+.Title {
+	font-size: 1.5rem;
+	margin: 0;
+	font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+	color: rgb(253,230,138);
+	text-shadow: 0 0 6px #ffe600, 0 0 15px #ff8800;
 }

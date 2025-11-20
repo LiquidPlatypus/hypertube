@@ -4,12 +4,12 @@
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	justify-content: center;
+	/* justify-content: center; */
 	padding: 2rem;
 	color: white;
 	border-radius: 1rem;
-	width: 90%;
-	height: 95%;
+	width: 80%;
+	height: 87%;
 	max-width: 100%;
 	background: radial-gradient(circle at center, #111 0%, #000 100%);
 	box-shadow:
@@ -24,21 +24,23 @@
 .LoginTitle {
 	font-size: 2.6rem;
 	text-shadow: 0 0 8px #ffe600, 0 0 20px #ff8800;
-	margin-bottom: 1rem;
+	margin-bottom: 1.5rem;
+	margin-top: 0.5rem;
 	text-align: center;
 }
 
 p {
 	font-size: 1.8rem;
 	text-shadow: 0 0 6px #ffe600, 0 0 15px #ff8800;
-	margin-bottom: 0.3rem;
+	margin-bottom: 0.5rem;
 	text-align: center;
 	white-space: nowrap;
 }
 
 /* Messages */
 .Message {
-	margin-bottom: 1rem;
+	margin-top: 0.5rem;
+	margin-bottom: 0.5rem;
 	text-align: center;
 	font-size: 1.7rem;
 	white-space: nowrap;
@@ -57,7 +59,7 @@ p {
 	transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
 	width: 100%;
 	box-sizing: border-box;
-	font-size: 1.5rem;
+	font-size: 1.3rem;
 }
 
 .Inputs:focus {
@@ -104,7 +106,7 @@ p {
 .RegisterForm button,
 .OAuthButtons button,
 .LoginRegisterBtn button {
-	width: 110%;
+	width: 100%;
 	max-width: 400px;
 	padding: 1rem;
 	border-radius: 9999px;

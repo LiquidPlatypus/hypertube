@@ -143,13 +143,13 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 
 					<div className={styles.OAuthButtons}>
 						<Button
-							text="Login with Google"
+							text="Google"
 							size="large"
 							shape="pill"
 							onClick={handleGoogleLogin}
 						/>
 						<Button
-							text="Login with Intra 42"
+							text="Intra 42"
 							size="large"
 							shape="pill"
 							onClick={handleIntra42Login}

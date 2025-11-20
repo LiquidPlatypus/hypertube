@@ -15,13 +15,15 @@
   z-index: 1;
 }
 
+
 .Background {
   position: absolute;
   inset: 0;
   background-image: url('/assets/screen7.png');
-  background-size: cover;
+  background-size: 100% 100%;
   background-position: center;
   image-rendering: auto;
+  background-repeat: no-repeat;
 }
 
 .Background::after {
@@ -59,15 +61,24 @@
 .MainHeader,
 .MainFooter {
   position: fixed;
-  left: 0;
   width: 100%;
-  z-index: 15;
+  z-index: 0;
 }
+
+/* .MainHeader {
+  top: 0;
+  height: var(--header-height);
+} */
 
 .MainHeader {
   top: 0;
   height: var(--header-height);
+  background: transparent;
+  backdrop-filter: none; /* Au cas où */
+  z-index: 0; /* au-dessus du background */
 }
+
+
 
 .MainFooter {
   bottom: 0;

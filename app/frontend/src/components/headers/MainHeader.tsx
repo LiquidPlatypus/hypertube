@@ -42,7 +42,7 @@ export default function MainHeader() {
 				<h1 className={styles.Title}>RetroTube TV</h1>
 			</div>
 
-			<div className={styles.Center}>
+			{/* <div className={styles.Center}>
 				<input
 					type="text"
 					className={styles.SearchInput}
@@ -67,7 +67,7 @@ export default function MainHeader() {
 						</ul>
 					</div>
 				)}
-			</div>
+			</div> */}
 		</header>
 	);
 }

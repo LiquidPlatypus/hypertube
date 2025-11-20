@@ -13,11 +13,11 @@ export default function MainLayout({ children }: MainLayoutProps) {
     <div
       className={styles.MainLayout}
       style={{
-        "--header-height": "70px",
-        "--footer-height": "70px",
+        "--header-height": "20px",
+        "--footer-height": "20px",
       } as React.CSSProperties}
     >
-      {/* Header fixe */}
+      
       <header className={styles.MainHeader}>
         <MainHeader />
       </header>

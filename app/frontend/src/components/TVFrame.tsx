@@ -29,7 +29,7 @@ export default function RetroTvFrame({
 
 	useLayoutEffect(() => {
 		const updateScale = () => {
-			const baseWidth = 800;
+			const baseWidth = 700;
 			const baseHeight = 600;
 			const newScale = Math.min(screenWidth / baseWidth, screenHeight / baseHeight);
 			setScale(newScale);

@@ -1,7 +1,6 @@
 import {useNavigate} from "react-router-dom";
 
 import Button from "./ui/Button.tsx";
-import SearchBar from "./ui/SearchBar.tsx";
 
 import styles from "./TVRemote.module.css";
 
@@ -53,10 +52,10 @@ export default function TVRemote() {
 				onClick={handleSearch}
 			/>
 			<Button
-				text="Profil"
+				text=""
 				size="small"
 				shape="square"
-				icon="assets/ProfileW.svg"
+				icon="assets/Profil.png"
 				className={styles.ProfileBtn}
 				variant="remote"
 				onClick={goToProfile}
@@ -70,7 +69,7 @@ export default function TVRemote() {
 				onClick={changeLang}
 			/>
 			<Button
-				text="Logout"
+				text=""
 				size="small"
 				shape="square"
 				icon="assets/LogoutW.svg"
@@ -78,10 +77,6 @@ export default function TVRemote() {
 				variant="remote"
 				onClick={handleLogout}
 			/>
-
-			<div className={styles.SearchContainer}>
-				<SearchBar />
-			</div>
 		</div>
 	);
 }
