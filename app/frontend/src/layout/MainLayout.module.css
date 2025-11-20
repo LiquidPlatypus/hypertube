@@ -10,8 +10,8 @@
 .MainLayout::before {
 	content: "";
 	position: fixed;
-	top: -0.1rem;
-	bottom: -0.5rem;
+	top: -0.6rem;
+	bottom: -0.9rem;
 	left: -2rem;
 	right: -2rem;
 
@@ -44,6 +44,7 @@
 }
 
 .ScrollArea::after {
+	pointer-events: none;
 	content: "";
 	position: absolute;
 	top: 0;
