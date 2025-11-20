@@ -1,7 +1,7 @@
 import { useState } from "react";
 import * as React from "react";
 import { useNavigate } from "react-router-dom";
-import { GoogleOAuthProvider, GoogleLogin, type GoogleLoginProps, type GoogleCredentialResponse } from "@react-oauth/google";
+import { GoogleOAuthProvider, GoogleLogin, type GoogleCredentialResponse } from "@react-oauth/google";
 
 export default function EntryPage() {
 	const navigate = useNavigate();
@@ -150,13 +150,14 @@ export default function EntryPage() {
 
 	const handleGoogleLogin = async (credentialResponse: GoogleCredentialResponse) => {
 		try {
+			const token = credentialResponse.credential;
 			const response = await fetch(`/api/google-auth`, {
 				method: "POST",
 				headers: {
-					"Content-Type":"application/json",
+					"Content-Type": "application/json",
 				},
 				body: JSON.stringify({
-					google_jwt: credentialResponse,
+					token,
 				}),
 			});
 			if (!response.ok)

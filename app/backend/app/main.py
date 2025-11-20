@@ -5,13 +5,13 @@ from fastapi.security import OAuth2PasswordBearer
 from fastapi.responses import JSONResponse, FileResponse
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
-from .model import RegisterRequest, LoginRequest, ModifyFormRequest, PasswordForm, EmailRequest, NewPasswordRequest
+from .model import RegisterRequest, LoginRequest, ModifyFormRequest, PasswordForm, EmailRequest, NewPasswordRequest, GoogleToken
 from fastapi_mail import FastMail, MessageSchema, ConnectionConfig
 from .database import Storage
 from fastapi import UploadFile, File
 from google.oauth2 import id_token
 from google.auth.transport import requests
-import jwt
+# import jwt
 
 # INIT
 
@@ -135,17 +135,16 @@ async def login(data: LoginRequest):
 	)
 
 @app.post("/api/google-auth")
-async def google_login(token: str):
+async def google_login(data: GoogleToken):
 	try:
-		idinfo = id_token.verify_oauth2_token(token, requests.Request(), GOOGLE_CLIENT_ID)
+		idinfo = id_token.verify_oauth2_token(data.token, requests.Request(), GOOGLE_CLIENT_ID)
 		google_id = idinfo["sub"]
 		username = idinfo["name"]
 		lastname = idinfo["family_name"]
 		firstname = idinfo["given_name"]
 		email = idinfo["email"]
+		profile_pic = idinfo["picture"]
 		users = storage.get_all_users()
-
-		print(idinfo["picture"])
 
 		for user in users:
 			if user["email"] == email:
@@ -153,6 +152,7 @@ async def google_login(token: str):
 				access_token = create_access_token(data={"sub": str(user["id"])}, expires_delta=access_token_expires)
 				return {"access_token": access_token, "token_type": "bearer"}
 		user = storage.add_user(username, email, google_id, firstname, lastname)
+		storage.add_profile_pic(user["id"], profile_pic)
 		access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
 		access_token = create_access_token(data={"sub": str(user["id"])}, expires_delta=access_token_expires)
 		return {"access_token": access_token, "token_type": "bearer"}
@@ -234,6 +234,9 @@ async def upload_picture(
 @app.get("/api/me/profile-pic")
 async def get_current_profile_pic(current_user=Depends(verif_access_token)):
 	url = storage.get_profile_pic(current_user["id"])
+	# url = "https://lh3.googleusercontent.com/a/ACg8ocJ8iMCvSGduhVx--UF4Kt9vhArFAk7ywNu61MNbZ9aUNV5JOlo=s96-c"
+	if url and url[:4] == "http":
+		return url
 	if url == None:
 		return None
 	return FileResponse(url)
