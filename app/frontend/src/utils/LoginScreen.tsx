@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import Button from "../components/ui/Button.tsx";
 import Input from "../components/ui/Input.tsx";
 import styles from "./LoginScreen.module.css";
@@ -9,7 +8,7 @@ interface LoginScreenProps {
 }
 
 export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
-	const navigate = useNavigate();
+	// const navigate = useNavigate();
 	const [isLogin, setIsLogin] = useState(true);
 	const [message, setMessage] = useState("");
 
@@ -41,7 +40,7 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 			const data = await response.json();
 			localStorage.setItem("access_token", data.access_token);
 			onLoginSuccess?.();
-			navigate("/");
+			// navigate("/");
 		} catch (error) {
 			setMessage(error instanceof Error ? error.message : String(error));
 		}
@@ -189,4 +188,3 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 		</div>
 	);
 }
-

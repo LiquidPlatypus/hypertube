@@ -6,8 +6,8 @@ import defaultAvatar from "/assets/vhs.jpg";
 export default function MainHeader() {
 	const [menuOpen, setMenuOpen] = useState(false);
 	const navigate = useNavigate();
-	const menuRef = useRef<HTMLDivElement>(null);  // référence au menu
-	const avatarRef = useRef<HTMLImageElement>(null); // référence à l'avatar
+	const menuRef = useRef<HTMLDivElement>(null);
+	const avatarRef = useRef<HTMLImageElement>(null);
 
 	const toggleMenu = () => setMenuOpen(!menuOpen);
 

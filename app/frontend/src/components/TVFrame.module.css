@@ -1,30 +1,34 @@
 .TV {
 	position: relative;
 	display: flex;
-	height: 100%;
 	width: 100%;
+	height: 100%;
 	align-items: center;
 	justify-content: center;
-	z-index: 10;
 }
 
 .TVImage {
 	pointer-events: none;
 	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: contain;
 	z-index: 20;
-	height: 110%;
-	width: 110%;
 }
 
 .TVScreen {
 	position: absolute;
-	z-index: 10;
+	z-index: 1;
 	overflow: hidden;
+	background-color: black;
+	
 }
 
 .TVVideo {
-	height: 100%;
 	width: 100%;
+	height: 100%;
 	object-fit: cover;
 }
 
@@ -32,7 +36,6 @@
 	position: absolute;
 	inset: 0;
 	display: flex;
-	flex-direction: column;
 	align-items: center;
 	justify-content: center;
 	overflow: hidden;
@@ -41,4 +44,26 @@
 
 .DynamicContentCenter {
 	transform-origin: center;
+}
+
+/* Effet CRT background */
+.CRTBackground {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.336),
+    rgba(255, 255, 255, 0.205) 1px,
+    rgba(0, 0, 0, 0.384) 1px,
+    rgba(0, 0, 0, 0.322) 3px
+  );
+  animation: noiseAni 0.2s infinite;
+  mix-blend-mode: difference;
+  pointer-events: none;
+}
+
+@keyframes noiseAni {
+  0% { opacity: 0.3; }
+  50% { opacity: 0.6; }
+  100% { opacity: 0.3; }
 }

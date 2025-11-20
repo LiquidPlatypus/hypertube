@@ -1,19 +1,25 @@
 import { useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import RetroTvFrame from "../components/TVFrame.tsx";
 import LoginScreen from "../utils/LoginScreen.tsx";
 import styles from "./LoginPage.module.css";
+import TvBootScreen from "../components/TvBootScreen.tsx";
+
 
 export default function LoginPage() {
 	const navigate = useNavigate();
+	const wrapperRef = useRef<HTMLDivElement | null>(null);
 	const [isZooming, setIsZooming] = useState(false);
+	const [showTvBoot, setShowTvBoot] = useState(false);
+	const [showBlack, setShowBlack] = useState(false);
 
 	// Dimensions originales de la TV (carrée)
-	const TV_SIZE = 6144; 
-	const SCREEN_X = 1000; 
-	const SCREEN_Y = 1000;
-	const SCREEN_WIDTH = 4144;
-	const SCREEN_HEIGHT = 4144;
+	const TV_SIZE = 6144;
+	const SCREEN_X = 1150;
+	const SCREEN_Y = 1900;
+	const SCREEN_WIDTH = 2900;
+	const SCREEN_HEIGHT = 2500;
+
 
 	const [tvDims, setTvDims] = useState({
 		tvWidth: TV_SIZE,
@@ -26,17 +32,20 @@ export default function LoginPage() {
 
 	const handleLoginSuccess = () => {
 		setIsZooming(true);
-		setTimeout(() => navigate("/"), 1500);
+		// Après 1.5s (fin du zoom)
+		setTimeout(() => {
+		setShowBlack(true);
+		setTimeout(() => {setShowTvBoot(true);}, 300);
+		}, 1500);
 	};
 
 	// Adapter les dimensions à la fenêtre (scale limité)
 	useEffect(() => {
 		const handleResize = () => {
-			// Calcul du scale proportionnel
 			const scale = Math.min(
 				window.innerWidth / TV_SIZE,
 				window.innerHeight / TV_SIZE,
-				1 // ne jamais dépasser la taille originale
+				1
 			);
 
 			setTvDims({
@@ -54,26 +63,43 @@ export default function LoginPage() {
 		return () => window.removeEventListener("resize", handleResize);
 	}, []);
 
+	// Mettre à jour le transform-origin en fonction du centre de l'écran TV
+	useEffect(() => {
+	if (!wrapperRef.current) return;
+
+	const originX = tvDims.screenX + tvDims.screenWidth / 2;
+	const originY = tvDims.screenY + tvDims.screenHeight / 2;
+
+	// Convertir en pourcentage pour rendre le zoom responsive
+	const originXPercent = (originX / tvDims.tvWidth) * 100;
+	const originYPercent = (originY / tvDims.tvHeight) * 100;
+
+	wrapperRef.current.style.transformOrigin = `${originXPercent}% ${originYPercent}%`;
+}, [tvDims]);
+
+
 	return (
-		<div className={`${styles.TVWrapper} ${isZooming ? styles.zoomOut : ""}`}>
-			<RetroTvFrame
-				videoSrc="/videos/screen2.mp4"
-				tvImageSrc="/assets/TV.png"
-				tvWidth={tvDims.tvWidth}
-				tvHeight={tvDims.tvHeight}
-				screenX={tvDims.screenX}
-				screenY={tvDims.screenY}
-				screenWidth={tvDims.screenWidth}
-				screenHeight={tvDims.screenHeight}
-				contentScale={1}
-			>
-				<LoginScreen onLoginSuccess={handleLoginSuccess} />
-			</RetroTvFrame>
-		</div>
+		<>
+			{/* Wrapper transformé */}
+			<div ref={wrapperRef} className={`${styles.pageWrapper} ${isZooming ? styles.zoomOut : ""}`}>
+				<RetroTvFrame
+					tvImageSrc="/assets/TV.png"
+					tvWidth={tvDims.tvWidth}
+					tvHeight={tvDims.tvHeight}
+					screenX={tvDims.screenX}
+					screenY={tvDims.screenY}
+					screenWidth={tvDims.screenWidth}
+					screenHeight={tvDims.screenHeight}
+					contentScale={1}
+				>
+					{!isZooming && <LoginScreen onLoginSuccess={handleLoginSuccess} />}
+				</RetroTvFrame>
+			</div>
+
+			{/* BlackOverlay hors du wrapper */}
+			{showBlack && <div className={styles.BlackOverlay}></div>}
+
+			{showTvBoot && <TvBootScreen onComplete={() => navigate("/")} />}
+		</>
 	);
 }
-
-
-
-
-

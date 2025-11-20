@@ -1,0 +1,61 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background-color: black;
+  overflow: hidden;
+  z-index: 9999;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flashLine {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background-color: white;
+  transform-origin: center;
+  opacity: 0;
+  animation: flashExpand 1.5s forwards;
+}
+
+@keyframes flashExpand {
+  0% {
+    width: 2px;
+    height: 2px;
+    opacity: 1;
+  }
+  50% {
+    width: 100%;   
+    height: 2px; 
+    opacity: 1;
+  }
+  100% {
+    width: 100%;
+    height: 100%;
+    opacity: 1;
+  }
+}
+
+.staticNoise {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(255,255,255,0.1),
+    rgba(255,255,255,0.1) 1px,
+    rgba(0,0,0,0.1) 1px,
+    rgba(0,0,0,0.1) 3px
+  );
+  animation: noiseAnim 0.2s infinite;
+  mix-blend-mode: difference;
+  pointer-events: none;
+}
+
+@keyframes noiseAnim {
+  0% { opacity: 0.3; }
+  50% { opacity: 0.6; }
+  100% { opacity: 0.3; }
+}
+

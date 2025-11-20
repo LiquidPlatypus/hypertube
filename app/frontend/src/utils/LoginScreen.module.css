@@ -8,16 +8,15 @@
 	padding: 2rem;
 	color: white;
 	border-radius: 1rem;
-	width: 80%;
-	max-width: 700px;
-	min-height: 500px;
+	width: 90%;
+	height: 95%;
+	max-width: 100%;
 	background: radial-gradient(circle at center, #111 0%, #000 100%);
 	box-shadow:
 		0 0 30px rgba(255, 220, 100, 0.5),
 		0 0 60px rgba(255, 170, 0, 0.3),
 		inset 0 0 25px rgba(255, 255, 150, 0.15);
 	border: 2px solid rgba(255, 215, 0, 0.4);
-	overflow: hidden;
 	box-sizing: border-box;
 }
 
@@ -29,7 +28,6 @@
 	text-align: center;
 }
 
-/* Paragraphe sous le login */
 p {
 	font-size: 1.8rem;
 	text-shadow: 0 0 6px #ffe600, 0 0 15px #ff8800;
@@ -134,12 +132,10 @@ p {
 	transform: scale(1.05);
 }
 
-/* Responsive : tablettes */
+/* Responsive */
 @media (max-width: 1024px) {
 	.LoginScreen {
-		width: 90%;
-		padding: 2rem;
-		min-height: 450px;
+		padding: 1rem;
 	}
 	.LoginForm,
 	.RegisterForm,
@@ -148,33 +144,37 @@ p {
 		width: 90%;
 	}
 	.LoginForm button,
-	.RegisterForm button,
-	.OAuthButtons button,
-	.LoginRegisterBtn button {
-		font-size: 1.15rem;
-		padding: 0.9rem;
+	.RegisterForm button {
+		font-size: 1rem;
+		padding: 0.7rem;
 	}
 }
 
-/* Responsive : mobile */
 @media (max-width: 768px) {
 	.LoginScreen {
-		width: 95%;
-		padding: 1.5rem;
-		min-height: auto;
+		padding: 0.5rem;
+		max-width: 100%;
+        
 	}
 	.LoginForm,
 	.RegisterForm,
 	.LoginRegisterBtn,
 	.OAuthButtons {
-		width: 95%;
+		width: 90%;
+	}
+
+	.OAuthButtons button{
+		white-space: normal;
+    	word-wrap: break-word; 
 	}
 	.LoginForm button,
-	.RegisterForm button,
-	.OAuthButtons button,
-	.LoginRegisterBtn button {
-		font-size: 1rem;
-		padding: 0.8rem;
+	.RegisterForm button {
+		font-size: 0.9rem;
+		padding: 0.6rem;
 	}
+	p,
+  .Message {
+    white-space: normal; /* supprime le nowrap */
+    word-wrap: break-word; /* permet de couper le texte si nécessaire */
+  }
 }
-

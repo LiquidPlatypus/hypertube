@@ -1,8 +1,8 @@
 .Thumbnail {
     position: relative;
-    aspect-ratio: 2 / 3; /* Portrait style Netflix */
-    width: 100%; /* Prend toute la largeur disponible dans la grille */
-    max-width: 300px; /* Limite la largeur maximale */
+    aspect-ratio: 2 / 3;
+    width: 100%;
+    max-width: 300px;
     border-radius: 1rem;
     box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.6);
     transition: transform 0.25s ease, box-shadow 0.25s ease;
@@ -24,7 +24,7 @@
 
 .CoverWrapper {
     width: 100%;
-    height: 70%; /* prend 70% de la hauteur de la vignette */
+    height: 70%;
     display: flex;
     align-items: center;
     justify-content: center;

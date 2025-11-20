@@ -18,11 +18,9 @@
 .Background {
   position: absolute;
   inset: 0;
-  background-image: url('/assets/screen4.png');
+  background-image: url('/assets/screen7.png');
   background-size: cover;
   background-position: center;
-  /* filter: brightness(0.8) saturate(1.1); */
-  /* filter: brightness(1.15) contrast(1.2) saturate(1.2); */
   image-rendering: auto;
 }
 
@@ -30,7 +28,7 @@
   content: "";
   position: absolute;
   inset: 0;
-  background: rgba(255, 255, 255, 0.096); /* légère lumière */
+  background: rgba(255, 255, 255, 0.096);
   pointer-events: none;
 }
 
@@ -52,7 +50,7 @@
 }
 
 .Scanline {
-  height: 4vh;
+  height: 1.3vh;
   background: rgba(19, 18, 18, 0.24);
   animation: Scan 6s linear infinite;
 }
@@ -81,8 +79,6 @@
   position: absolute;
   z-index: 0;
   width: 100%;
-  /* padding-top: var(--header-height);
-  padding-bottom: var(--footer-height); */
   top: 110px;
   bottom: 120px;
   overflow-y: auto;
