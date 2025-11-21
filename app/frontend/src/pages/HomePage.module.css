@@ -9,9 +9,10 @@
 	width: 100%;
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
-	gap: 2rem;
+	row-gap: 3rem;
+	column-gap: 6rem;
 	list-style: none;
-	padding: 0 50px;
+	padding: 0 100px;
 	margin: 0 auto;
 	place-items: center;
 	scrollbar-width: thin;
