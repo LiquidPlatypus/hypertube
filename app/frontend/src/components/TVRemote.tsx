@@ -1,18 +1,21 @@
 import {useNavigate} from "react-router-dom";
+import { useState } from "react";
+import { createPortal } from "react-dom";
 
 import Button from "./ui/Button.tsx";
-
+import SearchBar from "./ui/SearchBar.tsx";
 import styles from "./TVRemote.module.css";
 
 export default function TVRemote() {
 	const navigate = useNavigate();
+	const [showSearch, setShowSearch] = useState(false);
 
 	const goHome = () => {
 		navigate("/");
 	}
 
-	const handleSearch = () => {
-
+	const showSearchBar = () => {
+		setShowSearch((prev) => !prev);
 	};
 
 	const goToProfile = () => {
@@ -49,7 +52,7 @@ export default function TVRemote() {
 				icon="assets/SearchW.svg"
 				className={styles.SearchBtn}
 				variant="remote"
-				onClick={handleSearch}
+				onClick={showSearchBar}
 			/>
 			<Button
 				text=""
@@ -77,6 +80,13 @@ export default function TVRemote() {
 				variant="remote"
 				onClick={handleLogout}
 			/>
+
+			{showSearch && createPortal(
+				<div className={styles.SearchContainer}>
+					<SearchBar />
+				</div>,
+				document.body
+			)}
 		</div>
 	);
 }
