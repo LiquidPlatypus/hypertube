@@ -4,11 +4,14 @@ import { createPortal } from "react-dom";
 
 import Button from "./ui/Button.tsx";
 import SearchBar from "./ui/SearchBar.tsx";
+import {useTranslation} from "../hooks/useTranslation.tsx";
+
 import styles from "./TVRemote.module.css";
 
 export default function TVRemote() {
 	const navigate = useNavigate();
 	const [showSearch, setShowSearch] = useState(false);
+	const { currentLang, changeLang } = useTranslation();
 
 	const goHome = () => {
 		navigate("/");
@@ -22,8 +25,9 @@ export default function TVRemote() {
 		navigate("/profile");
 	}
 
-	const changeLang = () => {
-		
+	const handleChangeLang = async () => {
+		const newLang = currentLang === "en" ? "fr" : "en";
+		await changeLang(newLang);
 	}
 
 	const handleLogout = () => {
@@ -69,7 +73,7 @@ export default function TVRemote() {
 				shape="square"
 				className={styles.LangBtn}
 				variant="remote"
-				onClick={changeLang}
+				onClick={handleChangeLang}
 			/>
 			<Button
 				text=""

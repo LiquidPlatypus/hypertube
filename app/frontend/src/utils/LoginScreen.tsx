@@ -3,6 +3,8 @@ import {useNavigate} from "react-router-dom";
 import Button from "../components/ui/Button.tsx";
 import Input from "../components/ui/Input.tsx";
 
+import { useTranslation } from "../hooks/useTranslation.tsx";
+
 import styles from "./LoginScreen.module.css";
 
 interface LoginScreenProps {
@@ -13,6 +15,8 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 	const navigate = useNavigate();
 	const [isLogin, setIsLogin] = useState(true);
 	const [message, setMessage] = useState("");
+
+	const { t } = useTranslation();
 
 	// Login
 	const [loginUsername, setLoginUsername] = useState("");
@@ -38,7 +42,7 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 				body: JSON.stringify({ username: loginUsername, password: loginPassword }),
 			})
 			if (!response.ok)
-				throw new Error("Incorrect username or password");
+				throw new Error(t("login.error.incorrect"));
 			const data = await response.json();
 			localStorage.setItem("access_token", data.access_token);
 			onLoginSuccess?.();
@@ -54,7 +58,7 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 		setMessage("");
 
 		if (registerPassword !== registerPasswordConfirmation) {
-			setMessage("Passwords doesn't match");
+			setMessage(t("register.error.passwordMismatch"));
 			return;
 		}
 		try {
@@ -70,57 +74,122 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 				}),
 			});
 			if (!response.ok)
-				throw new Error("Error during registration");
+				throw new Error(t("register.error.failed"));
 			const data = await response.json();
 			if (data.returnValue) {
-				setMessage("Account created successfully! You can now log in.");
+				setMessage(t("register.success"));
 				setTimeout(() => {
 					setIsLogin(true);
 					setMessage("");
 				}, 2000);
 			} else {
-				setMessage(data.message || "Account creation not possible");
+				setMessage(data.message || t("register.error.notPossible"));
 			}
 		} catch (error) {
-			setMessage(error instanceof Error ? error.message : "Error during registration");
+			setMessage(error instanceof Error ? error.message : t("register.error.failed"));
 		}
 	};
 
 	return (
 		<div className={styles.LoginScreen}>
-			<h2 className={"styles.Login-Register"}>
-				{isLogin ? "Login" : "Register"}
+			<h2 className={styles.LoginRegister}>
+				{isLogin ? t("login.title") : t("register.title")}
 			</h2>
 
 			{message && (
-				<p className={`message ${message.includes("create") ? "message-success" : "message-error"}`}>
+				<p className={`message ${message.includes(t("register.success")) ? "message-success" : "message-error"}`}>
 					{message}
 				</p>
-
 			)}
 
 			<div className={styles.LoginRegisterBtn}>
-				<Button text="Login" size="medium" shape="pill" onClick={() => {setIsLogin(true); setMessage(""); }} />
-				<Button text="Register" size="medium" shape="pill" onClick={() => {setIsLogin(false); setMessage(""); }} />
+				<Button
+					text={t("login.button")}
+					size="medium"
+					shape="pill"
+					onClick={() => {setIsLogin(true); setMessage(""); }}
+				/>
+				<Button
+					text={t("register.button")}
+					size="medium"
+					shape="pill"
+					onClick={() => {setIsLogin(false); setMessage(""); }}
+				/>
 			</div>
 
-			{isLogin? (
+			{isLogin ? (
 				<form className={styles.LoginForm} onSubmit={handleLogin}>
-					<Input type="text" placeholder="Username" value={loginUsername} onChange={(e) => setLoginUsername(e.target.value)} className={styles.Inputs} required />
-					<Input type="password" placeholder="Password" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} className={styles.Inputs} required />
-					<Button text="Login" size="large" shape="pill" />
+					<Input
+						type="text"
+						placeholder={t("login.placeholder.username")}
+						value={loginUsername}
+						onChange={(e) => setLoginUsername(e.target.value)}
+						className={styles.Inputs}
+						required
+					/>
+					<Input
+						type="password"
+						placeholder={t("login.placeholder.password")}
+						value={loginPassword}
+						onChange={(e) => setLoginPassword(e.target.value)}
+						className={styles.Inputs}
+						required
+					/>
+					<Button text={t("login.submit")} size="large" shape="pill" />
 				</form>
 			) : (
 				<form className={styles.RegisterForm} onSubmit={handleRegister}>
-					<Input type="text" placeholder="First Name" value={registerFirstname} onChange={(e) => setRegisterFirstname(e.target.value)} className={styles.Inputs} required />
-					<Input type="text" placeholder="Last Name" value={registerLastname} onChange={(e) => setRegisterLastname(e.target.value)} className={styles.Inputs} required />
-					<Input type="text" placeholder="Username" value={registerUsername} onChange={(e) => setRegisterUsername(e.target.value)} className={styles.Inputs} required />
-					<Input type="email" placeholder="Email" value={registerEmail} onChange={(e) => setRegisterEmail(e.target.value)} className={styles.Inputs} required />
-					<Input type="password" placeholder="Password" value={registerPassword} onChange={(e) => setRegisterPassword(e.target.value)} className={styles.Inputs} required />
-					<Input type="password" placeholder="Confirm Password" value={registerPasswordConfirmation} onChange={(e) => setRegisterPasswordConfirmation(e.target.value)} className={styles.Inputs} required />
-					<Button text="Register" size="large" shape="pill" />
+					<Input
+						type="text"
+						placeholder={t("register.placeholder.firstname")}
+						value={registerFirstname}
+						onChange={(e) => setRegisterFirstname(e.target.value)}
+						className={styles.Inputs}
+						required
+					/>
+					<Input
+						type="text"
+						placeholder={t("register.placeholder.lastname")}
+						value={registerLastname}
+						onChange={(e) => setRegisterLastname(e.target.value)}
+						className={styles.Inputs}
+						required
+					/>
+					<Input
+						type="text"
+						placeholder={t("register.placeholder.username")}
+						value={registerUsername}
+						onChange={(e) => setRegisterUsername(e.target.value)}
+						className={styles.Inputs}
+						required
+					/>
+					<Input
+						type="email"
+						placeholder={t("register.placeholder.email")}
+						value={registerEmail}
+						onChange={(e) => setRegisterEmail(e.target.value)}
+						className={styles.Inputs}
+						required
+					/>
+					<Input
+						type="password"
+						placeholder={t("register.placeholder.password")}
+						value={registerPassword}
+						onChange={(e) => setRegisterPassword(e.target.value)}
+						className={styles.Inputs}
+						required
+					/>
+					<Input
+						type="password"
+						placeholder={t("register.placeholder.confirmPassword")}
+						value={registerPasswordConfirmation}
+						onChange={(e) => setRegisterPasswordConfirmation(e.target.value)}
+						className={styles.Inputs}
+						required
+					/>
+					<Button text={t("register.submit")} size="large" shape="pill" />
 				</form>
 			)}
 		</div>
 	);
-};
+}
