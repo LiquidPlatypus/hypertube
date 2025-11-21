@@ -3,14 +3,13 @@
 	aspect-ratio: 16/11;
 	width: 100%;
 	border-radius: 2rem;
-	box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.6);
 	transition: transform 0.25s ease, box-shadow 0.25s ease;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 	justify-content: flex-start;
 	cursor: pointer;
-	background: rgba(10, 10, 10, 0.5);
+	background: rgba(10, 10, 10, 0.3);
 	backdrop-filter: blur(6px);
 	overflow: hidden;
 }
@@ -18,7 +17,6 @@
 .Thumbnail:hover {
 	transform: scale(1.08);
 	box-shadow:
-			inset 0 3px 6px rgba(255, 255, 255, 0.8),
 			0 10px 20px rgba(0, 0, 0, 0.25);
 }
 
