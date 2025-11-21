@@ -1,0 +1,22 @@
+{
+	"login.title": "Connexion",
+	"login.button": "Connexion",
+	"login.submit": "Se connecter",
+	"login.placeholder.username": "Nom d'utilisateur",
+	"login.placeholder.password": "Mot de passe",
+	"login.error.incorrect": "Nom d'utilisateur ou mot de passe incorrect",
+
+	"register.title": "Inscription",
+	"register.button": "Inscription",
+	"register.submit": "S'inscrire",
+	"register.placeholder.firstname": "Prénom",
+	"register.placeholder.lastname": "Nom",
+	"register.placeholder.username": "Nom d'utilisateur",
+	"register.placeholder.email": "Email",
+	"register.placeholder.password": "Mot de passe",
+	"register.placeholder.confirmPassword": "Confirmer le mot de passe",
+	"register.success": "Compte créé avec succès ! Vous pouvez maintenant vous connecter.",
+	"register.error.passwordMismatch": "Les mots de passe ne correspondent pas",
+	"register.error.failed": "Erreur lors de l'inscription",
+	"register.error.notPossible": "Création de compte impossible"
+}
