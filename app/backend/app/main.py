@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse, FileResponse
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session
-from .model import RegisterRequest, LoginRequest, ModifyFormRequest, PasswordForm, EmailRequest, NewPasswordRequest, GoogleToken
+from model import RegisterRequest, LoginRequest, ModifyFormRequest, PasswordForm, EmailRequest, NewPasswordRequest, GoogleToken
 from fastapi_mail import FastMail, MessageSchema, ConnectionConfig
 from fastapi import UploadFile, File
 from google.oauth2 import id_token
@@ -23,10 +23,9 @@ from database import get_db, DB, engine
 # INIT
 app = FastAPI()
 SECRET_KEY = os.getenv("SECRET_KEY")
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 ALGORITHM = "HS256"
-
-GOOGLE_CLIENT_ID = "504765868462-ssreveurjgq1i8tuoinem6fcp0g8kv90.apps.googleusercontent.com"
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="access_token")
 
