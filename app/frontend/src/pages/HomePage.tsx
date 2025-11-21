@@ -35,7 +35,7 @@ export default function HomePage() {
 				throw new Error("Not authorized");
 			}
 			const data: User = await response.json();
-			console.log(data.user);
+			setUserInfo(`${data.user.email}//${data.user.firstname}//${data.user.lastname}//${data.user.username}`);
 		} catch (error) {
 			setUserInfo("Error")
 		}
@@ -122,13 +122,19 @@ export default function HomePage() {
 			});
 			if (!response.ok)
 				throw new Error("Server Error");
-			const blob = await response.blob();
-			if (blob.type === "application/json") {
-				setUserInfo("Have not profile pic");
-				return;
+			if (response.headers.get("Content-Type")?.includes("application/json")) {
+				const data = await response.json();
+				console.log(data);
+				setProfilePic(data);
+			} else {
+				const blob = await response.blob();
+				if (blob.type === "application/json") {
+					setUserInfo("Have not profile pic");
+					return;
+				}
+				const imageURL = URL.createObjectURL(blob);
+				setProfilePic(imageURL);
 			}
-			const imageURL = URL.createObjectURL(blob);
-			setProfilePic(imageURL);
 		} catch (error) {
 			console.error(error);
 		}

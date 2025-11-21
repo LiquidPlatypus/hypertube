@@ -43,3 +43,6 @@ class EmailRequest(BaseModel):
 
 class NewPasswordRequest(BaseModel):
 	newpassword: str
+
+class GoogleToken(BaseModel):
+	token: str

@@ -6,8 +6,12 @@ from fastapi.responses import JSONResponse, FileResponse
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session
+from .model import RegisterRequest, LoginRequest, ModifyFormRequest, PasswordForm, EmailRequest, NewPasswordRequest, GoogleToken
 from fastapi_mail import FastMail, MessageSchema, ConnectionConfig
 from fastapi import UploadFile, File
+from google.oauth2 import id_token
+from google.auth.transport import requests
+# import jwt
 
 # Models Pydantic
 from model import RegisterRequest, LoginRequest, ModifyFormRequest, PasswordForm, EmailRequest, NewPasswordRequest
@@ -21,6 +25,9 @@ app = FastAPI()
 SECRET_KEY = os.getenv("SECRET_KEY")
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 ALGORITHM = "HS256"
+
+GOOGLE_CLIENT_ID = "504765868462-ssreveurjgq1i8tuoinem6fcp0g8kv90.apps.googleusercontent.com"
+
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="access_token")
 
 conf = ConnectionConfig(
@@ -135,6 +142,34 @@ async def login(data: LoginRequest, db: Session = Depends(get_db)):
     access_token = create_access_token(data={"sub": str(user.id)}, expires_delta=access_token_expires)
     return {"access_token": access_token, "token_type": "bearer"}
 
+@app.post("/api/google-auth")
+async def google_login(data: GoogleToken):
+	try:
+		idinfo = id_token.verify_oauth2_token(data.token, requests.Request(), GOOGLE_CLIENT_ID)
+		google_id = idinfo["sub"]
+		username = idinfo["name"]
+		lastname = idinfo["family_name"]
+		firstname = idinfo["given_name"]
+		email = idinfo["email"]
+		profile_pic = idinfo["picture"]
+		users = storage.get_all_users()
+
+		for user in users:
+			if user["email"] == email:
+				access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+				access_token = create_access_token(data={"sub": str(user["id"])}, expires_delta=access_token_expires)
+				return {"access_token": access_token, "token_type": "bearer"}
+		user = storage.add_user(username, email, google_id, firstname, lastname)
+		storage.add_profile_pic(user["id"], profile_pic)
+		access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+		access_token = create_access_token(data={"sub": str(user["id"])}, expires_delta=access_token_expires)
+		return {"access_token": access_token, "token_type": "bearer"}
+	except Exception:
+		raise HTTPException(
+			status_code=400,
+			detail="Invalid Google Token"
+		)
+
 @app.get("/api/verify-token/{token}")
 async def verify_user_token(token: str, db: Session = Depends(get_db)):
     user = verif_access_token(token, db)
@@ -211,6 +246,9 @@ async def upload_picture(
 @app.get("/api/me/profile-pic")
 async def get_current_profile_pic(current_user=Depends(verif_access_token)):
 	url = storage.get_profile_pic(current_user["id"])
+	# url = "https://lh3.googleusercontent.com/a/ACg8ocJ8iMCvSGduhVx--UF4Kt9vhArFAk7ywNu61MNbZ9aUNV5JOlo=s96-c"
+	if url and url[:4] == "http":
+		return url
 	if url == None:
 		return None
 	return FileResponse(url)

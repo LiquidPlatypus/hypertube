@@ -1,6 +1,7 @@
 import { useState } from "react";
 import * as React from "react";
 import { useNavigate } from "react-router-dom";
+import { GoogleOAuthProvider, GoogleLogin, type GoogleCredentialResponse } from "@react-oauth/google";
 
 export default function EntryPage() {
 	const navigate = useNavigate();
@@ -147,9 +148,37 @@ export default function EntryPage() {
 		}
 	};
 
+	const handleGoogleLogin = async (credentialResponse: GoogleCredentialResponse) => {
+		try {
+			const token = credentialResponse.credential;
+			const response = await fetch(`/api/google-auth`, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					token,
+				}),
+			});
+			if (!response.ok)
+				throw new Error("Server error");
+			const data: LoginResponse = await response.json();
+			localStorage.setItem("access_token", data.access_token);
+			navigate("/");
+		} catch (error) {
+			console.error(error);
+		}
+	}
+
 	return (
 		<div>
 			<div>
+				<GoogleOAuthProvider clientId="504765868462-ssreveurjgq1i8tuoinem6fcp0g8kv90.apps.googleusercontent.com">
+					<GoogleLogin
+						onSuccess={handleGoogleLogin}
+						onError={() => console.error("Google Auth Failed")}
+					/>
+				</GoogleOAuthProvider>
 				<form onSubmit={emailSend}>
 					<label htmlFor="email">Email: </label>
 					<input
