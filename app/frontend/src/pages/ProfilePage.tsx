@@ -8,9 +8,9 @@ export default function ProfilInfo() {
 	const [user, setUser] = useState<{ username: string; email: string; firstname: string; lastname: string } | null>(null);
 	const [isEditing, setIsEditing] = useState(false);
 	const [formData, setFormData] = useState({
+		username: "",
 		firstname: "",
 		lastname: "",
-		username: "",
 		email: "",
 	});
 
@@ -59,8 +59,8 @@ export default function ProfilInfo() {
 			return;
 
 		try {
-			const res = await fetch("/api/me", {
-				method: "PUT",
+			const res = await fetch("/api/modify-profile", {
+				method: "POST",
 				headers: {
 					Authorization: `Bearer ${token}`,
 					"Content-Type": "application/json"
@@ -135,7 +135,6 @@ export default function ProfilInfo() {
 
 				{isEditing ? (
 					<div className={styles.ButtonGroup}>
-						// TODO: 405 method not allowed
 						<Button
 							text={t("profile.save")}
 							size="large"
