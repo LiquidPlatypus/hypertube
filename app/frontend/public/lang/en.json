@@ -18,5 +18,10 @@
 	"register.success": "Account created successfully! You can now log in.",
 	"register.error.passwordMismatch": "Passwords don't match",
 	"register.error.failed": "Error during registration",
-	"register.error.notPossible": "Account creation not possible"
+	"register.error.notPossible": "Account creation not possible",
+
+	"profile.userProfile": "User profile",
+	"profile.username": "Username",
+	"profile.email": "Email",
+	"profile.edit": "Edit profile"
 }
