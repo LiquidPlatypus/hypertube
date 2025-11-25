@@ -10,7 +10,7 @@ export default function WIPVideo() {
 						src="/videos/screen2.mp4"
 						height="500"
 						width="800"
-						playsInline
+						controls
 					/>
 				</div>
 				<div className={styles.miscellaneousPart}>
