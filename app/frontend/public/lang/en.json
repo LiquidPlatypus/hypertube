@@ -20,8 +20,12 @@
 	"register.error.failed": "Error during registration",
 	"register.error.notPossible": "Account creation not possible",
 
+	"profile.failedUpdate": "Failed to update profile",
+	"profile.errorUpdate": "Error during profile update:",
 	"profile.userProfile": "User profile",
 	"profile.username": "Username",
-	"profile.email": "Email",
-	"profile.edit": "Edit profile"
+	"profile.email": "EMail",
+	"profile.edit": "Modify profile",
+	"profile.save": "Save",
+	"profile.cancel": "Cancel"
 }
