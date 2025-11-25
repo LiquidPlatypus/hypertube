@@ -2,9 +2,9 @@ import os
 from fastapi import FastAPI, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from .auth import router as auth_router
-from .utils import verif_access_token
-from .users import router as users_router
+from auth import router as auth_router
+from utils import verif_access_token
+from users import router as users_router
 
 # Models Pydantic
 from model import RegisterRequest, LoginRequest, ModifyFormRequest, PasswordForm, EmailRequest, NewPasswordRequest
@@ -56,7 +56,7 @@ app.include_router(auth_router)
 app.include_router(users_router)
 
 @app.get("/api/verify-token/{token}")
-async def verify_user_token(token: str, db: Session = Depends(get_db)):
+async def verify_user_token(token: str, db=Depends(get_db)):
     user = verif_access_token(token, db)
     return {"message": "Token is valid"}
 
