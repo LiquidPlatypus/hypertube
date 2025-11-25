@@ -1,4 +1,4 @@
-from .model import RegisterRequest, LoginRequest, GoogleToken
+from .model import RegisterRequest, LoginRequest, GoogleToken, SuccessException
 from .database import storage
 from fastapi import APIRouter, HTTPException
 from google.oauth2 import id_token
@@ -42,6 +42,7 @@ async def login(data: LoginRequest):
 
 @router.post("/api/google-auth")
 async def google_login(data: GoogleToken):
+	user = None
 	try:
 		idinfo = id_token.verify_oauth2_token(data.token, requests.Request(), GOOGLE_CLIENT_ID)
 		google_id = idinfo["sub"]
@@ -54,15 +55,21 @@ async def google_login(data: GoogleToken):
 
 		for user in users:
 			if user["email"] == email:
-				access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-				access_token = create_access_token(data={"sub": str(user["id"])}, expires_delta=access_token_expires)
-				return {"access_token": access_token, "token_type": "bearer"}
+				raise SuccessException("Profile already create")
 		user = storage.add_user(username, email, google_id, firstname, lastname)
 		storage.add_profile_pic(user["id"], profile_pic)
+		raise SuccessException("Profile create now")
+	except SuccessException as e:
 		access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
 		access_token = create_access_token(data={"sub": str(user["id"])}, expires_delta=access_token_expires)
 		return {"access_token": access_token, "token_type": "bearer"}
-	except Exception:
+	except Exception as e:
+		print(f"Google error expection: {e.args[0]}")
+		if e.args[0] == "family_name":
+			raise HTTPException(
+				status_code=418,
+				detail="Missing information in google account"
+			)
 		raise HTTPException(
 			status_code=400,
 			detail="Invalid Google Token"

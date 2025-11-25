@@ -160,8 +160,12 @@ export default function EntryPage() {
 					token,
 				}),
 			});
-			if (!response.ok)
-				throw new Error("Server error");
+			if (!response.ok) {
+				const err = await response.json();
+				if (response.status === 418)
+					setMessage(err.detail);
+				throw new Error(err);
+			}
 			const data: LoginResponse = await response.json();
 			localStorage.setItem("access_token", data.access_token);
 			navigate("/");
