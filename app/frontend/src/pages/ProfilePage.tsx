@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "../hooks/useTranslation.tsx";
 
 import Button from "../components/ui/Button.tsx"
+import Input from "../components/ui/Input.tsx";
 import styles from "./ProfilePage.module.css";
 
 export default function ProfilInfo() {
@@ -96,32 +97,52 @@ export default function ProfilInfo() {
 
 					<div className={styles.values}>
 						{isEditing ? (
-							<>
-								<input
+							<div className={styles.editValues}>
+								<Input
 									type="text"
+									placeholder={t("register.placeholder.firstname")}
 									value={formData.firstname}
+									variant="profileEdit"
 									onChange={(e) => handleInputChange("firstname", e.target.value)}
+									size="medium"
+									shape="square"
 									className={styles.EditInput}
+									required
 								/>
-								<input
+								<Input
 									type="text"
+									placeholder={t("register.placeholder.lastname")}
 									value={formData.lastname}
+									variant="profileEdit"
 									onChange={(e) => handleInputChange("lastname", e.target.value)}
+									size="medium"
+									shape="square"
 									className={styles.EditInput}
+									required
 								/>
-								<input
+								<Input
 									type="text"
+									placeholder={t("register.placeholder.username")}
 									value={formData.username}
+									variant="profileEdit"
 									onChange={(e) => handleInputChange("username", e.target.value)}
+									size="medium"
+									shape="square"
 									className={styles.EditInput}
+									required
 								/>
-								<input
+								<Input
 									type="email"
+									placeholder={t("register.placeholder.email")}
 									value={formData.email}
+									variant="profileEdit"
 									onChange={(e) => handleInputChange("email", e.target.value)}
+									size="medium"
+									shape="square"
 									className={styles.EditInput}
+									required
 								/>
-							</>
+							</div>
 						) : (
 							<>
 								<p>{user.firstname}</p>
@@ -134,19 +155,19 @@ export default function ProfilInfo() {
 				</div>
 
 				{isEditing ? (
-					<div className={styles.ButtonGroup}>
+					<div className={styles.buttonGroup}>
 						<Button
 							text={t("profile.save")}
 							size="large"
 							shape="square"
-							className={styles.SaveButton}
+							variant="profileEdit"
 							onClick={handleSave}
 						/>
 						<Button
 							text={t("profile.cancel")}
 							size="large"
 							shape="square"
-							className={styles.CancelButton}
+							variant="profileEdit"
 							onClick={handleCancel}
 						/>
 					</div>
@@ -155,7 +176,7 @@ export default function ProfilInfo() {
 						text={t("profile.edit")}
 						size="large"
 						shape="square"
-						className={styles.EditButton}
+						variant="profileEdit"
 						onClick={handleProfileEdit}
 					/>
 				)}

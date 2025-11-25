@@ -15,32 +15,16 @@
 .CRTBox {
 	padding: 2rem 3rem;
 
-	box-shadow:
-			0 0 20px #4d5cff,
-			inset 0 0 20px rgba(0, 120, 255, 0.6);
-
-	color: #e7e2e2;
 	text-align: left;
 	position: relative;
-
-	/* scanlines CRT */
-	background: rgba(0, 30, 60, 0.9) repeating-linear-gradient(
-			to bottom,
-			rgba(255, 255, 255, 0.02) 0px,
-			rgba(255, 255, 255, 0.02) 2px,
-			transparent 2px,
-			transparent 4px
-	);
 }
 
 /* Encadré titre OSD */
 .TitleBar {
 	font-size: 2.2rem;
-	color: #e7e2e2;
-	background: #2836d3;
-	padding: 0.5rem 1rem;
-	margin-bottom: 1rem;
-	box-shadow: 0 0 12px #2836d3;
+	color: #3deaea;
+	text-shadow: 0 0 25px #3deaea;
+	margin-bottom: 2rem;
 }
 
 /* =============================== */
@@ -55,43 +39,24 @@
 }
 
 .keys {
-	color: #e7e2e2;
-	text-shadow: 0 0 25px #e7e2e2;
+	color: #3deaea;
+	text-shadow: 0 0 25px #3deaea;
 }
 
 .values {
-	color: #c5c0c0;
-	text-shadow: 0 0 25px #c5c0c0;
+	color: #3deaea;
+	text-shadow: 0 0 25px #3deaea;
 }
 
-/* =============================== */
-/* BOUTON OSD */
-/* =============================== */
-
-.EditButton {
-	font-family: "CommodoreRounded", serif;
+.editValues {
+	display: flex;
+	flex-direction: column;
 	margin-top: 1.5rem;
-	padding: 0.8rem 1.5rem;
-	font-size: 1.8rem;
-
-	color: #e7e2e2;
-	background: #2836d3;
-	cursor: pointer;
-
-	box-shadow: 0 0 12px #2836d3;
-
-	transition: 0.12s ease-out;
+	row-gap: 0.8rem;
 }
 
-/* Effet OSD : surbrillance jaune */
-.EditButton:hover {
-	transform: scale(1);
-	background: #e7e2e2;
-	color: #212020;
-	box-shadow: 0 0 20px #e7e2e2;
-}
-
-/* Effet clic */
-.EditButton:active {
-	transform: scale(0.95);
+.buttonGroup {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
 }
