@@ -19,15 +19,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
 				"--footer-height": "100px",
 			} as React.CSSProperties}
 		>
-			{/*<video*/}
-			{/*	className={styles.BackgroundVideo}*/}
-			{/*	src="/videos/screen2.mp4"*/}
-			{/*	autoPlay*/}
-			{/*	muted*/}
-			{/*	loop*/}
-			{/*	playsInline*/}
-			{/*	disablePictureInPicture={true}*/}
-			{/*/>*/}
+
 			<header className={styles.MainHeader}>
 				<MainHeader />
 			</header>
