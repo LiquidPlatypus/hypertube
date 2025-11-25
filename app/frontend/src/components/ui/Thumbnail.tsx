@@ -1,3 +1,5 @@
+import {useNavigate} from "react-router-dom";
+
 import styles from "./Thumbnail.module.css";
 
 interface ThumbnailProps {
@@ -15,6 +17,8 @@ export default function Thumbnail({
 	year,
 	rating
 }: ThumbnailProps) {
+	const navigate = useNavigate();
+
 	return (
 		<div className={styles.Thumbnail}>
 			<div className={styles.CoverWrapper}>
@@ -23,6 +27,9 @@ export default function Thumbnail({
 					alt={thumbnailAlt}
 					loading="lazy"
 					className={styles.Image}
+					onClick={() => {
+						navigate("/WIPvideo");
+					}}
 				/>
 			</div>
 
