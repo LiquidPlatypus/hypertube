@@ -88,3 +88,40 @@
 	border-left: 3px solid #2a2929;
 	border-top: 4px solid #4b4949;
 }
+
+/* ----- Profile Edit Variant ----- */
+.profileEdit {
+	font-family: "CommodoreRounded", serif;
+	text-align: left;
+	background: none;
+	border: none;
+	color: #3deaea;
+	text-shadow: 0 0 25px #3deaea;
+
+	margin-top: 2rem;
+	padding: 0;
+}
+
+.profileEdit:hover {
+	transform: scale(1);
+	background: none;
+	color: #ff72dc;
+	text-shadow: 0 0 15px #ff72dc;
+}
+
+.profileEdit::before {
+	content: "▶";
+	position: absolute;
+	left: -2rem;
+	top: 50%;
+	transform: translateY(-50%);
+	opacity: 0;
+	pointer-events: none;
+	font-size: 1.5rem;
+}
+
+.profileEdit:hover::before {
+	opacity: 1;
+	color: #ff72dc;
+	text-shadow: 0 0 15px #ff72dc;
+}
