@@ -12,9 +12,14 @@ interface LoginLayoutProps {
 export default function LoginLayout({ children }: LoginLayoutProps) {
 	return (
 		<div className={styles.LoginLayout}>
-			<LoginHeader />
-				{children}
-			<LoginFooter />
+			<LoginHeader className={styles.LoginHeader} />
+				<div className={styles.LoginContent}>
+					{children}
+				</div>
+			<LoginFooter className={styles.LoginFooter} />
 		</div>
+
+
+
 	)
 }

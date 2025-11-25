@@ -8,21 +8,30 @@ interface LoginScreenProps {
 }
 
 export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
-	// const navigate = useNavigate();
 	const [isLogin, setIsLogin] = useState(true);
 	const [message, setMessage] = useState("");
 
-	// Login
-	const [loginUsername, setLoginUsername] = useState("");
-	const [loginPassword, setLoginPassword] = useState("");
+	const [loginData, setLoginData] = useState({ username: "", password: "" });
+	const [registerData, setRegisterData] = useState({
+		firstName: "",
+		lastName: "",
+		username: "",
+		email: "",
+		password: "",
+		confirmPassword: "",
+	});
 
-	// Register
-	const [registerFirstname, setRegisterFirstname] = useState("");
-	const [registerLastname, setRegisterLastname] = useState("");
-	const [registerUsername, setRegisterUsername] = useState("");
-	const [registerEmail, setRegisterEmail] = useState("");
-	const [registerPassword, setRegisterPassword] = useState("");
-	const [registerPasswordConfirmation, setRegisterPasswordConfirmation] = useState("");
+	// Reset functions
+	const clearLoginData = () => setLoginData({ username: "", password: "" });
+	const clearRegisterData = () =>
+		setRegisterData({
+			firstName: "",
+			lastName: "",
+			username: "",
+			email: "",
+			password: "",
+			confirmPassword: "",
+		});
 
 	// Login handler
 	const handleLogin = async (e: React.FormEvent) => {
@@ -33,14 +42,13 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 			const response = await fetch("/api/login", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ username: loginUsername, password: loginPassword }),
+				body: JSON.stringify(loginData),
 			});
-			if (!response.ok)
-				throw new Error("Incorrect username or password");
+			if (!response.ok) throw new Error("Incorrect username or password");
 			const data = await response.json();
 			localStorage.setItem("access_token", data.access_token);
+			clearLoginData();
 			onLoginSuccess?.();
-			// navigate("/");
 		} catch (error) {
 			setMessage(error instanceof Error ? error.message : String(error));
 		}
@@ -51,7 +59,7 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 		e.preventDefault();
 		setMessage("");
 
-		if (registerPassword !== registerPasswordConfirmation) {
+		if (registerData.password !== registerData.confirmPassword) {
 			setMessage("Passwords don't match");
 			return;
 		}
@@ -61,16 +69,15 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({
-					username: registerUsername,
-					password: registerPassword,
-					email: registerEmail,
-					firstName: registerFirstname,
-					lastName: registerLastname,
+					username: registerData.username,
+					password: registerData.password,
+					email: registerData.email,
+					firstName: registerData.firstName,
+					lastName: registerData.lastName,
 				}),
 			});
 
-			if (!response.ok)
-				throw new Error("Error during registration");
+			if (!response.ok) throw new Error("Error during registration");
 
 			const data = await response.json();
 			if (data.returnValue) {
@@ -78,6 +85,7 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 				setTimeout(() => {
 					setIsLogin(true);
 					setMessage("");
+					clearRegisterData();
 				}, 2000);
 			} else {
 				setMessage(data.message || "Account creation not possible");
@@ -87,23 +95,20 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 		}
 	};
 
-	// Future OAuth handlers
-	const handleGoogleLogin = () => {
-		console.log("TODO: redirect to /api/auth/google");
-	};
-
-	const handleIntra42Login = () => {
-		console.log("TODO: redirect to /api/auth/intra42");
-	};
+	// OAuth handlers (TODO)
+	const handleGoogleLogin = () => console.log("TODO: redirect to /api/auth/google");
+	const handleIntra42Login = () => console.log("TODO: redirect to /api/auth/intra42");
 
 	return (
 		<div className={styles.LoginScreen}>
-			<h2 className={styles.LoginTitle}>
-				{isLogin ? "Login" : "Register"}
-			</h2>
+			<h2 className={styles.LoginTitle}>{isLogin ? "Login" : "Register"}</h2>
 
 			{message && (
-				<p className={`${styles.Message} ${message.includes("success") ? styles.MessageSuccess : styles.MessageError}`}>
+				<p
+					className={`${styles.Message} ${
+						message.includes("success") ? styles.MessageSuccess : styles.MessageError
+					}`}
+				>
 					{message}
 				</p>
 			)}
@@ -115,16 +120,16 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 						<Input
 							type="text"
 							placeholder="Username"
-							value={loginUsername}
-							onChange={(e) => setLoginUsername(e.target.value)}
+							value={loginData.username}
+							onChange={(e) => setLoginData({ ...loginData, username: e.target.value })}
 							className={styles.Inputs}
 							required
 						/>
 						<Input
 							type="password"
 							placeholder="Password"
-							value={loginPassword}
-							onChange={(e) => setLoginPassword(e.target.value)}
+							value={loginData.password}
+							onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
 							className={styles.Inputs}
 							required
 						/>
@@ -137,53 +142,84 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 							text="Register"
 							size="large"
 							shape="pill"
-							onClick={() => { setIsLogin(false); setMessage(""); }}
+							onClick={() => {
+								setIsLogin(false);
+								setMessage("");
+							}}
 						/>
 					</div>
 
 					<div className={styles.OAuthButtons}>
-						<Button
-							text="Google"
-							size="large"
-							shape="pill"
-							onClick={handleGoogleLogin}
-						/>
-						<Button
-							text="Intra 42"
-							size="large"
-							shape="pill"
-							onClick={handleIntra42Login}
-						/>
+						<Button text="Google" size="large" shape="pill" onClick={handleGoogleLogin} />
+						<Button text="Intra 42" size="large" shape="pill" onClick={handleIntra42Login} />
 					</div>
 				</>
 			)}
 
 			{/* === REGISTER === */}
 			{!isLogin && (
-				<div className={styles.RegisterContainer}>
-					<form className={styles.RegisterForm} onSubmit={handleRegister}>
-						<Input type="text" placeholder="First Name" value={registerFirstname}
-							onChange={(e) => setRegisterFirstname(e.target.value)} className={styles.Inputs} required />
-						<Input type="text" placeholder="Last Name" value={registerLastname}
-							onChange={(e) => setRegisterLastname(e.target.value)} className={styles.Inputs} required />
-						<Input type="text" placeholder="Username" value={registerUsername}
-							onChange={(e) => setRegisterUsername(e.target.value)} className={styles.Inputs} required />
-						<Input type="email" placeholder="Email" value={registerEmail}
-							onChange={(e) => setRegisterEmail(e.target.value)} className={styles.Inputs} required />
-						<Input type="password" placeholder="Password" value={registerPassword}
-							onChange={(e) => setRegisterPassword(e.target.value)} className={styles.Inputs} required />
-						<Input type="password" placeholder="Confirm Password" value={registerPasswordConfirmation}
-							onChange={(e) => setRegisterPasswordConfirmation(e.target.value)} className={styles.Inputs} required />
+				<form className={styles.RegisterForm} onSubmit={handleRegister}>
+					<Input
+						type="text"
+						placeholder="First Name"
+						value={registerData.firstName}
+						onChange={(e) => setRegisterData({ ...registerData, firstName: e.target.value })}
+						className={styles.Inputs}
+						required
+					/>
+					<Input
+						type="text"
+						placeholder="Last Name"
+						value={registerData.lastName}
+						onChange={(e) => setRegisterData({ ...registerData, lastName: e.target.value })}
+						className={styles.Inputs}
+						required
+					/>
+					<Input
+						type="text"
+						placeholder="Username"
+						value={registerData.username}
+						onChange={(e) => setRegisterData({ ...registerData, username: e.target.value })}
+						className={styles.Inputs}
+						required
+					/>
+					<Input
+						type="email"
+						placeholder="Email"
+						value={registerData.email}
+						onChange={(e) => setRegisterData({ ...registerData, email: e.target.value })}
+						className={styles.Inputs}
+						required
+					/>
+					<Input
+						type="password"
+						placeholder="Password"
+						value={registerData.password}
+						onChange={(e) => setRegisterData({ ...registerData, password: e.target.value })}
+						className={styles.Inputs}
+						required
+					/>
+					<Input
+						type="password"
+						placeholder="Confirm Password"
+						value={registerData.confirmPassword}
+						onChange={(e) => setRegisterData({ ...registerData, confirmPassword: e.target.value })}
+						className={styles.Inputs}
+						required
+					/>
 
-						<Button text="Register" size="large" shape="pill" />
-						<Button
-							text="← Back to Login"
-							size="large"
-							shape="pill"
-							onClick={() => { setIsLogin(true); setMessage(""); }}
-						/>
-					</form>
-				</div>
+					<Button text="Register" size="large" shape="pill" />
+					<Button
+						text="← Back to Login"
+						size="large"
+						shape="pill"
+						onClick={() => {
+							setIsLogin(true);
+							setMessage("");
+							clearRegisterData();
+						}}
+					/>
+				</form>
 			)}
 		</div>
 	);

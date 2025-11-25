@@ -1,36 +1,35 @@
-import {useNavigate} from "react-router-dom";
-
+import { useNavigate } from "react-router-dom";
 import Button from "./ui/Button.tsx";
-
 import styles from "./TVRemote.module.css";
 
 export default function TVRemote() {
 	const navigate = useNavigate();
 
-	const goHome = () => {
-		navigate("/");
-	}
+	const goHome = () => navigate("/");
 
-	const handleSearch = () => {
+	const handleSearch = () => {};
 
-	};
+	const goToProfile = () => navigate("/profile");
 
-	const goToProfile = () => {
-		navigate("/profile");
-	}
-
-	const changeLang = () => {
-		
-	}
+	const changeLang = () => {};
 
 	const handleLogout = () => {
-		try {
-			localStorage.removeItem("access_token");
-			navigate('/auth/login');
-		} catch (error) {
-			console.error("Error server");
-		}
-	}
+		localStorage.removeItem("access_token");
+		localStorage.setItem("just_logged_out", "true");
+
+		// Ajouter overlay logout
+		const overlay = document.createElement("div");
+		overlay.className = styles.LogoutOverlay;
+		document.body.appendChild(overlay);
+
+		// Supprimer overlay et naviguer après un délai
+		setTimeout(() => {
+			document.body.removeChild(overlay);
+			navigate("/auth/login");
+		}, 1500);
+	};
+
+
 
 	return (
 		<div className={styles.TVRemote}>

@@ -12,7 +12,7 @@ export default function TvBootScreen({ onComplete }: TvBootEffectProps) {
     setStarted(true);
     const timer = setTimeout(() => {
       onComplete();
-    }, 1800); // durée totale de l’effet
+    }, 1800);
     return () => clearTimeout(timer);
   }, [onComplete]);
 

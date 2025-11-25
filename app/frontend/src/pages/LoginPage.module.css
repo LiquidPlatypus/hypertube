@@ -6,13 +6,31 @@
 	width: 100%;
 	height: 100%;
 	overflow: hidden;
-	transition: transform 1.5s ease, opacity 1.5s ease;
 	transform-origin: center center;
 }
 
-.zoomOut {
+/* scale initiale pour login */
+.pageWrapper.login { 
+  transform: scale(1); 
+  
+}
+
+/* scale initiale pour logout */
+.pageWrapper.logout { 
+  transform: scale(6);
+  
+}
+
+/* Zoom login */
+.zoomIn {
 	transform: scale(6);
-	opacity: 1;
+	transition: transform 2.5s ease, opacity 1.5s ease;
+}
+
+/* Dézoom logout */
+.zoomOut {
+	transform: scale(1);
+	transition: transform 2.5s ease, opacity 1.5s ease;
 }
 
 .BlackOverlay {
@@ -28,3 +46,4 @@
   from { opacity: 0; }
   to { opacity: 1; }
 }
+
