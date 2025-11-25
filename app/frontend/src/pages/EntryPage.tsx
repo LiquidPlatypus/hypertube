@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import { GoogleOAuthProvider, GoogleLogin, type GoogleCredentialResponse } from "@react-oauth/google";
 
 export default function EntryPage() {
-	const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 	const navigate = useNavigate();
 	const [isLogin, setIsLogin] = useState(true); // true = Login, false = Register
 
@@ -178,7 +177,7 @@ export default function EntryPage() {
 	return (
 		<div>
 			<div>
-				<GoogleOAuthProvider clientId={googleClientId}>
+				<GoogleOAuthProvider clientId="504765868462-ssreveurjgq1i8tuoinem6fcp0g8kv90.apps.googleusercontent.com">
 					<GoogleLogin
 						onSuccess={handleGoogleLogin}
 						onError={() => console.error("Google Auth Failed")}
