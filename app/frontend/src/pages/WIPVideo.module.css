@@ -1,3 +1,29 @@
 .wrapper {
 	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	margin-left: 2.5rem;
+
+	font-family: "CommodoreRounded", serif;
+}
+
+.contentPart {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+}
+
+.videoPart {
+
+}
+
+.video {
+}
+
+.miscellaneousPart {
+
+}
+
+.commentsPart {
+
 }
