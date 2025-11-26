@@ -30,6 +30,29 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 	const [registerPassword, setRegisterPassword] = useState("");
 	const [registerPasswordConfirmation, setRegisterPasswordConfirmation] = useState("");
 
+	// TODO: REMOVE AUTOLOG !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	interface LoginResponse {
+		access_token: string;
+		token_type: string; // souvent "bearer"
+	}
+
+	const autoLog = async (e: React.MouseEvent<HTMLButtonElement>) => {
+		e.preventDefault();
+		try {
+			const response = await fetch("/api/auto-log", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+			});
+			if (!response.ok)
+				throw new Error("Error during register");
+			const data: LoginResponse = await response.json();
+			localStorage.setItem("access_token", data.access_token);
+			navigate("/");
+		} catch (err) {
+			console.error(err);
+		}
+	};
+
 	// Login Handler
 	const handleLogin = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -136,6 +159,7 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 						required
 					/>
 					<Button text={t("login.submit")} size="large" shape="pill" />
+					<button onClick={autoLog}>auto-log</button>
 				</form>
 			) : (
 				<form className={styles.RegisterForm} onSubmit={handleRegister}>
