@@ -27,5 +27,9 @@
 	"profile.email": "Mail",
 	"profile.edit": "Modifier le profil",
 	"profile.save": "Sauvegarder",
-	"profile.cancel": "Annuler"
+	"profile.cancel": "Annuler",
+
+	"video.summary": "Résumé",
+	"video.casting": "Distribution",
+	"video.comments": "Commentaires"
 }
