@@ -8,21 +8,24 @@ export default function WIPVideo() {
 					<video
 						className={styles.video}
 						src="/videos/screen2.mp4"
-						height="500"
-						width="800"
 						controls
 					/>
 				</div>
 				<div className={styles.miscellaneousPart}>
-					<h2>TITLE</h2>
-					<p>Summary</p>
-					<ul>
-						<li>casting</li>
-					</ul>
-					<p>year</p>
-					<p>lenght</p>
-					<p>grade</p>
-					<img alt="cover"/>
+					<div>
+						<h2>TITLE</h2>
+						<h3>Summary</h3>
+						<p>tres long resumetres long resumetres long resumetres long resumetres long resume</p>
+					</div>
+					<div>
+						<ul>
+							<li>casting</li>
+						</ul>
+						<p>year</p>
+						<p>lenght</p>
+						<p>grade</p>
+					</div>
+					<img src="/path/to/cover.jpg" alt="cover"/>
 				</div>
 			</div>
 

@@ -1,8 +1,9 @@
 .wrapper {
 	display: flex;
 	flex-direction: column;
-	align-items: flex-start;
-	margin-left: 2.5rem;
+
+	width: 100%;
+	height: 100%;
 
 	font-family: "CommodoreRounded", serif;
 }
@@ -14,16 +15,28 @@
 }
 
 .videoPart {
-
+	display: flex;
+	flex-direction: column;
+	align-self: center;
+	width: 100%;
+	max-width: 1750px;
+	padding: 0 1rem;
 }
 
 .video {
+	width: 100%;
+	height: auto;
+	aspect-ratio: 16 / 9;
 }
 
 .miscellaneousPart {
-
+	margin-top: 1.5rem;
+	margin-left: 10rem;
 }
 
 .commentsPart {
-
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	margin-left: 2.5rem;
 }
