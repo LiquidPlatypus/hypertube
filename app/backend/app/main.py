@@ -5,6 +5,7 @@ from fastapi.responses import JSONResponse
 from auth import router as auth_router
 from utils import verif_access_token
 from users import router as users_router
+from stream import router as stream_router
 
 # Models Pydantic
 from model import RegisterRequest, LoginRequest, ModifyFormRequest, PasswordForm, EmailRequest, NewPasswordRequest
@@ -54,11 +55,12 @@ async def verif_header(request: Request, call_next):
 
 app.include_router(auth_router)
 app.include_router(users_router)
+app.include_router(stream_router)
 
 @app.get("/api/verify-token/{token}")
-async def verify_user_token(token: str, db=Depends(get_db)):
-    user = verif_access_token(token, db)
-    return {"message": "Token is valid"}
+async def verify_user_token(token: str):
+	res = verif_access_token(token)
+	return {"message": "Token is valid"}
 
 @app.get("/api/hello")
 async def get_hello():
