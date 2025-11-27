@@ -29,6 +29,7 @@
 	"profile.save": "Save",
 	"profile.cancel": "Cancel",
 
+	"video.error": "Error loading video",
 	"video.summary": "Summary",
 	"video.casting": "Casting",
 	"video.comments": "Comments"

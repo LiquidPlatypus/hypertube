@@ -29,6 +29,7 @@
 	"profile.save": "Sauvegarder",
 	"profile.cancel": "Annuler",
 
+	"video.error": "Erreur lors du chargement de la vidéo",
 	"video.summary": "Résumé",
 	"video.casting": "Distribution",
 	"video.comments": "Commentaires"
