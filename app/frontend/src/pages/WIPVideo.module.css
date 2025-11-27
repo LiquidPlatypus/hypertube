@@ -6,6 +6,7 @@
 	height: 100%;
 
 	font-family: "CommodoreRounded", serif;
+	font-size: 20px;
 }
 
 .contentPart {
@@ -52,8 +53,13 @@
 
 }
 
-.meta {
+.rightInfos {
+	display: flex;
 	text-align: right;
+}
+
+.meta {
+
 }
 
 .cover {
@@ -66,5 +72,5 @@
 	align-self: flex-start;
 
 	margin-top: 5rem;
-	margin-left: 15rem;
+	margin-left: 10rem;
 }
