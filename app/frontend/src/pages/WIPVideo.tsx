@@ -39,11 +39,6 @@ export default function WIPVideo() {
 							resumetres long resumetres long resume
 						</p>
 					</div>
-					<div className={styles.cast}>
-						<ul>
-							<li>{t("video.casting")}</li>
-						</ul>
-					</div>
 					<div className={styles.rightInfos}>
 						<div className={styles.meta}>
 							<p>year</p>
@@ -60,9 +55,15 @@ export default function WIPVideo() {
 				</div>
 			</div>
 
+			<div className={styles.cast}>
+				<ul>
+					<li>{t("video.casting")}</li>
+				</ul>
+			</div>
+
 			<div className={styles.commentsPart}>
 				{comments.map((comment) => (
-					<div key = {comment.id}>
+					<div key={comment.id} className={styles.comment}>
 						<h3>{comment.pseudo}</h3>
 						<p>{comment.text}</p>
 					</div>

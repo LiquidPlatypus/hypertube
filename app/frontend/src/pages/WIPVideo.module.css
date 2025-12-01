@@ -17,10 +17,10 @@
 .videoPart {
 	display: flex;
 	flex-direction: column;
-	align-self: center;
+	align-self: flex-start;
 	width: 100%;
-	max-width: 2000px;
-	padding: 0 1rem;
+	max-width: 1500px;
+	margin: 0 10rem 0 10rem;
 }
 
 .video {
@@ -32,13 +32,10 @@
 .miscellaneousPart {
 	display: flex;
 	flex-direction: row;
-	width: 80%;
+	max-width: 1500px;
 	justify-content: space-between;
-	align-self: center;
 
-	padding: 0 1rem;
-
-	margin-top: 1.5rem;
+	margin: 1.5rem 10rem 0 10rem;
 }
 
 .mainInfos {
@@ -66,11 +63,28 @@
 
 }
 
+.cover img {
+	height: 125%;
+	aspect-ratio: auto;
+}
+
 .commentsPart {
-	display: flex;
-	flex-direction: column;
+	display: flow-root;
 	align-self: flex-start;
 
 	margin-top: 5rem;
 	margin-left: 10rem;
+
+	text-align: left;
+}
+
+.comment {
+	display: flex;
+	flex-direction: column;
+
+	margin-top: 2rem;
+}
+
+.comment p {
+	padding-left: 3rem;
 }
