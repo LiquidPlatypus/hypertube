@@ -1,6 +1,6 @@
 .TVRemote {
 	width: 340px;
-	height: 550px;
+	height: 600px;
 
 	background-image: url("/assets/TVRemoteBlank.png");
 	background-repeat: no-repeat;
@@ -104,44 +104,14 @@
 	box-shadow: none;
 }
 
-/* Écran blanc pour le logout */
-.LogoutOverlay {
+.SearchContainer {
 	position: fixed;
-	inset: 0;
-	background-color: white;
-	z-index: 9999;
-	overflow: hidden;
-	pointer-events: none;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-}
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	z-index: 8;
 
-/* Ligne noire qui se resserre vers le centre */
-.LogoutOverlay::before {
-	content: "";
-	position: absolute;
-	background-color: black;
-	width: 100%;
-	height: 100%;
-	animation: crtLogout 1.5s forwards;
-	transform-origin: center;
-}
-
-@keyframes crtLogout {
-	0% {
-    width: 100%;
-    height: 100%;
-    opacity: 1;
-	}
-	50% {
-		width: 100%;   
-		height: 3px; 
-		opacity: 1;
-	}
-	100% {
-		width: 2px;
-		height: 2px;
-		opacity: 1;
-	}
+	background-color: rgba(0, 0, 0, 0.8);
+	padding: 10000px;
+	border-radius: 10px;
 }

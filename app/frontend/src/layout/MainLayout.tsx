@@ -21,11 +21,11 @@ export default function MainLayout({ children }: MainLayoutProps) {
       <header className={styles.MainHeader}>
         <MainHeader />
       </header>
-
+    <div className={styles.CRT}></div>
+		<div className={styles.Scanline}></div>
 	  <div className={styles.BackgroundWrapper}>
 		<div className={styles.Background}></div>
-		<div className={styles.CRT}></div>
-		<div className={styles.Scanline}></div>
+		
 	  </div>
 
       {/* Contenu scrollable */}

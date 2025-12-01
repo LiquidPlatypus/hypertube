@@ -70,3 +70,40 @@
 .input:focus + .icon {
 	opacity: 1;
 }
+
+/* ----- Profile Edit Variant ----- */
+.profileEdit {
+	font-family: "CommodoreRounded", serif;
+	color: #3deaea;
+	text-shadow: 0 0 25px #3deaea;
+	border: none;
+	background: none;
+	font-size: 1.9rem;
+}
+
+
+.profileEdit:focus {
+	color: #ff72dc;
+	text-shadow: 0 0 25px #ff72dc;
+	box-shadow: none;
+}
+
+.wrapper:has(.profileEdit)::before {
+	content: "·";
+	position: absolute;
+	left: -2rem;
+	top: 50%;
+	transform: translateY(-50%);
+	color: #3deaea;
+	text-shadow: 0 0 15px #3deaea;
+	opacity: 1;
+	transition: opacity 0.2s;
+	pointer-events: none;
+	font-size: 1.5rem;
+}
+
+.wrapper:has(.profileEdit:focus)::before {
+	content: "▶";
+	color: #ff72dc;
+	text-shadow: 0 0 15px #ff72dc;
+}

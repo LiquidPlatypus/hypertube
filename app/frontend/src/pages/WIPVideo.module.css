@@ -1,0 +1,111 @@
+.wrapper {
+	display: flex;
+	flex-direction: column;
+
+	width: 100%;
+	min-height: 100vh;
+
+	font-family: "CommodoreRounded", serif;
+	font-size: 1.2rem; /* équivalent à 20px */
+	padding: 0 1rem;
+	box-sizing: border-box;
+}
+
+.contentPart {
+	display: flex;
+	flex-direction: column;
+	gap: 2rem;
+}
+
+.videoPart {
+	display: flex;
+	flex-direction: column;
+	align-self: center;
+	width: 100%;
+	max-width: 1200px; /* moins rigide que 2000px */
+	padding: 0 1rem;
+}
+
+.video {
+	width: 100%;
+	height: auto;
+	aspect-ratio: 16 / 9;
+}
+
+.miscellaneousPart {
+	display: flex;
+	flex-direction: row;
+	width: 100%;
+	max-width: 1200px;
+	justify-content: space-between;
+	align-self: center;
+	padding: 0 1rem;
+	margin-top: 1.5rem;
+	flex-wrap: wrap; /* pour que ça passe sur petits écrans */
+	gap: 1rem; /* espacement entre les éléments si wrap */
+}
+
+.mainInfos {
+	text-align: left;
+	flex: 1 1 300px; /* prend l’espace disponible */
+}
+
+.summary {
+  max-width: 50rem;   /* largeur maximale */
+  width: 100%;         /* prend toute la largeur possible */
+  word-wrap: break-word; /* casse les mots trop longs si besoin */
+  overflow-wrap: break-word; /* compatibilité moderne */
+  white-space: normal; /* autorise le texte à passer à la ligne */
+  line-height: 1.5;   /* espace entre les lignes pour lisibilité */
+  margin-top: 1rem;
+}
+
+
+.rightInfos {
+	display: flex;
+	text-align: right;
+	flex: 1 1 300px;
+	justify-content: flex-end;
+}
+
+.commentsPart {
+	display: flex;
+	flex-direction: column;
+	align-self: center;
+	width: 100%;
+	max-width: 1000px;
+	margin-top: 3rem;
+	padding: 0 1rem;
+	box-sizing: border-box;
+}
+
+/* MEDIA QUERIES pour les petits écrans */
+@media (max-width: 1024px) {
+	.miscellaneousPart {
+		flex-direction: column;
+		align-items: center;
+		text-align: center;
+	}
+	.mainInfos, .rightInfos {
+		flex: 1 1 100%;
+	}
+	.summary {
+		max-width: 90%;
+	}
+	.commentsPart {
+		margin-left: 0;
+		margin-top: 2rem;
+	}
+}
+
+@media (max-width: 768px) {
+	.wrapper {
+		font-size: 1rem; /* réduire la taille du texte */
+	}
+	.videoPart {
+		max-width: 100%;
+	}
+	.summary {
+		max-width: 100%;
+	}
+}

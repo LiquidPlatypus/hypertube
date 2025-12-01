@@ -87,3 +87,5 @@ class Storage:
 			if i["user_id"] == user_id:
 				return i["image_url"]
 		return None
+
+storage = Storage()

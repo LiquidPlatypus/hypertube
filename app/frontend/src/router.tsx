@@ -4,34 +4,46 @@ import ProtectedRoute from "./utils/ProtectedRoute.tsx";
 import HomePage from "./pages/HomePage.tsx";
 import LoginPage from "./pages/LoginPage.tsx";
 import ProfilInfo from "./pages/ProfilePage.tsx";
+import WIPVideo from "./pages/WIPVideo.tsx";
 
 export const router = createBrowserRouter([
-  {
-    path: "/",
-    element: <App />, 
-    children: [
-      {
-        element: <ProtectedRoute />,
-        children: [
-          {
-            path: "/",
-            element: <HomePage />,
-          },
-          {
-            path: "/profile",
-            element: <ProfilInfo />,
-          },
-        ],
-      },
-      // Auth routes
-      {
-        path: "auth/login",
-        element: <LoginPage />,
-      },
-      {
-        path: "auth/register",
-        element: <LoginPage />,
-      },
-    ],
-  },
+	{
+		path: "/",
+		element: <App />, // layout général
+		children: [
+			// Routes protégées
+			{
+				element: <ProtectedRoute />,
+				children: [
+					{
+						path: "/",
+						element: (
+							<HomePage />
+						),
+					},
+					{
+						path: "/profile",
+						element: (
+							<ProfilInfo />
+						),
+					},
+					{
+						path: "/WIPvideo",
+						element: (
+							<WIPVideo />
+						),
+					},
+				],
+			},
+			// Auth routes
+			{
+				path: "auth/login",
+				element: <LoginPage />,
+			},
+			{
+				path: "auth/register",
+				element: <LoginPage />,
+			},
+		],
+	},
 ]);

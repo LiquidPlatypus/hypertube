@@ -6,6 +6,7 @@ interface ThumbnailProps {
 	title: string;
 	year?: string | number;
 	rating?: string | number;
+	onClick?: () => void;
 }
 
 export default function Thumbnail({
@@ -13,10 +14,12 @@ export default function Thumbnail({
 	thumbnailAlt,
 	title,
 	year,
-	rating
+	rating,
+	onClick,
 }: ThumbnailProps) {
+
 	return (
-		<div className={styles.Thumbnail}>
+		<div className={styles.Thumbnail} onClick={onClick} >
 			<div className={styles.CoverWrapper}>
 				<img
 					src={thumbnailSrc}

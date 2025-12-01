@@ -1,35 +1,43 @@
-import { useNavigate } from "react-router-dom";
+import {useNavigate} from "react-router-dom";
+import { useState } from "react";
+import { createPortal } from "react-dom";
+
 import Button from "./ui/Button.tsx";
+import SearchBar from "./ui/SearchBar.tsx";
+import {useTranslation} from "../hooks/useTranslation.tsx";
+
 import styles from "./TVRemote.module.css";
 
 export default function TVRemote() {
 	const navigate = useNavigate();
+	const [showSearch, setShowSearch] = useState(false);
+	const { currentLang, changeLang } = useTranslation();
 
-	const goHome = () => navigate("/");
+	const goHome = () => {
+		navigate("/");
+	}
 
-	const handleSearch = () => {};
-
-	const goToProfile = () => navigate("/profile");
-
-	const changeLang = () => {};
-
-	const handleLogout = () => {
-		localStorage.removeItem("access_token");
-		localStorage.setItem("just_logged_out", "true");
-
-		// Ajouter overlay logout
-		const overlay = document.createElement("div");
-		overlay.className = styles.LogoutOverlay;
-		document.body.appendChild(overlay);
-
-		// Supprimer overlay et naviguer après un délai
-		setTimeout(() => {
-			document.body.removeChild(overlay);
-			navigate("/auth/login");
-		}, 1500);
+	const showSearchBar = () => {
+		setShowSearch((prev) => !prev);
 	};
 
+	const goToProfile = () => {
+		navigate("/profile");
+	}
 
+	const handleChangeLang = async () => {
+		const newLang = currentLang === "en" ? "fr" : "en";
+		await changeLang(newLang);
+	}
+
+	const handleLogout = () => {
+		try {
+			localStorage.removeItem("access_token");
+			navigate('/auth/login');
+		} catch (error) {
+			console.error("Error server");
+		}
+	}
 
 	return (
 		<div className={styles.TVRemote}>
@@ -48,7 +56,7 @@ export default function TVRemote() {
 				icon="assets/SearchW.svg"
 				className={styles.SearchBtn}
 				variant="remote"
-				onClick={handleSearch}
+				onClick={showSearchBar}
 			/>
 			<Button
 				text=""
@@ -65,7 +73,7 @@ export default function TVRemote() {
 				shape="square"
 				className={styles.LangBtn}
 				variant="remote"
-				onClick={changeLang}
+				onClick={handleChangeLang}
 			/>
 			<Button
 				text=""
@@ -76,6 +84,13 @@ export default function TVRemote() {
 				variant="remote"
 				onClick={handleLogout}
 			/>
+
+			{showSearch && createPortal(
+				<div className={styles.SearchContainer}>
+					<SearchBar />
+				</div>,
+				document.body
+			)}
 		</div>
 	);
 }

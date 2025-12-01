@@ -1,0 +1,36 @@
+{
+	"login.title": "Connexion",
+	"login.button": "Connexion",
+	"login.submit": "Se connecter",
+	"login.placeholder.username": "Nom d'utilisateur",
+	"login.placeholder.password": "Mot de passe",
+	"login.error.incorrect": "Nom d'utilisateur ou mot de passe incorrect",
+
+	"register.title": "Inscription",
+	"register.button": "Inscription",
+	"register.submit": "S'inscrire",
+	"register.placeholder.firstname": "Prénom",
+	"register.placeholder.lastname": "Nom",
+	"register.placeholder.username": "Nom d'utilisateur",
+	"register.placeholder.email": "Email",
+	"register.placeholder.password": "Mot de passe",
+	"register.placeholder.confirmPassword": "Confirmer le mot de passe",
+	"register.success": "Compte créé avec succès ! Vous pouvez maintenant vous connecter.",
+	"register.error.passwordMismatch": "Les mots de passe ne correspondent pas",
+	"register.error.failed": "Erreur lors de l'inscription",
+	"register.error.notPossible": "Création de compte impossible",
+
+	"profile.failedUpdate": "Échec de la mise à jour",
+	"profile.errorUpdate": "Erreur lors de la mise à jour du profil:",
+	"profile.userProfile": "Profil utilisateur",
+	"profile.username": "Nom d'utilisateur",
+	"profile.email": "Mail",
+	"profile.edit": "Modifier le profil",
+	"profile.save": "Sauvegarder",
+	"profile.cancel": "Annuler",
+
+	"video.error": "Erreur lors du chargement de la vidéo",
+	"video.summary": "Résumé",
+	"video.casting": "Distribution",
+	"video.comments": "Commentaires"
+}

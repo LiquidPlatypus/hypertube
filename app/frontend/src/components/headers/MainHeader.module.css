@@ -2,7 +2,7 @@
   position: relative;
   width: 100%;
   height: 20px;
-  background-color: rgba(0, 0, 0, 0.880);
+  background-color: rgba(32, 31, 31, 0.63);
   overflow: hidden;
   color: white;
   display: flex;
@@ -10,15 +10,6 @@
   justify-content: center;
   font-size: 2rem;
   font-weight: bold;
-
-  /* scanlines CRT */
-  background-image: 
-    repeating-linear-gradient(
-      to bottom,
-      rgba(255, 255, 255, 0.05) 0px,
-      rgba(255, 255, 255, 0.05) 1px,
-      rgba(0,0,0,0.3) 4px
-    );
   mix-blend-mode: overlay;
 }
 
@@ -27,7 +18,6 @@
   content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse at center, rgba(0,0,0,0) 50%, rgba(0,0,0,0.3) 100%);
   pointer-events: none;
   z-index: 0;
 

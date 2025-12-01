@@ -6,6 +6,7 @@ type InputProps = {
 	placeholder?: string;
 	accept?: string;
 	value?: string;
+	variant?: "default" | "profileEdit";
 	onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
 	size?: "small" | "medium" | "large";
 	shape?: "rounded" | "square" | "pill";
@@ -21,6 +22,7 @@ export default function Input({
 	placeholder = "",
 	accept,
 	value = "",
+	variant = "default",
 	onChange,
 	size = "medium",
 	shape = "rounded",
@@ -34,6 +36,7 @@ export default function Input({
 		styles.input,
 		styles[size],
 		styles[shape],
+		styles[variant || "default"],
 		className,
 	].filter(Boolean).join(" ");
 

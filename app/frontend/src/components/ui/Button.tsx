@@ -9,7 +9,7 @@ type ButtonProps = {
 	imageOnly?: boolean;
 	style?: React.CSSProperties;
 	className?: string;
-	variant?: "default" | "dark" | "remote"
+	variant?: "default" | "dark" | "remote" | "profileEdit"
 	onClick?: () => void;
 	alt?: string;
 };

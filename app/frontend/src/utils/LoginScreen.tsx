@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import Button from "../components/ui/Button.tsx";
 import Input from "../components/ui/Input.tsx";
 import styles from "./LoginScreen.module.css";
+import { GoogleOAuthProvider, GoogleLogin, type GoogleCredentialResponse } from "@react-oauth/google";
+
 
 interface LoginScreenProps {
 	onLoginSuccess?: () => void;
@@ -10,7 +12,7 @@ interface LoginScreenProps {
 export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 	const [isLogin, setIsLogin] = useState(true);
 	const [message, setMessage] = useState("");
-
+	const [_isLoading, setIsLoading] = useState(false);
 	const [loginData, setLoginData] = useState({ username: "", password: "" });
 	const [registerData, setRegisterData] = useState({
 		firstName: "",
@@ -96,7 +98,40 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 	};
 
 	// OAuth handlers (TODO)
-	const handleGoogleLogin = () => console.log("TODO: redirect to /api/auth/google");
+	const handleGoogleLogin = async (credentialResponse: GoogleCredentialResponse) => {
+		if (!credentialResponse.credential) return;
+
+		try {
+			setIsLoading(true);
+
+			const token = credentialResponse.credential;
+			const response = await fetch(`/api/google-auth`, {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ token }),
+			});
+
+			if (!response.ok) {
+				const err = await response.json();
+				setMessage(err.detail || "Erreur Google Auth");
+				setIsLoading(false);
+				return;
+			}
+
+			const data = await response.json();
+			localStorage.setItem("access_token", data.access_token);
+
+			setTimeout(() => {
+				setIsLoading(false);
+				onLoginSuccess?.(); 
+			}, 500);
+
+		} catch (error) {
+			setIsLoading(false);
+			console.error(error);
+		}
+	};
+
 	const handleIntra42Login = () => console.log("TODO: redirect to /api/auth/intra42");
 
 	return (
@@ -148,11 +183,15 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 							}}
 						/>
 					</div>
-
 					<div className={styles.OAuthButtons}>
-						<Button text="Google" size="large" shape="pill" onClick={handleGoogleLogin} />
+ 						<GoogleOAuthProvider clientId="504765868462-ssreveurjgq1i8tuoinem6fcp0g8kv90.apps.googleusercontent.com">
+							<GoogleLogin
+ 								onSuccess={handleGoogleLogin}
+ 								onError={() => console.error("Google Auth Failed")}
+ 							/>
+ 						</GoogleOAuthProvider>
 						<Button text="Intra 42" size="large" shape="pill" onClick={handleIntra42Login} />
-					</div>
+ 					</div>
 				</>
 			)}
 
