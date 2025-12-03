@@ -3,18 +3,18 @@ import { useTranslation } from "../hooks/useTranslation.tsx";
 import styles from "./WIPVideo.module.css";
 
 const comments = [
-	{ id: 1, pseudo: "Pseudo", text: "fffffffffff" },
+	{ id: 1, pseudo: "Pseudo", text: "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff" },
 	{ id: 2, pseudo: "Pseudo", text: "fffffffffff" },
 	{ id: 3, pseudo: "Pseudo", text: "fffffffffff" },
 	{ id: 4, pseudo: "Pseudo", text: "fffffffffff" },
 	{ id: 5, pseudo: "Pseudo", text: "fffffffffff" },
 	{ id: 6, pseudo: "Pseudo", text: "fffffffffff" },
 	{ id: 7, pseudo: "Pseudo", text: "fffffffffff" },
-	{ id: 8, pseudo: "Pseudo", text: "fffffffffff" },
+	{ id: 8, pseudo: "Pseudo", text: "ffffffffffffffffffffffffff ffffffffffffffffffffffffffffff" },
 	{ id: 9, pseudo: "Pseudo", text: "fffffffffff" },
 	{ id: 10, pseudo: "Pseudo", text: "fffffffffff" },
 	{ id: 11, pseudo: "Pseudo", text: "fffffffffff" },
-	{ id: 12, pseudo: "Pseudo", text: "fffffffffff" },
+	{ id: 12, pseudo: "Pseudo", text: "ffffffffffffffffffffffffffffffffffffffffffffffffff" },
 	{ id: 13, pseudo: "Pseudo", text: "fffffffffff" },
 	{ id: 14, pseudo: "Pseudo", text: "fffffffffff" },
 	{ id: 15, pseudo: "Pseudo", text: "fffffffffff" },
@@ -98,12 +98,16 @@ export default function WIPVideo() {
 			</div>
 
 			<div className={styles.commentsPart}>
-				{comments.map((comment) => (
-					<div key={comment.id} className={styles.comment}>
-						<h3>{comment.pseudo}</h3>
-						<p>{comment.text}</p>
-					</div>
-				))}
+				<h2>{t("video.comments")}</h2>
+
+				<div className={styles.commentsList}>
+					{comments.map((comment) => (
+						<div key={comment.id} className={styles.comment}>
+							<h3>{comment.pseudo}</h3>
+							<p>{comment.text}</p>
+						</div>
+					))}
+				</div>
 			</div>
 		</div>
 	);

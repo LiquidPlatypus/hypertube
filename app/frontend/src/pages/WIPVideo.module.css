@@ -1,13 +1,16 @@
 .wrapper {
 	display: flex;
+	align-items: flex-start;
 
 	width: 100%;
 
 	font-family: "CommodoreRounded", serif;
 	font-size: 20px;
+
+	overflow-x: hidden;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1920px) {
 	.wrapper {
 		flex-direction: column;
 		align-items: center;
@@ -33,23 +36,34 @@
 
 	.commentsPart {
 		width: 100%;
-		margin-top: 2rem;
-		padding: 0 1.5rem;
+		margin: 2rem 10rem;
+		max-height: none;
 	}
 }
 
 .contentPart {
 	display: flex;
 	flex-direction: column;
-	width: 100%;
+	flex: 1 1 auto;
 	box-sizing: border-box;
 
-	margin: 0 10rem;
+	margin: 0 clamp(1.5rem, 6vw, 10rem);
+	max-width: clamp(40rem, 90vw, 90rem);
 }
 
 @media (max-width: 900px) {
 	.contentPart {
 		margin: 0 1.5rem;
+	}
+
+	.commentsPart {
+		align-self: stretch;
+		margin: 1.5rem;
+		max-height: none;
+	}
+
+	.comment p {
+		padding-left: 1.5rem;
 	}
 }
 
@@ -58,7 +72,7 @@
 	flex-direction: column;
 	align-self: flex-start;
 	width: 100%;
-	max-width: 1500px;
+	max-width: 100%;
 	box-sizing: border-box;
 }
 
@@ -68,6 +82,7 @@
 	max-width: 100%;
 	height: auto;
 	aspect-ratio: 16 / 9;
+	object-fit: contain;
 }
 
 @media (max-width: 600px) {
@@ -79,8 +94,11 @@
 .miscellaneousPart {
 	display: flex;
 	flex-direction: row;
-	max-width: 1500px;
+	max-width: clamp(40rem, 90vw, 90rem);
 	justify-content: space-between;
+	align-items: flex-start;
+	gap: 2rem;
+	max-height: min(60vh, 32rem);
 }
 
 .mainInfos {
@@ -105,8 +123,9 @@
 }
 
 .cover img {
-	height: 125%;
-	aspect-ratio: auto;
+	width: 100%;
+	height: auto;
+	object-fit: cover;
 }
 
 .cast {
@@ -121,14 +140,15 @@
 	list-style: none;
 
 	display: flex;
+	width: 100%;
 	column-gap: 5rem;
 
 	padding-left: 0;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1650px) {
 	.castList {
-		overflow-x: auto;
+		overflow-x: scroll;
 		column-gap: 1.5rem;
 		padding-bottom: 1rem;
 		scrollbar-width: thin;
@@ -145,14 +165,32 @@
 }
 
 .commentsPart {
-	align-self: flex-start;
+	display: flex;
+	flex-direction: column;
+
+	margin-right: 1.5rem;
 
 	text-align: left;
 }
 
+.commentsList {
+	flex: 1 1 auto;
+	padding-right: 0.5rem;
+	max-height: 100vh;
+	max-width: 50vh;
+	overflow-y: auto;
+}
+
 @media (max-width: 900px) {
 	.commentsPart {
-		align-self: stretch;
+		width: 100%;
+		margin: 1.5rem;
+		max-height: none;        /* pas de hauteur max */
+	}
+
+	.commentsList {
+		max-height: none;
+		overflow-y: visible;     /* pas de scroll interne */
 	}
 
 	.comment p {
@@ -161,10 +199,11 @@
 }
 
 .comment {
-	display: flex;
-	flex-direction: column;
+	padding-bottom: 1rem;
 }
 
 .comment p {
 	padding-left: 3rem;
+
+	word-wrap: break-word;
 }
