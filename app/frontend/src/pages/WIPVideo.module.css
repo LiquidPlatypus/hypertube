@@ -23,6 +23,7 @@
 	.miscellaneousPart {
 		flex-direction: column;
 		align-items: flex-start;
+		max-height: none;
 	}
 
 	.rightInfos {
@@ -39,6 +40,62 @@
 		margin: 2rem 10rem;
 		max-height: none;
 	}
+
+	.commentsList {
+		max-height: none !important;
+		max-width: 100% !important;
+		overflow-y: visible !important;
+	}
+
+	.comment p {
+		padding-left: 1.5rem;
+	}
+}
+
+@media (max-width: 900px) {
+	.contentPart {
+		margin: 0 1.5rem;
+	}
+
+	.commentsPart {
+		width: 100%;
+		margin: 1.5rem;
+		max-height: none;
+		align-self: stretch;
+	}
+
+	.commentsList {
+		max-height: none;
+		overflow-y: visible;
+	}
+
+	.comment p {
+		padding-left: 1.5rem;
+	}
+}
+
+@media (max-width: 600px) {
+	.videoPart {
+		max-width: 100%;
+	}
+}
+
+@media (max-width: 1650px) {
+	.castList {
+		overflow-x: scroll;
+		column-gap: 1.5rem;
+		padding-bottom: 1rem;
+		scrollbar-width: thin;
+	}
+
+	.castList li {
+		flex: 0 0 auto;
+	}
+
+	.cast {
+		width: 100%;
+		padding-right: 1.5rem;
+	}
 }
 
 .contentPart {
@@ -49,22 +106,6 @@
 
 	margin: 0 clamp(1.5rem, 6vw, 10rem);
 	max-width: clamp(40rem, 90vw, 90rem);
-}
-
-@media (max-width: 900px) {
-	.contentPart {
-		margin: 0 1.5rem;
-	}
-
-	.commentsPart {
-		align-self: stretch;
-		margin: 1.5rem;
-		max-height: none;
-	}
-
-	.comment p {
-		padding-left: 1.5rem;
-	}
 }
 
 .videoPart {
@@ -83,12 +124,6 @@
 	height: auto;
 	aspect-ratio: 16 / 9;
 	object-fit: contain;
-}
-
-@media (max-width: 600px) {
-	.videoPart {
-		max-width: 100%;
-	}
 }
 
 .miscellaneousPart {
@@ -146,24 +181,6 @@
 	padding-left: 0;
 }
 
-@media (max-width: 1650px) {
-	.castList {
-		overflow-x: scroll;
-		column-gap: 1.5rem;
-		padding-bottom: 1rem;
-		scrollbar-width: thin;
-	}
-
-	.castList li {
-		flex: 0 0 auto;
-	}
-
-	.cast {
-		width: 100%;
-		padding-right: 1.5rem;
-	}
-}
-
 .commentsPart {
 	display: flex;
 	flex-direction: column;
@@ -181,29 +198,13 @@
 	overflow-y: auto;
 }
 
-@media (max-width: 900px) {
-	.commentsPart {
-		width: 100%;
-		margin: 1.5rem;
-		max-height: none;        /* pas de hauteur max */
-	}
-
-	.commentsList {
-		max-height: none;
-		overflow-y: visible;     /* pas de scroll interne */
-	}
-
-	.comment p {
-		padding-left: 1.5rem;
-	}
-}
 
 .comment {
 	padding-bottom: 1rem;
 }
 
 .comment p {
-	padding-left: 3rem;
+	padding-left: 1.5rem;
 
 	word-wrap: break-word;
 }
