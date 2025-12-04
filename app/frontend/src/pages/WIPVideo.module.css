@@ -27,7 +27,6 @@
 	}
 
 	.rightInfos {
-		margin-top: 1.5rem;
 		text-align: left;
 	}
 
@@ -75,8 +74,48 @@
 }
 
 @media (max-width: 600px) {
+	.contentPart {
+		align-items: center;
+	}
+
 	.videoPart {
-		max-width: 100%;
+		align-self: center !important;
+		max-width: 375px !important;
+	}
+
+	.miscellaneousPart {
+		font-size: 8px;
+		margin: 0 9.5rem;
+
+		max-width: 360px !important;
+	}
+
+	.mainInfos {
+		max-width: 200px !important;
+	}
+
+	.rightInfos {
+		margin-top: 0.2rem;
+	}
+
+	.meta {
+		margin-right: 0.5rem !important;
+	}
+
+	.cover {
+		margin-top: 0.5rem !important;
+	}
+
+	.cast {
+		margin-top: 0 !important;
+	}
+
+	.commentsPart {
+		font-size: 8px;
+	}
+
+	.commentsList {
+		margin-right: 3.5rem;
 	}
 }
 
