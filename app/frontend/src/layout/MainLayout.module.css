@@ -101,3 +101,12 @@
 	transform: translateY(140px);
 	opacity: 1;
 }
+
+.noFx::before {
+	/*display: none; pour les bords noirs*/
+	background: none;
+}
+
+.noFx .ScrollArea:after {
+	background: none;
+}
