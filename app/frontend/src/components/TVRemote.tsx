@@ -30,6 +30,10 @@ export default function TVRemote() {
 		await changeLang(newLang);
 	}
 
+	const FXToggle = async () => {
+
+	}
+
 	const handleLogout = () => {
 		try {
 			localStorage.removeItem("access_token");
@@ -74,6 +78,14 @@ export default function TVRemote() {
 				className={styles.LangBtn}
 				variant="remote"
 				onClick={handleChangeLang}
+			/>
+			<Button
+				text="FX"
+				size="small"
+				shape="square"
+				className={styles.FXBtn}
+				variant="remote"
+				onClick={FXToggle}
 			/>
 			<Button
 				text=""
