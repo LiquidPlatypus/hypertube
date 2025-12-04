@@ -1,4 +1,4 @@
 app/frontend/node_modules
-app/backend/app/__pycache__
+app/backend/app/__pycache__/
 venv
 .idea
