@@ -1,3 +1,4 @@
+import datetime
 class Storage:
 	def __init__(self):
 		self.users = []
@@ -89,17 +90,22 @@ class Storage:
 				return i["image_url"]
 		return None
 	
-	def add_comment(self, content, author, date):
+	def add_comment(self, content, author):
 		"""
 		DESK:
 		Set in DB the comment and metadata of this
 		date : mm/jj/aaaa : must be an array of int: 0[mm], 1[jj], 2[aaaa]
 		author : author username
 		"""
+		date = datetime.datetime.now()
 		comment = {"id": len(self.comments) + 1, "content": content, "author": author, "date": date}
 		self.comments.append(comment)
 	
-	# def get_comment
+	def get_comment(self, id):
+		for i in self.comments:
+			if i["id"] == id:
+				return i
+		return None
 
 
 storage = Storage()
