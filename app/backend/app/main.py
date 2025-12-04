@@ -5,6 +5,7 @@ from fastapi.responses import JSONResponse
 from .auth import router as auth_router
 from .utils import verif_access_token
 from .users import router as users_router
+from .comment import router as comment_router
 
 # INIT
 
@@ -42,6 +43,7 @@ async def verif_header(request: Request, call_next):
 
 app.include_router(auth_router)
 app.include_router(users_router)
+app.include_router(comment_router)
 
 @app.get("/api/verify-token/{token}")
 async def verify_user_token(token: str):

@@ -3,6 +3,7 @@ class Storage:
 		self.users = []
 		self.password = []
 		self.profile_pic = []
+		self.comments = []
 
 	def add_user(self, username: str, email: str, password: str, firstname: str, lastname: str):
 		"""
@@ -87,5 +88,18 @@ class Storage:
 			if i["user_id"] == user_id:
 				return i["image_url"]
 		return None
+	
+	def add_comment(self, content, author, date):
+		"""
+		DESK:
+		Set in DB the comment and metadata of this
+		date : mm/jj/aaaa : must be an array of int: 0[mm], 1[jj], 2[aaaa]
+		author : author username
+		"""
+		comment = {"id": len(self.comments) + 1, "content": content, "author": author, "date": date}
+		self.comments.append(comment)
+	
+	# def get_comment
+
 
 storage = Storage()
