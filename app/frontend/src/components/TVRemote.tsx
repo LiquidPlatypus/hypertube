@@ -8,7 +8,11 @@ import {useTranslation} from "../hooks/useTranslation.tsx";
 
 import styles from "./TVRemote.module.css";
 
-export default function TVRemote() {
+interface TVRemoteProps {
+	onToggleFx?: () => void;
+}
+
+export default function TVRemote({ onToggleFx }: TVRemoteProps) {
 	const navigate = useNavigate();
 	const [showSearch, setShowSearch] = useState(false);
 	const { currentLang, changeLang } = useTranslation();
@@ -28,10 +32,6 @@ export default function TVRemote() {
 	const handleChangeLang = async () => {
 		const newLang = currentLang === "en" ? "fr" : "en";
 		await changeLang(newLang);
-	}
-
-	const FXToggle = async () => {
-
 	}
 
 	const handleLogout = () => {
@@ -85,7 +85,8 @@ export default function TVRemote() {
 				shape="square"
 				className={styles.FXBtn}
 				variant="remote"
-				onClick={FXToggle}
+				onClick={onToggleFx}
+				aria-pressed="false"
 			/>
 			<Button
 				text=""

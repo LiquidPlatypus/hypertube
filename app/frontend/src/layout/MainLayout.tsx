@@ -11,9 +11,13 @@ interface MainLayoutProps {
 }
 
 export default function MainLayout({ children }: MainLayoutProps) {
+	const [fxEnabled, setFxEnabled] = React.useState(true);
+
+	const toggleFx = () => setFxEnabled(v => !v);
+
 	return (
 		<div
-			className={styles.MainLayout}
+			className={`${styles.MainLayout} ${!fxEnabled ? styles.noFx : ""}`}
 			style={{
 				"--header-height": "150px",
 				"--footer-height": "100px",
@@ -34,7 +38,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
 			</footer>
 
 			<div className={styles.TVRemoteContainer}>
-				<TVRemote />
+				<TVRemote onToggleFx={toggleFx} />
 			</div>
 		</div>
 	);
