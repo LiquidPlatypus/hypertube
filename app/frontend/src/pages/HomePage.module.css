@@ -18,3 +18,16 @@
 	scrollbar-width: thin;
 	scrollbar-color: #aaa transparent;
 }
+
+@media (max-width: 600px) {
+	.content {
+		width: 50%;
+	}
+
+	.thumbnails {
+		max-width: clamp(1rem, 1vw, 1rem);
+		grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+		padding: 0;
+		margin: 0;
+	}
+}
