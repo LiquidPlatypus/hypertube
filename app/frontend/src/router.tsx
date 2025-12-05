@@ -13,7 +13,6 @@ const routes: RouteObject[] = [
 		element: <App />,
 		children: [
 			{
-				// all protected element by login system must be here
 				path: "/",
 				element: <ProtectedRoute />,
 				children: [

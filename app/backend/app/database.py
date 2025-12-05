@@ -117,5 +117,7 @@ class Storage:
 				return comment
 		return None
 
+	def get_comments(self):
+		return self.comments
 
 storage = Storage()

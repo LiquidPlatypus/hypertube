@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 export interface User {
@@ -21,6 +21,7 @@ export default function HomePage() {
 	const [profilePic, setProfilePic] = useState<string | null>(null);
 	const navigate = useNavigate();
 	const [comment, setComment] = useState("");
+	const [comments, setComments] = useState<string[]>([]);
 
 	const testGetUserInfo = async (e: React.MouseEvent<HTMLButtonElement>) => {
 		e.preventDefault();
@@ -168,7 +169,44 @@ export default function HomePage() {
 				throw new Error("Server Error");
 			const data = await response.json();
 			console.log(data.comment);
-			setComment("Comment catched");
+			setComments(prevState => {
+				if (prevState.includes(data.comment.content)) {
+					const clone = [...prevState];
+					clone.splice(prevState.indexOf(data.comment.content), 1)
+					return clone;
+				} else {
+					return [...prevState, data.comment.content];
+				}
+			});
+		} catch (error) {
+			console.error(error);
+			setComment("Error server");
+		}
+	}
+
+	const getComments = async (e: React.MouseEvent<HTMLButtonElement>) => { // il faut enlever le any svp
+		e.preventDefault();
+		const token = localStorage.getItem("access_token");
+		try {
+			const response = await fetch("/api/comments", {
+				method: "GET",
+				headers: {
+					Authorization: `Bearer ${token}`,
+				},
+			});
+			if (!response.ok)
+				throw new Error("Server Error");
+			const data = await response.json();
+			console.log(data.comments);
+			// setComments(prevState => {
+			// 	if (prevState.includes(data.comment.content)) {
+			// 		const clone = [...prevState];
+			// 		clone.splice(prevState.indexOf(data.comment.content), 1)
+			// 		return clone;
+			// 	} else {
+			// 		return [...prevState, data.comment.content];
+			// 	}
+			// });
 		} catch (error) {
 			console.error(error);
 			setComment("Error server");
@@ -247,7 +285,9 @@ export default function HomePage() {
 						/>
 						<button type="submit">submit</button>
 					</form>
-					<h3>{comment}</h3>
+					<h3>{comments}</h3>
+					<button onClick={getComments}>get comments</button>
+					<p>{comments}</p>
 				</div>
 		</div>
 	);

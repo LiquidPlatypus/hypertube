@@ -35,4 +35,7 @@ async def modif_comment_byid(data: CustomCommentForm, current_user=Depends(verif
     print(comment)
     return {"comment": comment}
 
-
+@router.get("/api/comments")
+async def get_comments(current_user=Depends(verif_access_token)):
+    comments = storage.get_comments()
+    return {"comments": comments}

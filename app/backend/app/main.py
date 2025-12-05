@@ -29,15 +29,15 @@ async def verif_header(request: Request, call_next):
 	response = await call_next(request)
 	return response
 
-@app.websocket("/ws")
-async def websocket_endpoint(ws: WebSocket):
-    await ws.accept()
-    try:
-        while True:
-            data = await ws.receive_text()
-            await ws.send_text(f"Message Receive : {data}")
-    except WebSocketDisconnect:
-        print(f"❌ Client left")
+# @app.websocket("/ws")
+# async def websocket_endpoint(ws: WebSocket):
+#     await ws.accept()
+#     try:
+#         while True:
+#             data = await ws.receive_text()
+#             await ws.send_text(f"Message Receive : {data}")
+#     except WebSocketDisconnect:
+#         print(f"❌ Client left")
 
 
 # ROUTER
