@@ -20,6 +20,7 @@ export default function HomePage() {
 	const [file, setFile] = useState<File | null>(null);
 	const [profilePic, setProfilePic] = useState<string | null>(null);
 	const navigate = useNavigate();
+	const [comment, setComment] = useState("");
 
 	const testGetUserInfo = async (e: React.MouseEvent<HTMLButtonElement>) => {
 		e.preventDefault();
@@ -150,6 +151,30 @@ export default function HomePage() {
 		}
 	};
 
+	const postComment = async (e: React.FormEvent<HTMLFormElement>) => {
+		e.preventDefault();
+		const token = localStorage.getItem("access_token");
+		try {
+			const content = comment;
+			const response = await fetch("/api/comments", {
+				method: "POST",
+				headers: {
+					Authorization: `Bearer ${token}`,
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({ content }),
+			});
+			if (!response.ok)
+				throw new Error("Server Error");
+			const data = await response.json();
+			console.log(data.comment);
+			setComment("Comment catched");
+		} catch (error) {
+			console.error(error);
+			setComment("Error server");
+		}
+	}
+
 	return (
 		<div>
 			<button onClick={testMessage}>Hello</button>
@@ -208,6 +233,22 @@ export default function HomePage() {
 				</form>
 				<button onClick={testGetUserInfo}>Click me</button>
 				<button onClick={logout}>Logout</button>
+				<div>
+					<h1>COMMENT PART:</h1>
+					<form onSubmit={postComment}>
+						<label htmlFor="comment">Enter comment :</label>
+						<input
+							id="comment"
+							type="text"
+							value={comment}
+							onChange={(e) => setComment(e.target.value)}
+							placeholder="your comment"
+							required
+						/>
+						<button type="submit">submit</button>
+					</form>
+					<h3>{comment}</h3>
+				</div>
 		</div>
 	);
 }

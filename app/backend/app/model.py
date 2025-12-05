@@ -54,3 +54,7 @@ class SuccessException(Exception):
 
 class CommentForm(BaseModel):
 	content: str
+
+class CustomCommentForm(BaseModel):
+	id: int
+	new_content: str

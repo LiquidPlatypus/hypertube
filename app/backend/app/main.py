@@ -1,11 +1,12 @@
 import os
-from fastapi import FastAPI, Depends, Request
+from fastapi import FastAPI, Depends, Request, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from .auth import router as auth_router
 from .utils import verif_access_token
 from .users import router as users_router
 from .comment import router as comment_router
+
 
 # INIT
 
@@ -28,15 +29,15 @@ async def verif_header(request: Request, call_next):
 	response = await call_next(request)
 	return response
 
-# @app.websocket("/ws")
-# async def websocket_endpoint(ws: WebSocket):
-#     await ws.accept()
-#     try:
-#         while True:
-#             data = await ws.receive_text()
-#             await ws.send_text(f"Message Receive : {data}")
-#     except WebSocketDisconnect:
-#         print(f"❌ Client left")
+@app.websocket("/ws")
+async def websocket_endpoint(ws: WebSocket):
+    await ws.accept()
+    try:
+        while True:
+            data = await ws.receive_text()
+            await ws.send_text(f"Message Receive : {data}")
+    except WebSocketDisconnect:
+        print(f"❌ Client left")
 
 
 # ROUTER

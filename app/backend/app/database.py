@@ -90,7 +90,7 @@ class Storage:
 				return i["image_url"]
 		return None
 	
-	def add_comment(self, content, author):
+	def add_comment(self, content: str, author: str):
 		"""
 		DESK:
 		Set in DB the comment and metadata of this
@@ -100,11 +100,21 @@ class Storage:
 		date = datetime.datetime.now()
 		comment = {"id": len(self.comments) + 1, "content": content, "author": author, "date": date}
 		self.comments.append(comment)
+		return comment
 	
 	def get_comment(self, id):
 		for i in self.comments:
 			if i["id"] == id:
 				return i
+		return None
+
+	def custom_comment(self, id: int, new_content: str):
+		for i in self.comments:
+			if i["id"] == id:
+				comment = {"id": i["id"], "content": new_content, "author": i["author"], "date": i["date"]}
+				self.comments.remove(i)
+				self.comments.append(comment)
+				return comment
 		return None
 
 

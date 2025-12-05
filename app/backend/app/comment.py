@@ -2,7 +2,7 @@ from fastapi import APIRouter
 from .database import storage
 from fastapi import HTTPException, Depends
 from .utils import verif_access_token
-from .model import CommentForm
+from .model import CommentForm, CustomCommentForm
 import datetime
 
 router = APIRouter()
@@ -16,10 +16,23 @@ async def get_comment_byid(id: int, current_user=Depends(verif_access_token)):
             detail="Comment not found"
         )
     print(comment)
-    return comment
+    return {"comment": comment}
 
 @router.post("/api/comments")
 async def post_comment(data: CommentForm, current_user=Depends(verif_access_token)):
-    storage.add_comment(data.content, current_user["username"])
-    return {"returnValue": True}
+    comment = storage.add_comment(data.content, current_user["username"])
+    print(comment)
+    return {"comment": comment}
     
+@router.patch("/api/comments/{id}")
+async def modif_comment_byid(data: CustomCommentForm, current_user=Depends(verif_access_token)):
+    comment = storage.custom_comment(id, data.new_content)
+    if not id or comment == None:
+        raise HTTPException(
+            status_code=404,
+            detail="Comment not found"
+        )
+    print(comment)
+    return {"comment": comment}
+
+
