@@ -30,6 +30,10 @@
 	"profile.cancel": "Cancel",
 
 	"video.error": "Error loading video",
+	"video.title": "Title",
+	"video.year": "Year",
+	"video.length": "Length",
+	"video.grade": "Grade",
 	"video.casting": "Casting",
 	"video.comments": "Comments"
 }

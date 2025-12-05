@@ -30,6 +30,10 @@
 	"profile.cancel": "Annuler",
 
 	"video.error": "Erreur lors du chargement de la vidéo",
+	"video.title": "Titre",
+	"video.year": "Année",
+	"video.length": "Durée",
+	"video.grade": "Note",
 	"video.casting": "Distribution",
 	"video.comments": "Commentaires"
 }

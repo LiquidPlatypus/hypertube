@@ -42,7 +42,7 @@ export default function WIPVideo() {
 				</div>
 				<div className={styles.miscellaneousPart}>
 					<div className={styles.mainInfos}>
-						<h2>TITLE</h2>
+						<h2>{t("video.title")}</h2>
 						<p className={styles.summary}>
 							tres long resumetres long resumetres long resumetres
 							long resumetres long resume tres long resumetres
@@ -53,9 +53,9 @@ export default function WIPVideo() {
 					</div>
 					<div className={styles.rightInfos}>
 						<div className={styles.meta}>
-							<p>year</p>
-							<p>lenght</p>
-							<p>grade</p>
+							<p>{t("video.year")}</p>
+							<p>{t("video.length")}</p>
+							<p>{t("video.grade")}</p>
 						</div>
 						<div className={styles.cover}>
 							<img
@@ -69,30 +69,42 @@ export default function WIPVideo() {
 				<div className={styles.cast}>
 					<h3>{t("video.casting")}</h3>
 					<ul className={styles.castList}>
-						<li><img
-							src="/assets/Vertical_placeholder.svg"
-							alt="casting"
-						/></li>
-						<li><img
-							src="/assets/Vertical_placeholder.svg"
-							alt="casting"
-						/></li>
-						<li><img
-							src="/assets/Vertical_placeholder.svg"
-							alt="casting"
-						/></li>
-						<li><img
-							src="/assets/Vertical_placeholder.svg"
-							alt="casting"
-						/></li>
-						<li><img
-							src="/assets/Vertical_placeholder.svg"
-							alt="casting"
-						/></li>
-						<li><img
-							src="/assets/Vertical_placeholder.svg"
-							alt="casting"
-						/></li>
+						<li>
+							<img
+								src="/assets/Vertical_placeholder.svg"
+								alt="casting"
+							/>
+						</li>
+						<li>
+							<img
+								src="/assets/Vertical_placeholder.svg"
+								alt="casting"
+							/>
+						</li>
+						<li>
+							<img
+								src="/assets/Vertical_placeholder.svg"
+								alt="casting"
+							/>
+						</li>
+						<li>
+							<img
+								src="/assets/Vertical_placeholder.svg"
+								alt="casting"
+							/>
+						</li>
+						<li>
+							<img
+								src="/assets/Vertical_placeholder.svg"
+								alt="casting"
+							/>
+						</li>
+						<li>
+							<img
+								src="/assets/Vertical_placeholder.svg"
+								alt="casting"
+							/>
+						</li>
 					</ul>
 				</div>
 			</div>
