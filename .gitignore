@@ -3,4 +3,5 @@ app/frontend/dist
 mariadb/data
 .env
 venv
+test
 .idea

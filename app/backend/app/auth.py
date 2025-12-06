@@ -5,8 +5,13 @@ from google.oauth2 import id_token
 from google.auth.transport import requests
 from datetime import timedelta
 from utils import create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES, GOOGLE_CLIENT_ID
+# import tmdbsimple as tmdb
+# import os
 
 router = APIRouter()
+
+# tmdb.API_KEY = os.getenv("TMDB_API_KEY")
+# tmdb.REQUESTS_TIMEOUT = 5
 
 @router.post("/api/register")
 async def register(data: RegisterRequest):

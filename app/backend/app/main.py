@@ -6,6 +6,7 @@ from auth import router as auth_router
 from utils import verif_access_token
 from users import router as users_router
 from stream import router as stream_router
+from movies import router as movies_router
 
 # Models Pydantic
 from model import RegisterRequest, LoginRequest, ModifyFormRequest, PasswordForm, EmailRequest, NewPasswordRequest
@@ -56,6 +57,7 @@ async def verif_header(request: Request, call_next):
 app.include_router(auth_router)
 app.include_router(users_router)
 app.include_router(stream_router)
+app.include_router(movies_router)
 
 @app.get("/api/verify-token/{token}")
 async def verify_user_token(token: str):

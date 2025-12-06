@@ -6,12 +6,23 @@ import EntryPage from "./pages/EntryPage";
 import HomePage from "./pages/HomePage";
 import IdentifyForReset from "./component/IdentifyForReset";
 import ForgotPassword from "./pages/ForgotPassword";
+import Thumbnails from "./pages/Thumbnails";
+import MovieDetails from "./pages/MovieDetails";
 
 const routes: RouteObject[] = [
 	{
 		path: "/",
 		element: <App />,
 		children: [
+			 {
+                path: "thumbnails", 
+                element: <Thumbnails />,
+            },
+			{
+				path: "movie/:id",
+				element: <MovieDetails />,
+			},
+
 			{
 				// all protected element by login system must be here
 				path: "/",

@@ -58,3 +58,4 @@ urllib3==2.5.0
 uvicorn==0.37.0
 watchfiles==1.1.1
 websockets==15.0.1
+tmdbsimple==2.9.1

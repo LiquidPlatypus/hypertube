@@ -12,6 +12,7 @@
 	},
 	"dependencies": {
 		"@react-oauth/google": "^0.12.2",
+		"axios": "^1.13.2",
 		"google-one-tap": "^1.0.6",
 		"react": "^19.1.1",
 		"react-dom": "^19.1.1",
