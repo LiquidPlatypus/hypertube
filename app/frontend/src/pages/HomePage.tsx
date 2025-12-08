@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, type SyntheticEvent, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 export interface User {
@@ -9,6 +9,11 @@ export interface User {
 		"firstname": string,
 		"lastname": string,
 	}
+}
+
+function ft_atoc(data: any) {
+	const final_string: string = '[' + data.author + ']:: ' + data.content + '//' + data.date;
+	return final_string;
 }
 
 export default function HomePage() {
@@ -173,6 +178,7 @@ export default function HomePage() {
 				if (prevState.includes(data.comment.content)) {
 					const clone = [...prevState];
 					clone.splice(prevState.indexOf(data.comment.content), 1)
+					console.log(comments);
 					return clone;
 				} else {
 					return [...prevState, data.comment.content];
@@ -184,8 +190,7 @@ export default function HomePage() {
 		}
 	}
 
-	const getComments = async (e: React.MouseEvent<HTMLButtonElement>) => { // il faut enlever le any svp
-		e.preventDefault();
+	const getComments = async () => {
 		const token = localStorage.getItem("access_token");
 		try {
 			const response = await fetch("/api/comments", {
@@ -197,21 +202,28 @@ export default function HomePage() {
 			if (!response.ok)
 				throw new Error("Server Error");
 			const data = await response.json();
-			console.log(data.comments);
-			// setComments(prevState => {
-			// 	if (prevState.includes(data.comment.content)) {
-			// 		const clone = [...prevState];
-			// 		clone.splice(prevState.indexOf(data.comment.content), 1)
-			// 		return clone;
-			// 	} else {
-			// 		return [...prevState, data.comment.content];
-			// 	}
-			// });
+			for (const it in data.comments) {
+				setComments(prevState => {
+					const printableComment = ft_atoc(data.comments[it]);
+					// if (prevState.includes(data.comments[it].id)) { // verif si il existe deja dans la list
+					// 	const clone = [...prevState];
+					// 	clone.splice(prevState.indexOf(data.comments[it].content), 1)
+					// 	return clone;
+					// } else {
+					// 	return [...prevState, data.comments[it].content];
+					// }
+					return [...prevState, printableComment];
+				});
+			}
 		} catch (error) {
 			console.error(error);
 			setComment("Error server");
 		}
 	}
+
+	useEffect(() => {
+		getComments();
+	}, []);
 
 	return (
 		<div>
@@ -285,9 +297,11 @@ export default function HomePage() {
 						/>
 						<button type="submit">submit</button>
 					</form>
-					<h3>{comments}</h3>
-					<button onClick={getComments}>get comments</button>
-					<p>{comments}</p>
+					{/* <button onClick={getComments}>get comments</button> */}
+					{/* <p>{comments}</p> */}
+					{comments.map((comment, index) => (
+						<p key={index}>{comment}</p>
+					))}
 				</div>
 		</div>
 	);
