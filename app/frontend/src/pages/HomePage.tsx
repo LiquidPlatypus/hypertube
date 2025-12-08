@@ -26,7 +26,7 @@ export default function HomePage() {
 	const [profilePic, setProfilePic] = useState<string | null>(null);
 	const navigate = useNavigate();
 	const [comment, setComment] = useState("");
-	const [comments, setComments] = useState<string[]>([]);
+	const [comments, setComments] = useState<Map<number, string>>(new Map());
 
 	const testGetUserInfo = async (e: React.MouseEvent<HTMLButtonElement>) => {
 		e.preventDefault();
@@ -175,14 +175,9 @@ export default function HomePage() {
 			const data = await response.json();
 			console.log(data.comment);
 			setComments(prevState => {
-				if (prevState.includes(data.comment.content)) {
-					const clone = [...prevState];
-					clone.splice(prevState.indexOf(data.comment.content), 1)
-					console.log(comments);
-					return clone;
-				} else {
-					return [...prevState, data.comment.content];
-				}
+				const clone = new Map(prevState);
+				clone.set(data.comment.id, data.comment.content);
+				return clone;
 			});
 		} catch (error) {
 			console.error(error);
@@ -204,15 +199,11 @@ export default function HomePage() {
 			const data = await response.json();
 			for (const it in data.comments) {
 				setComments(prevState => {
-					const printableComment = ft_atoc(data.comments[it]);
-					// if (prevState.includes(data.comments[it].id)) { // verif si il existe deja dans la list
-					// 	const clone = [...prevState];
-					// 	clone.splice(prevState.indexOf(data.comments[it].content), 1)
-					// 	return clone;
-					// } else {
-					// 	return [...prevState, data.comments[it].content];
-					// }
-					return [...prevState, printableComment];
+					const clone = new Map(prevState);
+					if (clone.get(data.comments[it].id))
+						return clone;
+					clone.set(data.comments[it].id, data.comments[it].content);
+					return clone;
 				});
 			}
 		} catch (error) {
@@ -299,8 +290,8 @@ export default function HomePage() {
 					</form>
 					{/* <button onClick={getComments}>get comments</button> */}
 					{/* <p>{comments}</p> */}
-					{comments.map((comment, index) => (
-						<p key={index}>{comment}</p>
+					{Array.from(comments.entries()).map(([id, content]) => (
+						<p key={id}>{content}</p>
 					))}
 				</div>
 		</div>
