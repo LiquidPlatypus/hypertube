@@ -5,3 +5,4 @@ mariadb/data
 venv
 test
 .idea
+app/backend/app/__pycache__/

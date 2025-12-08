@@ -4,6 +4,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import time
 from sqlalchemy.exc import OperationalError
+import datetime
 
 
 MARIADB_USER = getenv("MARIADB_USER")
@@ -60,6 +61,7 @@ class Storage:
 		self.users = []
 		self.password = []
 		self.profile_pic = []
+		self.comments = []
 
 	def add_user(self, username: str, email: str, password: str, firstname: str, lastname: str):
 		"""
@@ -144,5 +146,35 @@ class Storage:
 			if i["user_id"] == user_id:
 				return i["image_url"]
 		return None
+	
+	def add_comment(self, content: str, author: str):
+		"""
+		DESK:
+		Set in DB the comment and metadata of this
+		date : mm/jj/aaaa : must be an array of int: 0[mm], 1[jj], 2[aaaa]
+		author : author username
+		"""
+		date = datetime.datetime.now()
+		comment = {"id": len(self.comments) + 1, "content": content, "author": author, "date": date}
+		self.comments.append(comment)
+		return comment
+	
+	def get_comment(self, id):
+		for i in self.comments:
+			if i["id"] == id:
+				return i
+		return None
+
+	def custom_comment(self, id: int, new_content: str):
+		for i in self.comments:
+			if i["id"] == id:
+				comment = {"id": i["id"], "content": new_content, "author": i["author"], "date": i["date"]}
+				self.comments.remove(i)
+				self.comments.append(comment)
+				return comment
+		return None
+
+	def get_comments(self):
+		return self.comments
 
 storage = Storage()
