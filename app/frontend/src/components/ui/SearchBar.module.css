@@ -1,19 +1,135 @@
-.SearchBar {
-	position: relative;
-	font-family: "CommodoreRounded", serif;
+/* =============================== */
+/* ROW DE RECHERCHE                */
+/* =============================== */
+ .SearchRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  justify-content: center;
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 0 1rem;
+  box-sizing: border-box;
+}
+
+/* =============================== */
+/* BARRE DE RECHERCHE              */
+/* =============================== */
+
+ .SearchBar {
+  flex: 1;
+  width: 100%;
+  max-width: 600px;
+  padding: 0.6rem 1rem;
+  font-size: clamp(1rem, 2vw, 1.6rem);
+  border: 1px solid #666;
+  border-radius: 0.3rem;
+  background-color: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(3px);
+  color: #fff;
+  outline: none;
+  transition: all 0.2s ease;
 }
 
 .SearchBar:hover {
-	border-color: black;
+  border-color: #fff;
 }
 
 .SearchBar:focus {
-	border-color: black;
-	box-shadow: 0 0 5px black;
+  border-color: #fff;
+  box-shadow: 0 0 6px #fff;
 }
 
 .SearchBar::placeholder {
-	font-family: "CommodoreRounded", serif;
-	color: gray;
-	opacity: 0.5;
+  color: #fff;
+  opacity: 0.6;
+}
+
+/* =============================== */
+/* BOUTON RESET                     */
+/* =============================== */
+.ResetBtn {
+  padding: 0.3rem 1rem;
+  border: 1px solid #666;
+  border-radius: 0.3rem;
+  background-color: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(3px);
+  color: #fff;
+  font-size: clamp(1.2rem, 5vw, 2.2rem);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ResetBtn:hover {
+  border-color: #fff;
+  box-shadow: 0 0 6px #fff;
+}
+
+/* =============================== */
+/* CONTENEUR DES FILTRES           */
+/* =============================== */
+
+.FiltersContainer {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 0.8rem;
+
+  justify-content: center;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+
+.FiltersContainer select {
+  padding: clamp(0.3rem, 1vw, 0.6rem) clamp(0.6rem, 2vw, 1rem);
+  font-size: clamp(1rem, 2.5vw, 1.4rem);
+  min-width: 120px;
+  max-width: 100%;
+  
+  color: #fff;
+  background-color: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(3px);
+  border: 1px solid #666;
+  border-radius: 0.3rem;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+
+.FiltersContainer select:hover,
+.FiltersContainer select:focus {
+  border-color: #fff;
+  box-shadow: 0 0 6px #fff;
+  color: #fff;
+}
+
+/* =============================== */
+/* CONTENEUR DES THUMBNAILS        */
+/* =============================== */
+
+.ThumbnailsContainer {
+  display: flex;
+  flex-direction: column;
+  max-height: 500px;
+  overflow-y: auto;
+  gap: 0.5rem;
+  padding: 0.5rem;
+}
+
+.ThumbnailsRow {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+
+.ThumbnailsContainer::-webkit-scrollbar {
+  width: 6px;
+}
+
+.ThumbnailsContainer::-webkit-scrollbar-thumb {
+  background-color: rgba(255,255,255,0.3);
+  border-radius: 3px;
 }

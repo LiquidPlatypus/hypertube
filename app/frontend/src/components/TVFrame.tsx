@@ -1,8 +1,7 @@
-import { type ReactNode, useState, useLayoutEffect } from "react";
+import { type ReactNode, useLayoutEffect, useState } from "react";
 import styles from "./TVFrame.module.css";
 
 interface RetroTvFrameProps {
-	videoSrc?: string;
 	tvImageSrc: string;
 	tvWidth: number;
 	tvHeight: number;
@@ -10,7 +9,7 @@ interface RetroTvFrameProps {
 	screenY: number;
 	screenWidth: number;
 	screenHeight: number;
-	contentScale: number;
+	contentScale?: number;
 	children?: ReactNode;
 }
 
@@ -25,26 +24,41 @@ export default function RetroTvFrame({
 	contentScale = 1,
 	children,
 }: RetroTvFrameProps) {
-	const [scale, setScale] = useState(1);
+	const [isMobile, setIsMobile] = useState(false);
 
+	// Détecte mobile pour agrandir la TV
 	useLayoutEffect(() => {
-		const updateScale = () => {
-			const baseWidth = 700;
-			const baseHeight = 600;
-			const newScale = Math.min(screenWidth / baseWidth, screenHeight / baseHeight);
-			setScale(newScale);
-		};
+		const checkMobile = () => setIsMobile(window.innerWidth < 768);
+		checkMobile();
+		window.addEventListener("resize", checkMobile);
+		return () => window.removeEventListener("resize", checkMobile);
+	}, []);
 
-		// Delay pour attendre le layout du DOM
-		requestAnimationFrame(updateScale);
-
-		window.addEventListener("resize", updateScale);
-		return () => window.removeEventListener("resize", updateScale);
+	// Scale contenu interne
+	const [contentScaleState, setContentScaleState] = useState(1);
+	useLayoutEffect(() => {
+		const baseWidth = 700;
+		const baseHeight = 600;
+		const newScale = Math.min(screenWidth / baseWidth, screenHeight / baseHeight);
+		setContentScaleState(newScale);
 	}, [screenWidth, screenHeight]);
 
 	return (
-		<div className={styles.TV} style={{ width: tvWidth, height: tvHeight }}>
-			<img src={tvImageSrc} alt="TV rétro" className={styles.TVImage} />
+		<div
+			className={styles.TV}
+			style={{
+				width: tvWidth * (isMobile ? 1.25 : 1), // 🔥 TV plus grande sur mobile
+				height: tvHeight * (isMobile ? 1.25 : 1),
+			}}
+		>
+			<img
+				src={tvImageSrc}
+				alt="TV rétro"
+				className={styles.TVImage}
+				style={{
+					objectFit: "cover", // remplit tout le conteneur
+				}}
+			/>
 
 			<div
 				className={styles.TVScreen}
@@ -60,7 +74,7 @@ export default function RetroTvFrame({
 					<div
 						className={styles.DynamicContentCenter}
 						style={{
-							transform: `scale(${scale * contentScale})`,
+							transform: `scale(${contentScaleState * contentScale})`,
 							transformOrigin: "center center",
 							width: "800px",
 							height: "600px",

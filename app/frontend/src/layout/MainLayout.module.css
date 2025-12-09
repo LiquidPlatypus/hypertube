@@ -20,7 +20,7 @@
 .Background {
   position: absolute;
   inset: 0;
-  background-image: url('/assets/screen7.png');
+  background-image: url('/assets/screen.png');
   background-size: 100% 100%;
   background-position: center;
   image-rendering: auto;
@@ -50,8 +50,10 @@
 .CRT {
   position: absolute;
   inset: 0;
-  background: repeating-linear-gradient(to bottom, rgba(255, 255, 255, 0.062) 0px, rgba(255, 255, 255, 0.055) 1px, rgba(0, 0, 0, 0.062) 3px);
- z-index: 0;
+  background: repeating-linear-gradient(to bottom, 
+  rgba(255, 255, 255, 0.062) 0px, rgba(255, 255, 255, 0.055) 1px,
+  rgba(0, 0, 0, 0.062) 3px);
+  z-index: 0;
 }
 
 .Scanline {

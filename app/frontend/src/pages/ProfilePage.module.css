@@ -46,6 +46,13 @@
 .values {
 	color: #3deaea;
 	text-shadow: 0 0 25px #3deaea;
+	align-items: flex-start;
+    text-align: left;
+}
+
+.keys p, .values p{
+    align-items: flex-start;
+    text-align: left;     
 }
 
 .editValues {
@@ -62,23 +69,14 @@
 }
 
 /* =============================== */
-/* AVATAR */
+/*        AVATAR     */
 /* =============================== */
 
-/* Conteneur avatar au-dessus des infos */
+/* Conteneur avatar centré */
 .AvatarWrapper {
 	display: flex;
-	flex-direction: column;
-	align-items: center;
-	margin-bottom: 2rem;
-}
-
-/* Titre "Avatar" */
-.AvatarTitle {
-	color: #3deaea;
-	text-shadow: 0 0 25px #3deaea;
-	font-size: 1.8rem;
-	margin-bottom: 0.8rem;
+	justify-content: left;
+	margin-bottom: 1rem;
 }
 
 /* Image avatar */
@@ -87,15 +85,21 @@
 	height: 120px;
 	border-radius: 50%;
 	object-fit: cover;
-	border: 2px solid #fff;
-	box-shadow: 0 0 5px rgba(0,0,0,0.3);
+	border: 2px solid #3deaea;
+	box-shadow: 0 0 10px #3deaea;
 	cursor: pointer;
 	transition: 0.2s;
 }
 
-.AvatarImage:hover {
-	filter: brightness(1.15);
+
+/* Avatar rose uniquement AU SURVOL quand on est en édition */
+.AvatarEditing .AvatarImage:hover {
+    border: 2px solid #ff72dc !important;
+    box-shadow: 0 0 25px #ff72dc !important;
+    filter: brightness(1.2);
+    transition: 0.2s ease-in-out;
 }
+
 
 /* Input file invisible */
 .HiddenFileInput {
@@ -105,7 +109,5 @@
 /* Empêche clic quand pas en édition */
 .DisableClick {
 	pointer-events: none;
+	cursor: default;
 }
-
-
-

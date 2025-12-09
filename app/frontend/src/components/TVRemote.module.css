@@ -1,6 +1,6 @@
 .TVRemote {
 	width: 340px;
-	height: 600px;
+	height: 550px;
 
 	background-image: url("/assets/TVRemoteBlank.png");
 	background-repeat: no-repeat;
@@ -13,12 +13,7 @@
 	align-items: center;
 	justify-content: center;
 	font-size: 0.75rem;
-
-	/*background-color: #312f2f;*/
 	color: white;
-
-	/*border-right: 3px solid #4b4949;*/
-	/*border-bottom: 4px solid #000000;*/
 	border-left: 0;
 	border-top: 0;
 
@@ -104,14 +99,58 @@
 	box-shadow: none;
 }
 
-.SearchContainer {
+/* Écran blanc pour le logout */
+.LogoutOverlay {
 	position: fixed;
-	top: 50%;
-	left: 50%;
-	transform: translate(-50%, -50%);
-	z-index: 8;
+	inset: 0;
+	background-color: white;
+	z-index: 9999;
+	overflow: hidden;
+	pointer-events: none;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
 
-	background-color: rgba(0, 0, 0, 0.8);
-	padding: 10000px;
-	border-radius: 10px;
+/* Ligne noire qui se resserre vers le centre */
+.LogoutOverlay::before {
+	content: "";
+	position: absolute;
+	background-color: black;
+	width: 100%;
+	height: 100%;
+	animation: crtLogout 1.5s forwards;
+	transform-origin: center;
+}
+
+@keyframes crtLogout {
+	0% {
+    width: 100%;
+    height: 100%;
+    opacity: 1;
+	}
+	50% {
+		width: 100%;   
+		height: 3px; 
+		opacity: 1;
+	}
+	100% {
+		width: 2px;
+		height: 2px;
+		opacity: 1;
+	}
+}
+
+.SearchOverlayRoot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.767);
+  pointer-events: auto;
+  z-index: 1;
 }

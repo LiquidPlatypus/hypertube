@@ -1,4 +1,6 @@
-/* Container principal */
+/* =============================== */
+/* CONTAINER PRINCIPAL             */
+/* =============================== */
 .LoginScreen {
 	position: relative;
 	display: flex;
@@ -7,9 +9,8 @@
 	padding: 2rem;
 	color: white;
 	border-radius: 1rem;
-	width: 80%;
-	height: auto;
-	max-width: 100%;
+	width: 90%;
+	max-width: 500px;      /* limite raisonnable sur grand écran */
 	background: radial-gradient(circle at center, #111 0%, #000 100%);
 	box-shadow:
 		0 0 30px rgba(255, 220, 100, 0.5),
@@ -19,40 +20,49 @@
 	box-sizing: border-box;
 }
 
-/* Titre */
+/* =============================== */
+/* TITRE                            */
+/* =============================== */
 .LoginTitle {
 	font-size: 2.6rem;
 	text-shadow: 0 0 8px #ffe600, 0 0 20px #ff8800;
-	margin-bottom: 1.5rem;
-	margin-top: 0.5rem;
+	margin: 0.5rem 0 1.5rem 0;
 	text-align: center;
 }
 
+/* =============================== */
+/* PARAGRAPHES                      */
+/* =============================== */
 p {
 	font-size: 1.8rem;
 	text-shadow: 0 0 6px #ffe600, 0 0 15px #ff8800;
 	margin-bottom: 0.5rem;
 	text-align: center;
-	white-space: nowrap;
+	white-space: normal;
+	word-break: break-word;
+	overflow-wrap: break-word;
 }
 
-/* Messages */
+/* =============================== */
+/* MESSAGES                         */
+/* =============================== */
 .Message {
-	margin-top: 0.5rem;
-	margin-bottom: 0.5rem;
+	margin: 0.5rem 0;
 	text-align: center;
 	font-size: 1.7rem;
 	max-width: 100%;
-    display: block;
-    white-space: normal !important;
-    overflow-wrap: break-word;
-    word-break: break-word;
-	/* white-space: nowrap; */
+	display: block;
+	white-space: normal !important;
+	overflow-wrap: break-word;
+	word-break: break-word;
 }
+
 .MessageSuccess { color: #4ade80; }
 .MessageError { color: #f87171; }
 
-/* Inputs */
+/* =============================== */
+/* INPUTS                            */
+/* =============================== */
 .Inputs {
 	border-radius: 0.25rem;
 	border: 2px solid #eab308;
@@ -62,6 +72,7 @@ p {
 	outline: none;
 	transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
 	width: 100%;
+	max-width: 100%;
 	box-sizing: border-box;
 	font-size: 1.3rem;
 }
@@ -71,41 +82,35 @@ p {
 	box-shadow: 0 0 8px rgba(250, 128, 114, 0.6);
 }
 
-/* Formulaires */
-.LoginForm{
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	gap: 1rem;
-	width: 60%;    
-	max-width: 180px;
-	box-sizing: border-box;
-}
-
+/* =============================== */
+/* FORMULAIRES                       */
+/* =============================== */
+.LoginForm,
 .RegisterForm {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 	gap: 1rem;
 	width: 100%;
-	max-width: 600px;
+	max-width: 400px;    /* limite raisonnable */
 	box-sizing: border-box;
 }
 
-/* Containers de boutons */
 .LoginRegisterBtn,
 .OAuthButtons {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 	gap: 1rem;
-	width: 60%;
-	max-width: 180px;
+	width: 100%;
+	max-width: 400px;
 	margin-top: 2rem;
 	box-sizing: border-box;
 }
 
-/* Boutons */
+/* =============================== */
+/* BOUTONS                           */
+/* =============================== */
 .LoginForm button,
 .RegisterForm button,
 .OAuthButtons button,
@@ -138,57 +143,106 @@ p {
 	transform: scale(1.05);
 }
 
-/* Responsive */
+/* =============================== */
+/* BOUTON GOOGLE / OAUTH             */
+/* =============================== */
+.GoogleWrapper {
+	width: 100%;
+	max-width: 155px;
+	padding: 1rem;
+	border-radius: 9999px;
+	border: 2px solid rgb(234,179,8);
+	background: radial-gradient(circle at center, #222 0%, #000 100%);
+	box-shadow: 0 0 15px rgba(255, 230, 0, 0.5);
+	margin-top: 2rem;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.GoogleWrapper:hover {
+	background: linear-gradient(180deg, #1a1a1a 0%, #333333 100%);
+	color: #ffffff;
+	box-shadow: 0 0 20px rgba(255, 200, 0, 0.7);
+	transform: scale(1.05);
+}
+
+.GoogleWrapper > div {
+	width: 100% !important;
+	max-width: 100% !important;
+}
+
+.GoogleWrapper iframe {
+	width: 100% !important;
+	transform: scale(0.95);
+	transform-origin: center;
+}
+
+/* =============================== */
+/* RESPONSIVE                        */
+/* =============================== */
 @media (max-width: 1024px) {
 	.LoginScreen {
 		padding: 1rem;
+		width: 95%;
+		max-width: 100%;
+		border-radius: 0.8rem;
 	}
+
 	.LoginForm,
 	.RegisterForm,
 	.LoginRegisterBtn,
 	.OAuthButtons {
-		width: 90%;
+		width: 100%;
+		max-width: 100%;
 	}
+
 	.LoginForm button,
 	.RegisterForm button {
 		font-size: 1rem;
 		padding: 0.7rem;
 	}
 
+	p,
 	.Message {
-        white-space: normal !important;
-        word-wrap: break-word;
-        overflow-wrap: break-word;
-    }
+		font-size: 1rem;
+		white-space: normal !important;
+		word-break: break-word;
+		overflow-wrap: break-word;
+	}
 }
 
 @media (max-width: 768px) {
 	.LoginScreen {
-		padding: 0.5rem;
-		max-width: 100%;
-        
+		padding: 1rem;
+		width: 110vw;
+        max-width: 150vw;
+		border-radius: 1rem;
 	}
+
 	.LoginForm,
 	.RegisterForm,
 	.LoginRegisterBtn,
 	.OAuthButtons {
-		width: 90%;
+		width: 95%;
+		max-width: 100%;
 	}
 
-	.OAuthButtons button{
-		white-space: normal;
-    	word-wrap: break-word; 
-	}
 	.LoginForm button,
-	.RegisterForm button {
-		font-size: 0.9rem;
-		padding: 0.6rem;
+	.RegisterForm button,
+	.OAuthButtons button {
+		font-size: 1rem;
+		padding: 0.8rem;
 	}
 
-	
+	p,
 	.Message {
-        white-space: normal !important;
-        word-wrap: break-word;
-        overflow-wrap: break-word;
-    }
+		font-size: 1rem;
+		text-align: center;
+		white-space: normal !important;
+		word-break: break-word;
+		overflow-wrap: break-word;
+	}
 }
+

@@ -38,6 +38,7 @@ export default function Input({
 		styles[shape],
 		styles[variant || "default"],
 		className,
+		
 	].filter(Boolean).join(" ");
 
 	return (

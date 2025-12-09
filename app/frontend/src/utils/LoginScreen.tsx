@@ -132,7 +132,7 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 		}
 	};
 
-	const handleIntra42Login = () => console.log("TODO: redirect to /api/auth/intra42");
+	// const handleIntra42Login = () => console.log("TODO: redirect to /api/auth/intra42");
 
 	return (
 		<div className={styles.LoginScreen}>
@@ -183,14 +183,27 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 							}}
 						/>
 					</div>
-					<div className={styles.OAuthButtons}>
- 						<GoogleOAuthProvider clientId="504765868462-ssreveurjgq1i8tuoinem6fcp0g8kv90.apps.googleusercontent.com">
+					<div className={styles.GoogleWrapper}>
+						<GoogleOAuthProvider clientId="504765868462-ssreveurjgq1i8tuoinem6fcp0g8kv90.apps.googleusercontent.com">
 							<GoogleLogin
- 								onSuccess={handleGoogleLogin}
- 								onError={() => console.error("Google Auth Failed")}
- 							/>
- 						</GoogleOAuthProvider>
-						<Button text="Intra 42" size="large" shape="pill" onClick={handleIntra42Login} />
+								onSuccess={handleGoogleLogin}
+								onError={() => console.error("Google Auth Failed")}
+								theme="filled_black"
+								size="large"
+								shape="pill"
+								logo_alignment="left"
+							/>
+						</GoogleOAuthProvider>
+					</div>
+
+					<div className={styles.OAuthButtons}>
+						<Button 
+							text="Intra 42" 
+							size="large" 
+							shape="pill"  
+							onClick={() => alert("Login via Intra 42 non encore implémenté")}
+							// onClick={handleIntra42Login} 
+							/>
  					</div>
 				</>
 			)}

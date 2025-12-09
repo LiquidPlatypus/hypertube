@@ -28,9 +28,28 @@
 	"profile.edit": "Modify profile",
 	"profile.save": "Save",
 	"profile.cancel": "Cancel",
+	"profile.avatar": "Avatar",
 
 	"video.error": "Error loading video",
 	"video.summary": "Summary",
 	"video.casting": "Casting",
-	"video.comments": "Comments"
+	"video.comments": "Comments",
+
+	"search.placeholder":"Search",
+	"search.allRatings": "All ratings",
+    "search.allYears": "All years",
+    "search.allGenres": "All genres",
+    "search.action": "Action",
+	"search.adventure": "Adventure",
+    "search.comedy": "Comedy",
+    "search.drama": "Drama",
+    "search.horror": "Horror",
+    "search.thriller": "Thriller",
+    "search.romance": "Romance",
+    "search.scifi": "Sci-Fi",
+    "search.fantasy": "Fantasy",
+    "search.animation": "Animation",
+    "search.documentary": "Documentary"
+
+
 }

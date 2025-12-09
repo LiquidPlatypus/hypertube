@@ -1,0 +1,56 @@
+.SearchThumbnail {
+  width: 100%;
+  max-width: 200px;
+  height: auto;
+  margin: 0 auto;
+  border-radius: 0.5rem;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(3px);
+  overflow: hidden;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.2s ease;
+}
+
+.SearchThumbnail:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 6px #fff;
+}
+
+.Image {
+  width: 100%;
+  height: 100px;
+  object-fit: cover;
+}
+
+.Infos {
+  padding: 0.4rem 0.5rem;
+  text-align: center;
+  color: #fff;
+  font-family: "CommodoreRounded", serif;
+}
+
+.Title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.Meta {
+  display: flex;
+  justify-content: center;
+  gap: 0.3rem;
+  font-size: 0.75rem;
+  margin-top: 0.2rem;
+  color: #ccc;
+}
+
+.Year, .Rating {
+  display: flex;
+  align-items: center;
+  gap: 0.1rem;
+}
+

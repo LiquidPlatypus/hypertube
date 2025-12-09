@@ -31,3 +31,9 @@
   box-sizing: border-box;
 }
 
+@media (max-width: 768px) {
+  .LoginContent {
+    padding: 0.5rem;
+    
+  }
+}
