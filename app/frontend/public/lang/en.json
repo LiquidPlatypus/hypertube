@@ -31,7 +31,10 @@
 	"profile.avatar": "Avatar",
 
 	"video.error": "Error loading video",
-	"video.summary": "Summary",
+	"video.title": "Title",
+	"video.year": "Year",
+	"video.length": "Length",
+	"video.grade": "Grade",
 	"video.casting": "Casting",
 	"video.comments": "Comments",
 

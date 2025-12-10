@@ -31,7 +31,10 @@
 	"profile.avatar": "Avatar",
 
 	"video.error": "Erreur lors du chargement de la vidéo",
-	"video.summary": "Résumé",
+	"video.title": "Titre",
+	"video.year": "Année",
+	"video.length": "Durée",
+	"video.grade": "Note",
 	"video.casting": "Distribution",
 	"video.comments": "Commentaires",
 
