@@ -1,5 +1,7 @@
 import { useTranslation } from "../hooks/useTranslation.tsx";
 
+import Input from "../components/ui/Input.tsx";
+
 import styles from "./WIPVideo.module.css";
 
 const comments = [
@@ -110,6 +112,17 @@ export default function WIPVideo() {
 			</div>
 
 			<div className={styles.commentsPart}>
+				<div className={styles.commentInput}>
+					<Input
+						type="text"
+						placeholder={t("video.comments")}
+						// value={userComment}
+						// onChange={(e) => sendComment(e.target.value)}
+						shape="square"
+						required
+					/>
+				</div>
+
 				<h2>{t("video.comments")}</h2>
 
 				<div className={styles.commentsList}>
