@@ -1,25 +1,38 @@
 import os
-from fastapi import FastAPI, Depends, Request, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from .auth import router as auth_router
 from .utils import verif_access_token
 from .users import router as users_router
+from .stream import router as stream_router
+from .movies import router as movies_router
 from .comment import router as comment_router
 
+# Models Pydantic
+from model import RegisterRequest, LoginRequest, ModifyFormRequest, PasswordForm, EmailRequest, NewPasswordRequest
+# Models SQLAlchemy et Repository
+from models_db import User, Password
+from repositories.user_repository import UserRepository
+from database import get_db, DB, engine 
 
 # INIT
-
 app = FastAPI()
 
 app.add_middleware(
-	CORSMiddleware,
-	allow_origins=["http://localhost:5173"],
-	allow_credentials=True,
-	allow_methods=["*"],
-	allow_headers=["*"],
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
+# Init DB
+@app.on_event("startup")
+def on_startup():
+    DB.metadata.create_all(bind=engine)
+
+# Middleware
 @app.middleware("http")
 async def verif_header(request: Request, call_next):
 	headers = request.scope['headers']
@@ -44,6 +57,8 @@ async def verif_header(request: Request, call_next):
 
 app.include_router(auth_router)
 app.include_router(users_router)
+app.include_router(stream_router)
+app.include_router(movies_router)
 app.include_router(comment_router)
 
 @app.get("/api/verify-token/{token}")

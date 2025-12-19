@@ -1,0 +1,47 @@
+services:
+
+  # NGINX Web server (and naxsi as WAF)
+  # Also contains the frontend static files
+  nginx:
+    build:
+      context: .
+      dockerfile: ./nginx/Dockerfile
+    container_name: nginx
+    ports:
+      - 80:80
+      - 443:443
+    env_file: .env
+    depends_on:
+     - hypertube_backend
+    networks:
+      - hypertube-network
+    restart: on-failure
+
+  # Hypertube backend
+  hypertube_backend:
+    build: ./app/backend
+    container_name: hypertube_backend
+    ports:
+      - 8000:8000
+    env_file: .env
+    volumes:
+      - ./app/backend/app:/app
+    depends_on:
+      - mariadb
+    networks:
+      - hypertube-network
+    restart: on-failure
+
+  mariadb:
+    image: mariadb:latest
+    container_name: mariadb
+    env_file: .env
+    volumes:
+      - ./mariadb/data:/var/lib/mysql
+    networks:
+      - hypertube-network
+    restart: on-failure
+
+networks:
+  hypertube-network:
+    driver: bridge
