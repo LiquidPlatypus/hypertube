@@ -107,3 +107,23 @@
 	color: #ff72dc;
 	text-shadow: 0 0 15px #ff72dc;
 }
+
+/* ----- Comment Variant ----- */
+.commentWrapper {
+	position: relative;
+	width: 100%;
+	max-width: 100%;
+	box-sizing: border-box;
+}
+
+.commentInput {
+	border: 2px solid #ccc;
+	padding: 0.5rem 1rem;
+	outline: none;
+	transition: border-color 0.2s, box-shadow 0.2s;
+	color: white;
+	background-color: #111;
+	width: 100%;
+	max-width: 100%;
+	box-sizing: border-box;
+}

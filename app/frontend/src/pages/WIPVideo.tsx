@@ -3,6 +3,8 @@ import { useTranslation } from "../hooks/useTranslation.tsx";
 import Input from "../components/ui/Input.tsx";
 
 import styles from "./WIPVideo.module.css";
+import { useState } from "react";
+import Button from "../components/ui/Button.tsx";
 
 const comments = [
 	{ id: 1, pseudo: "Pseudo", text: "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff" },
@@ -29,6 +31,8 @@ const comments = [
 
 export default function WIPVideo() {
 	const { t } = useTranslation();
+
+	const [userComment, setUserComment] = useState("");
 
 	return (
 		<div className={styles.wrapper}>
@@ -116,10 +120,16 @@ export default function WIPVideo() {
 					<Input
 						type="text"
 						placeholder={t("video.comments")}
-						// value={userComment}
-						// onChange={(e) => sendComment(e.target.value)}
+						value={userComment}
+						variant="comment"
+						onChange={(e) => setUserComment(e.target.value)}
+						size="large"
 						shape="square"
 						required
+					/>
+					<Button
+						size="large"
+						shape="square"
 					/>
 				</div>
 

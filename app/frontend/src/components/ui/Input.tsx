@@ -6,7 +6,7 @@ type InputProps = {
 	placeholder?: string;
 	accept?: string;
 	value?: string;
-	variant?: "default" | "profileEdit";
+	variant?: "default" | "profileEdit" | "comment";
 	onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
 	size?: "small" | "medium" | "large";
 	shape?: "rounded" | "square" | "pill";

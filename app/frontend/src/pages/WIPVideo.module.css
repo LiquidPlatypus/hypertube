@@ -238,6 +238,35 @@
 	text-align: left;
 }
 
+.commentInput {
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	column-gap: 1rem;
+	box-sizing: border-box;
+}
+
+.commentInput :global(.wrapper) {
+	flex: 1 1 auto;
+	width: 100%;
+	max-width: 100%;
+}
+
+.commentInput :global(.input) {
+	width: 100%;
+	max-width: 100%;
+	box-sizing: border-box;
+}
+
+.commentInput input:hover {
+	border-color: black;
+}
+
+.commentInput input:focus {
+	border-color: black;
+	box-shadow: 0 0 5px black;
+}
+
 .commentsList {
 	flex: 1 1 auto;
 	padding-right: 0.5rem;
