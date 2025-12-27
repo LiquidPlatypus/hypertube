@@ -4,7 +4,7 @@ import Thumbnail from "../components/ui/Thumbnail.tsx";
 
 import styles from "./HomePage.module.css";
 
-import testThumbnail from "/assets/elementor-placeholder-image.png";
+import testThumbnail from "/assets/vertical_cover.webp";
 
 const thumbnailsTest = Array.from({ length: 35 }, (_, i) => ({
 	src: testThumbnail,
