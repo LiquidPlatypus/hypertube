@@ -1,8 +1,8 @@
 app/frontend/node_modules
 app/frontend/dist
-app/backend/app/__pycache__/
 mariadb/data
 .env
 venv
 test
 .idea
+app/backend/app/__pycache__/

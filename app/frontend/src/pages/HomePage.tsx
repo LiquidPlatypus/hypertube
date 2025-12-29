@@ -157,6 +157,7 @@ export default function HomePage() {
 		}
 	};
 
+	
 	const postComment = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		const token = localStorage.getItem("access_token");
