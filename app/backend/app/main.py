@@ -10,11 +10,11 @@ from .movies import router as movies_router
 from .comment import router as comment_router
 
 # Models Pydantic
-from model import RegisterRequest, LoginRequest, ModifyFormRequest, PasswordForm, EmailRequest, NewPasswordRequest
+from .model import RegisterRequest, LoginRequest, ModifyFormRequest, PasswordForm, EmailRequest, NewPasswordRequest
 # Models SQLAlchemy et Repository
-from models_db import User, Password
-from repositories.user_repository import UserRepository
-from database import get_db, DB, engine 
+from .models_db import User, Password
+from .repositories.user_repository import UserRepository
+from .database import get_db, DB, engine 
 
 # INIT
 app = FastAPI()

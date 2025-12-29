@@ -1,7 +1,7 @@
 from fastapi import HTTPException, Depends
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
-from database import storage
+from .database import storage
 from fastapi.security import OAuth2PasswordBearer
 import os
 

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, File, UploadFile
-from model import ModifyFormRequest, PasswordForm, NewPasswordRequest, EmailRequest
-from database import storage
-from utils import create_access_token, verif_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
+from .model import ModifyFormRequest, PasswordForm, NewPasswordRequest, EmailRequest
+from .database import storage
+from .utils import create_access_token, verif_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
 from fastapi.responses import FileResponse
 from datetime import timedelta
 from fastapi_mail import FastMail, MessageSchema, ConnectionConfig
