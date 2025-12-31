@@ -83,3 +83,14 @@
 	align-items: center;
 	gap: 0.2rem;
 }
+
+@media (max-width: 600px) {
+	.Thumbnail:hover {
+		transform: scale(1);
+		box-shadow: -7px 5px 1px #282828;
+	}
+
+	.Thumbnail:hover .image {
+		filter: brightness(1) contrast(1);
+	}
+}
