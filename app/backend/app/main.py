@@ -28,9 +28,9 @@ app.add_middleware(
 )
 
 # Init DB
-@app.on_event("startup")
-def on_startup():
-    DB.metadata.create_all(bind=engine)
+# @app.on_event("startup")
+# def on_startup():
+#     DB.metadata.create_all(bind=engine)
 
 # Middleware
 @app.middleware("http")

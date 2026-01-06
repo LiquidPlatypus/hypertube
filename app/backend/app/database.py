@@ -27,7 +27,7 @@ DB = declarative_base()
 
 
 def init_db():
-    max_attempts = 10
+    max_attempts = 0
     attempt = 0
     while attempt < max_attempts:
         try:

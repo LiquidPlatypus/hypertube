@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from models_db import User, Password
+from ..models_db import User, Password
 from passlib.context import CryptContext
 from typing import Optional
 
