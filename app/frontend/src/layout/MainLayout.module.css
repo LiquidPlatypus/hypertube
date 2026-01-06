@@ -86,6 +86,15 @@
 	height: var(--footer-height);
 }
 
+.noFx::before {
+	/*display: none; pour les bords noirs*/
+	background: none;
+}
+
+.noFx .ScrollArea:after {
+	background: none;
+}
+
 .TVRemoteContainer {
 	position: fixed;
 	bottom: -270px;
@@ -97,16 +106,14 @@
 	filter: drop-shadow(0px 1px 4px black);
 }
 
+/* DESKTOP MODE */
 .TVRemoteContainer:hover {
 	transform: translateY(140px);
 	opacity: 1;
 }
 
-.noFx::before {
-	/*display: none; pour les bords noirs*/
-	background: none;
-}
-
-.noFx .ScrollArea:after {
-	background: none;
+/* MOBILE MODE */
+.TVRemoteContainer.open {
+	transform: translateY(140px);
+	opacity: 1;
 }

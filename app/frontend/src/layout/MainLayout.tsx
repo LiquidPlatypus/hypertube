@@ -2,9 +2,9 @@ import * as React from "react";
 
 import MainHeader from "../components/headers/MainHeader.tsx";
 import MainFooter from "../components/footers/MainFooter.tsx";
+import TVRemote from "../components/TVRemote.tsx";
 
 import styles from "./MainLayout.module.css";
-import TVRemote from "../components/TVRemote.tsx";
 
 interface MainLayoutProps {
 	children: React.ReactNode
@@ -12,8 +12,10 @@ interface MainLayoutProps {
 
 export default function MainLayout({ children }: MainLayoutProps) {
 	const [fxEnabled, setFxEnabled] = React.useState(true);
+	const [remoteOpen, setRemoteOpen] = React.useState(false);
 
 	const toggleFx = () => setFxEnabled(v => !v);
+	const toggleRemote = () => setRemoteOpen(v => !v);
 
 	return (
 		<div
@@ -37,8 +39,15 @@ export default function MainLayout({ children }: MainLayoutProps) {
 				<MainFooter />
 			</footer>
 
-			<div className={styles.TVRemoteContainer}>
-				<TVRemote onToggleFx={toggleFx} />
+			<div
+				className={`${styles.TVRemoteContainer} ${
+					remoteOpen ? styles.open : ""
+				}`}
+			>
+				<TVRemote
+					isOpen={remoteOpen}
+					onToggleRemote={toggleRemote}
+					onToggleFx={toggleFx} />
 			</div>
 		</div>
 	);

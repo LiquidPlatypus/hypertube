@@ -43,6 +43,16 @@
 	margin: 0 auto;
 }
 
+.remoteToggleBtn {
+	position: absolute;
+	top: 30px;
+	right: 60px;
+}
+
+.remoteToggleBtnOpen img {
+	transform: rotate(180deg);
+}
+
 .HomeBtn {
 	position: absolute;
 	top: 100px;
@@ -108,4 +118,27 @@
 	background-color: rgba(0, 0, 0, 0.8);
 	padding: 10000px;
 	border-radius: 10px;
+}
+
+
+@media (max-width: 768px) {
+	.TVRemoteContainer {
+		transform: translateY(230px);
+	}
+
+	.TVRemoteContainer:hover {
+		transform: translateY(230px);
+	}
+
+	.remoteToggleBtn, .remoteToggleBtnOpen {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+	}
+}
+
+@media (min-width: 769px) {
+	.remoteToggleBtn, .remoteToggleBtnOpen {
+		display: none !important;
+	}
 }

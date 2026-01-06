@@ -7,12 +7,19 @@ import SearchBar from "./ui/SearchBar.tsx";
 import {useTranslation} from "../hooks/useTranslation.tsx";
 
 import styles from "./TVRemote.module.css";
+import * as React from "react";
 
 interface TVRemoteProps {
+	isOpen: boolean;
+	onToggleRemote: () => void;
 	onToggleFx?: () => void;
 }
 
-export default function TVRemote({ onToggleFx }: TVRemoteProps) {
+export default function TVRemote({
+	isOpen,
+	onToggleRemote,
+	onToggleFx,
+}: TVRemoteProps) {
 	const navigate = useNavigate();
 	const [showSearch, setShowSearch] = useState(false);
 	const { currentLang, changeLang } = useTranslation();
@@ -45,6 +52,17 @@ export default function TVRemote({ onToggleFx }: TVRemoteProps) {
 
 	return (
 		<div className={styles.TVRemote}>
+			<Button
+				size="small"
+				shape="square"
+				icon="assets/Arrow.svg"
+				className={`${styles.remoteToggleBtn} ${
+					isOpen ? styles.remoteToggleBtnOpen : ""
+				}`}
+				variant="remote"
+				onClick={onToggleRemote}
+			/>
+
 			<Button
 				size="small"
 				shape="square"
