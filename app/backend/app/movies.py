@@ -3,13 +3,17 @@ from fastapi.responses import JSONResponse
 import requests
 import tmdbsimple as tmdb
 # from auth import tmdb
+from dotenv import load_dotenv
+from .utils import env_path
 import os
+
+load_dotenv(dotenv_path=env_path)
 
 router = APIRouter()
 
-# tmdb.API_KEY = os.getenv("TMDB_API_KEY")
-# tmdb.REQUESTS_TIMEOUT = 5
-# BITSEARCH_API_KEY = os.getenv("BITSEARCH_API_KEY")
+tmdb.API_KEY = os.getenv("TMDB_API_KEY")
+tmdb.REQUESTS_TIMEOUT = 5
+BITSEARCH_API_KEY = os.getenv("BITSEARCH_API_KEY")
 
 @router.get("/api/thumbnails", response_class=JSONResponse)
 def get_thumbnails(query: str = Query(None, min_length=1), page: int = Query(1, ge=1)):

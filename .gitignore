@@ -2,3 +2,5 @@ app/frontend/node_modules
 venv
 .idea
 app/backend/app/__pycache__/
+.env
+app/backend/app/.env
