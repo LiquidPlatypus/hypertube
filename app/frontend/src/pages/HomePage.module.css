@@ -27,7 +27,7 @@
 	.thumbnails {
 		padding: 1rem;
 		margin: 0;
-		grid-template-columns: repeat(4, minmax(140px, 1fr));
+		grid-template-columns: repeat(3, minmax(140px, 1fr));
 		row-gap: 3rem;
 		column-gap: 2rem;
 	}
@@ -41,7 +41,7 @@
 	.thumbnails {
 		padding: 1rem;
 		margin: 0;
-		grid-template-columns: repeat(3, minmax(140px, 1fr));
+		grid-template-columns: repeat(2, minmax(140px, 1fr));
 		row-gap: 3rem;
 		column-gap: 2rem;
 	}
