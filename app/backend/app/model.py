@@ -46,3 +46,15 @@ class NewPasswordRequest(BaseModel):
 
 class GoogleToken(BaseModel):
 	token: str
+
+class SuccessException(Exception):
+	def __init__(self, message):
+		super().__init__(message)
+		self.message = message
+
+class CommentForm(BaseModel):
+	content: str
+
+class CustomCommentForm(BaseModel):
+	id: int
+	new_content: str

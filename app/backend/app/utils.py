@@ -3,9 +3,11 @@ from datetime import datetime, timedelta
 from jose import JWTError, jwt
 from .database import storage
 from fastapi.security import OAuth2PasswordBearer
+import os
 
 ALGORITHM = "HS256"
-SECRET_KEY = "super_secret_key" # Ben faut proteger sa niveau sécurité sinon t'es pas gentil
+# SECRET_KEY = os.getenv("SECRET_KEY")  # Ben faut proteger sa niveau sécurité sinon t'es pas gentil
+SECRET_KEY = "super_secret_key"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 GOOGLE_CLIENT_ID = "504765868462-ssreveurjgq1i8tuoinem6fcp0g8kv90.apps.googleusercontent.com"
 
