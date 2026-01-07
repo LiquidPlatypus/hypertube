@@ -3,7 +3,11 @@ from fastapi.responses import JSONResponse
 import requests
 import tmdbsimple as tmdb
 # from auth import tmdb
+from dotenv import load_dotenv
+from .utils import env_path
 import os
+
+load_dotenv(dotenv_path=env_path)
 
 router = APIRouter()
 
