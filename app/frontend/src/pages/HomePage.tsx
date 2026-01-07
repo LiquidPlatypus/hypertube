@@ -30,7 +30,6 @@ export default function HomePage() {
 
 			const res = await fetch(url);
 			const data = await res.json();
-			console.log(data);
 			setResults(data);
 			setLoading(false);
 		};
