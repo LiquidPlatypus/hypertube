@@ -25,8 +25,8 @@ export default function HomePage() {
 		const fetchData = async () => {
 			setLoading(true);
 			const url = searchTerm
-				? `/api/thumbnails?query=?{encodeURIComponent(searchTerm)}`
-				: `api/thumbnails`;
+				? `/api/thumbnails?query=${encodeURIComponent(searchTerm)}`
+				: `/api/thumbnails`;
 
 			const res = await fetch(url);
 			const data = await res.json();
