@@ -1,20 +1,42 @@
 import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useSearch } from "../utils/searchContext.tsx";
 
 import Thumbnail from "../components/ui/Thumbnail.tsx";
 
 import styles from "./HomePage.module.css";
 
-import testThumbnail from "/assets/vertical_cover.webp";
-
-const thumbnailsTest = Array.from({ length: 35 }, (_, i) => ({
-	src: testThumbnail,
-	title: `Film ${i + 1}`,
-	year: 2000 + (i % 20),
-	rating: (60 + Math.random() * 3).toFixed(0),
-}));
+interface Movie {
+	id: number;
+	title: string;
+	poster_path: string;
+	release_date: string;
+	score: number;
+}
 
 export default function HomePage() {
 	const navigate = useNavigate();
+
+	const { searchTerm } = useSearch();
+	const [results, setResults] = useState<any[]>([]);
+	const [loading, setLoading] = useState(false);
+
+	useEffect(() => {
+		const fetchData = async () => {
+			setLoading(true);
+			const url = searchTerm
+				? `/api/thumbnails?query=?{encodeURIComponent(searchTerm)}`
+				: `api/thumbnails`;
+
+			const res = await fetch(url);
+			const data = await res.json();
+			console.log(data);
+			setResults(data);
+			setLoading(false);
+		};
+
+		fetchData();
+	}, [searchTerm]);
 
 	const handleThumbnailClick = () => {
 		navigate("/WIPVideo");
@@ -23,14 +45,14 @@ export default function HomePage() {
 	return (
 		<div className={styles.content}>
 			<ul className={styles.thumbnails}>
-				{thumbnailsTest.map((thumb, index) => (
-					<li key={index}>
+				{results.map((movie) => (
+					<li key={movie.id}>
 						<Thumbnail
-							thumbnailSrc={thumb.src}
-							thumbnailAlt={`Thumbnail ${index + 1}`}
-							title={thumb.title}
-							year={thumb.year}
-							rating={thumb.rating}
+							thumbnailSrc={movie.poster_path}
+							thumbnailAlt={movie.title}
+							title={movie.title}
+							year={movie.release_date}
+							rating={movie.score}
 							onClick={() => handleThumbnailClick()}
 						/>
 					</li>
