@@ -1,10 +1,11 @@
 import { useState } from "react";
 import Input from "./Input.tsx";
+import { useSearch } from "../../utils/searchContext.tsx";
 
 import styles from "./SearchBar.module.css";
 
 export default function SearchBar() {
-	const [searchValue, setSearchValue] = useState("");
+	const { searchTerm, setSearchTerm } = useSearch();
 
 	return (
 		<div>
@@ -15,8 +16,8 @@ export default function SearchBar() {
 				shape="square"
 				style={{ width: "30rem" }}
 				className={styles.SearchBar}
-				value={searchValue}
-				onChange={(e) => setSearchValue(e.target.value)}
+				value={searchTerm}
+				onChange={(e) => setSearchTerm(e.target.value)}
 				required
 			/>
 		</div>

@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 
 import MainLayout from "./layout/MainLayout.tsx";
 import LoginLayout from "./layout/LoginLayout.tsx";
+import {SearchProvider} from "./utils/searchContext.tsx";
+
 import { initLanguage, loadLanguage } from "./lang/i18n.tsx";
 
 function App() {
@@ -27,9 +29,11 @@ function App() {
 	}
 
 	return (
-		<Layout>
-			<Outlet />
-		</Layout>
+		<SearchProvider>
+			<Layout>
+				<Outlet />
+			</Layout>
+		</SearchProvider>
 	);
 }
 
