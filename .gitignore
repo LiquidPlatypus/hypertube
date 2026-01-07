@@ -2,6 +2,7 @@ app/frontend/node_modules
 app/frontend/dist
 mariadb/data
 .env
+app/backend/app/.env
 venv
 test
 .idea
