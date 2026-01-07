@@ -18,6 +18,9 @@ export default function Thumbnail({
 	onClick,
 }: ThumbnailProps) {
 
+	// Ajusté sur 100 et tronqué à la virgule.
+	const truncRating = Math.trunc(rating * 10);
+
 	return (
 		<div className={styles.Thumbnail} onClick={onClick} >
 			<div className={styles.CoverWrapper}>
@@ -33,7 +36,7 @@ export default function Thumbnail({
 				<h3 className={styles.Title}>{title}</h3>
 				<div className={styles.Meta}>
 					{year && <span className={styles.Year}>📅 {year}</span>}
-					{rating && <span className={styles.Rating}>⭐ {rating}%</span>}
+					{truncRating && <span className={styles.Rating}>⭐ {truncRating}%</span>}
 				</div>
 			</div>
 		</div>
