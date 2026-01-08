@@ -1,6 +1,5 @@
 .Thumbnail {
 	position: relative;
-	aspect-ratio: 11/16;
 	width: 100%;
 
 	border-top: 5px solid #e7e7e2;
@@ -92,5 +91,23 @@
 
 	.Thumbnail:hover .image {
 		filter: brightness(1) contrast(1);
+	}
+
+	.Title {
+		font-size: 0.9rem;
+	}
+
+	.Meta {
+		font-size: 0.7rem;
+	}
+}
+
+@media (max-width: 500px) {
+	.Title {
+		font-size: 0.7rem;
+	}
+
+	.Meta {
+		font-size: 0.5rem;
 	}
 }
