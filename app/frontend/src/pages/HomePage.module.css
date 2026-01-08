@@ -14,9 +14,14 @@
 	list-style: none;
 	padding: 0 100px;
 	margin: 0 auto;
-	place-items: center;
+	justify-items: stretch;
+	align-items: start;
 	scrollbar-width: thin;
 	scrollbar-color: #aaa transparent;
+}
+
+.thumbnail li {
+	width: 100%;
 }
 
 @media (max-width: 1800px) {
