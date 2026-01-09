@@ -37,14 +37,14 @@ export default function HomePage() {
 		fetchData();
 	}, [searchTerm]);
 
-	const handleThumbnailClick = () => {
-		navigate("/WIPVideo");
+	const handleThumbnailClick = (movieId: number) => {
+		navigate(`/movie/${movieId}`);
 	};
 
 	return (
 		<div className={styles.content}>
 			<ul className={styles.thumbnails}>
-				{results.map((movie) => (
+				{results.map((movie: Movie) => (
 					<li key={movie.id}>
 						<Thumbnail
 							thumbnailSrc={movie.poster_path}
@@ -52,7 +52,7 @@ export default function HomePage() {
 							title={movie.title}
 							year={movie.release_date}
 							rating={movie.score}
-							onClick={() => handleThumbnailClick()}
+							onClick={() => handleThumbnailClick(movie.id)}
 						/>
 					</li>
 				))}
