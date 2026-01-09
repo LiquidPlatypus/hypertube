@@ -28,7 +28,7 @@ export const router = createBrowserRouter([
 						),
 					},
 					{
-						path: "/WIPvideo",
+						path: "/movie/:id",
 						element: (
 							<WIPVideo />
 						),
