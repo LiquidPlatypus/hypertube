@@ -1,10 +1,13 @@
-import { useTranslation } from "../hooks/useTranslation.tsx";
+import * as React from "react";
+import { useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 
+import Button from "../components/ui/Button.tsx";
 import Input from "../components/ui/Input.tsx";
 
+import { useTranslation } from "../hooks/useTranslation.tsx";
+
 import styles from "./WIPVideo.module.css";
-import { useState } from "react";
-import Button from "../components/ui/Button.tsx";
 
 const comments = [
 	{ id: 1, pseudo: "Pseudo", text: "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff" },
@@ -29,10 +32,70 @@ const comments = [
 	{ id: 20, pseudo: "Pseudo", text: "fffffffffff" },
 ]
 
+interface Movie {
+	id: number;
+	title: string;
+	tagline: string;
+	overview: string;
+	poster_path: string;
+	release_date: string;
+	runtime: number;
+	score: number;
+	cast: {
+		actor_name: string;
+		character_name: string;
+		actor_picture_path: string;
+	}[];
+}
+
 export default function WIPVideo() {
+	const navigate = useNavigate();
+	const [Loading, setLoading] = useState(false);
+	const [movieDetails, setMovieDetails] = useState<Movie | null>(null);
+	const [error, setError] = useState('');
+	const { id } = useParams<{ id: string }>();
+
 	const { t } = useTranslation();
 
 	const [userComment, setUserComment] = useState("");
+
+	const getMovieDetails = async (movieId: number) => {
+		setLoading(true);
+		try {
+			const url = `/api/movie/${movieId}`;
+			const response = await fetch(url, {
+				method: "GET",
+				headers: {
+					"Content-Type": "application/json",
+				},
+			});
+			if (!response.ok) {
+				throw new Error(`HTTP eroror! status: ${response.status}`);
+			}
+			const data: Movie = await response.json();
+			console.log(data);
+			setMovieDetails(data);
+		} catch (err) {
+			setError('Erreur lors de la recherche des films.');
+			console.error("Error fetching Movies:", err);
+		}
+		setLoading(false);
+	}
+
+	React.useEffect(() => {
+		if (id) {
+			getMovieDetails(parseInt(id, 10));
+		} else {
+			setError("ID de film invalide.");
+		}
+	}, [navigate]);
+
+	function toHoursAndMinutes(totalMinutes: number | undefined) {
+		const hours = Math.floor(totalMinutes / 60);
+		const minutes = totalMinutes % 60;
+
+		return (`${hours}h${minutes > 0 ? `${minutes}m` : ''}`);
+	}
 
 	return (
 		<div className={styles.wrapper}>
@@ -48,25 +111,21 @@ export default function WIPVideo() {
 				</div>
 				<div className={styles.miscellaneousPart}>
 					<div className={styles.mainInfos}>
-						<h2>{t("video.title")}</h2>
+						<h2>{movieDetails?.title}</h2>
 						<p className={styles.summary}>
-							tres long resumetres long resumetres long resumetres
-							long resumetres long resume tres long resumetres
-							long resumetres long resumetres long resumetres long
-							resume tres long resumetres long resumetres long
-							resumetres long resumetres long resume
+							{movieDetails?.overview}
 						</p>
 					</div>
 					<div className={styles.rightInfos}>
 						<div className={styles.meta}>
-							<p>{t("video.year")}</p>
-							<p>{t("video.length")}</p>
-							<p>{t("video.grade")}</p>
+							<p>{movieDetails?.release_date}</p>
+							<p>{toHoursAndMinutes(movieDetails?.runtime)}</p>
+							<p>{`${Math.trunc(movieDetails?.score * 10)}%`}</p>
 						</div>
 						<div className={styles.cover}>
 							<img
-								src="/assets/Vertical_placeholder.svg"
-								alt="cover"
+								src={movieDetails?.poster_path}
+								alt={`${movieDetails?.title} Poster`}
 							/>
 						</div>
 					</div>
@@ -75,42 +134,18 @@ export default function WIPVideo() {
 				<div className={styles.cast}>
 					<h3>{t("video.casting")}</h3>
 					<ul className={styles.castList}>
-						<li>
-							<img
-								src="/assets/Vertical_placeholder.svg"
-								alt="casting"
-							/>
-						</li>
-						<li>
-							<img
-								src="/assets/Vertical_placeholder.svg"
-								alt="casting"
-							/>
-						</li>
-						<li>
-							<img
-								src="/assets/Vertical_placeholder.svg"
-								alt="casting"
-							/>
-						</li>
-						<li>
-							<img
-								src="/assets/Vertical_placeholder.svg"
-								alt="casting"
-							/>
-						</li>
-						<li>
-							<img
-								src="/assets/Vertical_placeholder.svg"
-								alt="casting"
-							/>
-						</li>
-						<li>
-							<img
-								src="/assets/Vertical_placeholder.svg"
-								alt="casting"
-							/>
-						</li>
+						{movieDetails?.cast.map((member, index) => (
+							<li key={index} className={styles.actorCard}>
+								<img
+									src={member.actor_picture_path}
+									alt={member.actor_name}
+								/>
+								<div>
+									<p>{member.actor_name}</p>
+									<p>{member.character_name}</p>
+								</div>
+							</li>
+						))}
 					</ul>
 				</div>
 			</div>
