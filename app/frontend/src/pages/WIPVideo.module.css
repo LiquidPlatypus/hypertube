@@ -195,6 +195,7 @@
 .rightInfos {
 	display: flex;
 	text-align: right;
+	justify-content: flex-end;
 }
 
 .meta {
@@ -202,7 +203,8 @@
 }
 
 .cover {
-	margin-top: 1.9rem;
+	margin-top: 1.6rem;
+	width: 50%;
 }
 
 .cover img {
@@ -227,6 +229,15 @@
 	column-gap: 5rem;
 
 	padding-left: 0;
+}
+
+.actorCard {
+	display: flex;
+	flex-direction: column;
+}
+
+.actorCard img {
+	width: 75%;
 }
 
 .commentsPart {
