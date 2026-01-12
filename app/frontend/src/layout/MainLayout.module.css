@@ -13,7 +13,7 @@
   left: 0;
   right: 0;
   pointer-events: none;
-  z-index: 1;
+  z-index: 5;
   
 }
 
@@ -83,11 +83,8 @@
   bottom: 0;
   height: var(--footer-height);
 }
-
-/* Contenu scrollable */
 .ScrollArea {
   position: absolute;
-  z-index: 0;
   width: 100%;
   top: 110px;
   bottom: 120px;
@@ -95,6 +92,46 @@
   max-height: 90%;
   display: flex;
   justify-content: center;
+
+  scrollbar-width: none;
+  z-index: 1;
+}
+
+.ScrollArea::-webkit-scrollbar {
+  width: 0;
+}
+
+.ScrollbarOverlay {
+  position: fixed;
+  top: 110px;
+  bottom: 120px;
+  right: 22px;
+
+  width: 16px;
+  z-index: 999;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.MainLayout:hover .ScrollbarOverlay {
+  opacity: 1;
+}
+
+.ScrollbarTrack {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.25);
+  border: 2px solid #000;
+}
+
+.ScrollbarThumb {
+  position: absolute;
+  left: 2px;
+  right: 2px;
+
+  background: #f7c600;
+  border: 2px solid #000;
+  box-shadow: 3px 3px 0 #000;
 }
 
 @keyframes Scan {
@@ -121,7 +158,7 @@
 
 .TVRemoteContainer {
 	position: fixed;
-	bottom: -270px;
+	bottom: -380px;
 	right: 20px;
 	z-index: 50;
 	transition: transform 0.3s ease, opacity 0.3s ease;

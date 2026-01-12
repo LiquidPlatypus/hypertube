@@ -6,7 +6,7 @@ type InputProps = {
 	placeholder?: string;
 	accept?: string;
 	value?: string;
-	variant?: "default" | "profileEdit";
+	variant?: "default" | "profileEdit" | "comment";
 	onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
 	size?: "small" | "medium" | "large";
 	shape?: "rounded" | "square" | "pill";
@@ -15,6 +15,7 @@ type InputProps = {
 	className?: string;
 	style?: React.CSSProperties;
 	required?: boolean;
+	onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
 };
 
 export default function Input({
@@ -31,6 +32,7 @@ export default function Input({
 	className = "",
 	style,
 	required = false,
+	onKeyDown,
 }: InputProps) {
 	const classNames = [
 		styles.input,
@@ -38,7 +40,6 @@ export default function Input({
 		styles[shape],
 		styles[variant || "default"],
 		className,
-		
 	].filter(Boolean).join(" ");
 
 	return (
@@ -55,6 +56,7 @@ export default function Input({
 				className={classNames}
 				style={style}
 				required={required}
+				onKeyDown={onKeyDown}
 			/>
 			{iconRight && (
 				<img src={iconRight} alt="" className={`${styles.icon} ${styles.right}`} />

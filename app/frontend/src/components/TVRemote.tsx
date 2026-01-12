@@ -1,106 +1,138 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
 import Button from "./ui/Button.tsx";
 import SearchBar from "./ui/SearchBar.tsx";
-import { useTranslation } from "../hooks/useTranslation.tsx";
+import {useTranslation} from "../hooks/useTranslation.tsx";
 
 import styles from "./TVRemote.module.css";
 
-export default function TVRemote() {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const [showSearch, setShowSearch] = useState(false);
-  const { currentLang, changeLang } = useTranslation();
+interface TVRemoteProps {
+	isOpen: boolean;
+	onToggleRemote: () => void;
+	onToggleFx?: () => void;
+}
 
-  const closeSearch = () => setShowSearch(false);
+export default function TVRemote({
+	isOpen,
+	onToggleRemote,
+	onToggleFx,
+}: TVRemoteProps) {
+	const navigate = useNavigate();
+	const [showSearch, setShowSearch] = useState(false);
+	const { currentLang, changeLang } = useTranslation();
+	const { pathname } = useLocation();
+	const disableSearch = pathname.startsWith("/profile");
 
-  const goHome = () => {
-    closeSearch();
-    navigate("/");
-  };
 
-  const showSearchBar = () => {
-    // Bloque la searchbar sur la page profil
-    if (location.pathname === "/profile") return;
-    setShowSearch((prev) => !prev); // toggle
-  };
+	const goHome = () => {
+		navigate("/");
+	}
 
-  const goToProfile = () => {
-    closeSearch();
-    navigate("/profile");
-  };
+	const showSearchBar = () => {
+		if (disableSearch) return;
+		setShowSearch((prev) => !prev);
+	};
 
-  const handleChangeLang = async () => {
-    const newLang = currentLang === "en" ? "fr" : "en";
-    await changeLang(newLang);
-  };
 
-  const handleLogout = () => {
-    closeSearch();
-    localStorage.removeItem("access_token");
-    localStorage.setItem("just_logged_out", "true");
+	const closeSearch = () => {
+		setShowSearch(false);
+	};
 
-    const overlay = document.createElement("div");
-    overlay.className = styles.LogoutOverlay;
-    document.body.appendChild(overlay);
+	const goToProfile = () => {
+		navigate("/profile");
+	}
 
-    setTimeout(() => {
-      document.body.removeChild(overlay);
-      navigate("/auth/login");
-    }, 1500);
-  };
+	const handleChangeLang = async () => {
+		const newLang = currentLang === "en" ? "fr" : "en";
+		await changeLang(newLang);
+	}
 
-  return (
-    <div className={styles.TVRemote}>
-      <Button
-        size="small"
-        shape="square"
-        icon="assets/HomeW.svg"
-        className={styles.HomeBtn}
-        variant="remote"
-        onClick={goHome}
-      />
-      <Button
-        size="small"
-        shape="square"
-        icon="assets/SearchW.svg"
-        className={styles.SearchBtn}
-        variant="remote"
-        onClick={showSearchBar}
-      />
-      <Button
-        size="small"
-        shape="square"
-        icon="assets/Profil.png"
-        className={styles.ProfileBtn}
-        variant="remote"
-        onClick={goToProfile}
-      />
-      <Button
-        text="EN/FR"
-        size="small"
-        shape="square"
-        className={styles.LangBtn}
-        variant="remote"
-        onClick={handleChangeLang}
-      />
-      <Button
-        size="small"
-        shape="square"
-        icon="assets/LogoutW.svg"
-        className={styles.LogoutBtn}
-        variant="remote"
-        onClick={handleLogout}
-      />
-		{showSearch &&
-			createPortal(
-				<div className={styles.SearchOverlayRoot}>
-				<SearchBar closeSearch={closeSearch} currentLang={currentLang} />
+	const handleLogout = () => {
+		try {
+			localStorage.removeItem("access_token");
+			navigate('/auth/login');
+		} catch (error) {
+			console.error("Logout failed:", error);
+		}
+	}
+	useEffect(() => {
+		if (disableSearch) setShowSearch(false);
+	}, [disableSearch]);
+
+	return (
+		<div className={styles.TVRemote}>
+			<Button
+				size="small"
+				shape="square"
+				icon="assets/Arrow.svg"
+				className={`${styles.remoteToggleBtn} ${
+					isOpen ? styles.remoteToggleBtnOpen : ""
+				}`}
+				variant="remote"
+				onClick={onToggleRemote}
+			/>
+
+			<Button
+				size="small"
+				shape="square"
+				icon="assets/HomeW.svg"
+				className={styles.HomeBtn}
+				variant="remote"
+				onClick={goHome}
+			/>
+			<Button
+				text=""
+				size="small"
+				shape="square"
+				icon="assets/SearchW.svg"
+				className={styles.SearchBtn}
+				variant="remote"
+				onClick={showSearchBar}
+			/>
+			<Button
+				text=""
+				size="small"
+				shape="square"
+				icon="assets/Profil.png"
+				className={styles.ProfileBtn}
+				variant="remote"
+				onClick={goToProfile}
+			/>
+			<Button
+				text="EN/FR"
+				size="small"
+				shape="square"
+				className={styles.LangBtn}
+				variant="remote"
+				onClick={handleChangeLang}
+			/>
+			<Button
+				text="FX"
+				size="small"
+				shape="square"
+				className={styles.FXBtn}
+				variant="remote"
+				onClick={onToggleFx}
+				aria-pressed="false"
+			/>
+			<Button
+				text=""
+				size="small"
+				shape="square"
+				icon="assets/LogoutW.svg"
+				className={styles.LogoutBtn}
+				variant="remote"
+				onClick={handleLogout}
+			/>
+
+			{showSearch && createPortal(
+				<div className={styles.SearchContainer}>
+					<SearchBar closeSearch={closeSearch} currentLang={currentLang} />
 				</div>,
-				document.getElementById("search-overlay-root")!
-		)}
-    </div>
-  );
+				document.body
+			)}
+		</div>
+	);
 }

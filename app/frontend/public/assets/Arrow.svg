@@ -1,0 +1,17 @@
+<svg id="Calque_1" data-name="Calque 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 127.79" transform="rotate(180)">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #ededed;
+      }
+
+      .cls-2 {
+        fill: #efefef;
+        stroke: #efefef;
+        stroke-miterlimit: 10;
+      }
+    </style><style class="darkreader darkreader--sync" media="screen"></style>
+  </defs>
+  <rect class="cls-2" x="30.63" y=".5" width="67.65" height="84.18"></rect>
+  <polygon class="cls-1" points="128 63.79 0 63.79 64 127.79 128 63.79"></polygon>
+</svg>

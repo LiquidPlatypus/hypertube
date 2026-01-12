@@ -1,178 +1,169 @@
-// import { useTranslation } from "../hooks/useTranslation.tsx";
+import * as React from "react";
+import { useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 
-// import styles from "./WIPVideo.module.css";
-
-// const comments = [
-// 	{ id: 1, pseudo: "Pseudo", text: "fffffffffff" },
-// 	{ id: 2, pseudo: "Pseudo", text: "fffffffffff" },
-// 	{ id: 3, pseudo: "Pseudo", text: "fffffffffff" },
-// 	{ id: 4, pseudo: "Pseudo", text: "fffffffffff" },
-// 	{ id: 5, pseudo: "Pseudo", text: "fffffffffff" },
-// 	{ id: 6, pseudo: "Pseudo", text: "fffffffffff" },
-// 	{ id: 7, pseudo: "Pseudo", text: "fffffffffff" },
-// 	{ id: 8, pseudo: "Pseudo", text: "fffffffffff" },
-// 	{ id: 9, pseudo: "Pseudo", text: "fffffffffff" },
-// 	{ id: 10, pseudo: "Pseudo", text: "fffffffffff" },
-// 	{ id: 11, pseudo: "Pseudo", text: "fffffffffff" },
-// 	{ id: 12, pseudo: "Pseudo", text: "fffffffffff" },
-// 	{ id: 13, pseudo: "Pseudo", text: "fffffffffff" },
-// 	{ id: 14, pseudo: "Pseudo", text: "fffffffffff" },
-// 	{ id: 15, pseudo: "Pseudo", text: "fffffffffff" },
-// 	{ id: 16, pseudo: "Pseudo", text: "fffffffffff" },
-// 	{ id: 17, pseudo: "Pseudo", text: "fffffffffff" },
-// 	{ id: 18, pseudo: "Pseudo", text: "fffffffffff" },
-// 	{ id: 19, pseudo: "Pseudo", text: "fffffffffff" },
-// 	{ id: 20, pseudo: "Pseudo", text: "fffffffffff" },
-// ]
-
-// export default function WIPVideo() {
-// 	const { t } = useTranslation();
-
-// 	return (
-// 		<div className={styles.wrapper}>
-// 			<div className={styles.contentPart}>
-// 				<div className={styles.videoPart}>
-// 					<video
-// 						className={styles.video}
-// 						src="/videos/screen2.mp4"
-// 						controls
-// 					>
-// 						<p>{t("video.error")}</p>
-// 					</video>
-// 				</div>
-// 				<div className={styles.miscellaneousPart}>
-// 					<div className={styles.mainInfos}>
-// 						<h2>TITLE</h2>
-// 						<p className={styles.summary}>
-// 							tres long resumetres long resumetres long resumetres
-// 							long resumetres long resume tres long resumetres
-// 							long resumetres long resumetres long resumetres long
-// 							resume tres long resumetres long resumetres long
-// 							resumetres long resumetres long resume
-// 						</p>
-// 					</div>
-// 					<div className={styles.rightInfos}>
-// 						<div className={styles.meta}>
-// 							<p>year</p>
-// 							<p>lenght</p>
-// 							<p>grade</p>
-// 						</div>
-// 						<div className={styles.cover}>
-// 							<img
-// 								src="/assets/Vertical_placeholder.svg"
-// 								alt="cover"
-// 							/>
-// 						</div>
-// 					</div>
-// 				</div>
-
-// 				<div className={styles.cast}>
-// 					<h3>{t("video.casting")}</h3>
-// 					<ul className={styles.castList}>
-// 						<li><img
-// 							src="/assets/Vertical_placeholder.svg"
-// 							alt="casting"
-// 						/></li>
-// 						<li><img
-// 							src="/assets/Vertical_placeholder.svg"
-// 							alt="casting"
-// 						/></li>
-// 						<li><img
-// 							src="/assets/Vertical_placeholder.svg"
-// 							alt="casting"
-// 						/></li>
-// 						<li><img
-// 							src="/assets/Vertical_placeholder.svg"
-// 							alt="casting"
-// 						/></li>
-// 						<li><img
-// 							src="/assets/Vertical_placeholder.svg"
-// 							alt="casting"
-// 						/></li>
-// 						<li><img
-// 							src="/assets/Vertical_placeholder.svg"
-// 							alt="casting"
-// 						/></li>
-// 					</ul>
-// 				</div>
-// 			</div>
-
-// 			<div className={styles.commentsPart}>
-// 				{comments.map((comment) => (
-// 					<div key={comment.id} className={styles.comment}>
-// 						<h3>{comment.pseudo}</h3>
-// 						<p>{comment.text}</p>
-// 					</div>
-// 				))}
-// 			</div>
-// 		</div>
-// 	);
-// }
-
+import Button from "../components/ui/Button.tsx";
+import Input from "../components/ui/Input.tsx";
 
 import { useTranslation } from "../hooks/useTranslation.tsx";
 
 import styles from "./WIPVideo.module.css";
 
-const comments = [
-	{ id: 1, pseudo: "Pseudo", text: "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff" },
-	{ id: 2, pseudo: "Pseudo", text: "fffffffffff" },
-	{ id: 3, pseudo: "Pseudo", text: "fffffffffff" },
-	{ id: 4, pseudo: "Pseudo", text: "fffffffffff" },
-	{ id: 5, pseudo: "Pseudo", text: "fffffffffff" },
-	{ id: 6, pseudo: "Pseudo", text: "fffffffffff" },
-	{ id: 7, pseudo: "Pseudo", text: "fffffffffff" },
-	{ id: 8, pseudo: "Pseudo", text: "ffffffffffffffffffffffffff ffffffffffffffffffffffffffffff" },
-	{ id: 9, pseudo: "Pseudo", text: "fffffffffff" },
-	{ id: 10, pseudo: "Pseudo", text: "fffffffffff" },
-	{ id: 11, pseudo: "Pseudo", text: "fffffffffff" },
-	{ id: 12, pseudo: "Pseudo", text: "ffffffffffffffffffffffffffffffffffffffffffffffffff" },
-	{ id: 13, pseudo: "Pseudo", text: "fffffffffff" },
-	{ id: 14, pseudo: "Pseudo", text: "fffffffffff" },
-	{ id: 15, pseudo: "Pseudo", text: "fffffffffff" },
-	{ id: 16, pseudo: "Pseudo", text: "fffffffffff" },
-	{ id: 17, pseudo: "Pseudo", text: "fffffffffff" },
-	{ id: 18, pseudo: "Pseudo", text: "fffffffffff" },
-	{ id: 19, pseudo: "Pseudo", text: "fffffffffff" },
-	{ id: 20, pseudo: "Pseudo", text: "fffffffffff" },
-]
+interface Movie {
+	id: number;
+	title: string;
+	tagline: string;
+	overview: string;
+	poster_path: string;
+	release_date: string;
+	runtime: number;
+	score: number;
+	cast: {
+		actor_name: string;
+		character_name: string;
+		actor_picture_path: string;
+	}[];
+}
+
+type ApiComment = {
+	id?: number;
+	username?: string;
+	pseudo?: string;
+	author?: string;
+	user?: string;
+	content?: string;
+	text?: string;
+	created_at?: string;
+};
 
 export default function WIPVideo() {
+	const navigate = useNavigate();
+	const [Loading, setLoading] = useState(false);
+	const [movieDetails, setMovieDetails] = useState<Movie | null>(null);
+	const [error, setError] = useState("");
+
+	const { id } = useParams<{ id: string }>();
 	const { t } = useTranslation();
+
+	// Commentaires
+	const [userComment, setUserComment] = useState("");
+	const [comments, setComments] = useState<ApiComment[]>([]);
+	const [commentLoading, setCommentLoading] = useState(false);
+	const [commentError, setCommentError] = useState("");
+
+	const getMovieDetails = async (movieId: number) => {
+		setLoading(true);
+		try {
+			const url = `/api/movie/${movieId}`;
+			const response = await fetch(url, {
+				method: "GET",
+				headers: {
+					"Content-Type": "application/json",
+				},
+			});
+			if (!response.ok) {
+				throw new Error(`HTTP error! status: ${response.status}`);
+			}
+			const data: Movie = await response.json();
+			setMovieDetails(data);
+		} catch (err) {
+			setError("Erreur lors de la récupération du film.");
+			console.error("Error fetching movie:", err);
+		}
+		setLoading(false);
+	};
+
+	const loadComments = async () => {
+		setCommentLoading(true);
+		setCommentError("");
+
+		try {
+			const token = localStorage.getItem("access_token");
+			const res = await fetch("/api/comments", {
+				method: "GET",
+				headers: {
+					"Content-Type": "application/json",
+					...(token ? { Authorization: `Bearer ${token}` } : {}),
+				},
+			});
+
+			if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+			const data = await res.json();
+			console.log("COMMENTS API:", data);
+			setComments(data.comments ?? []);
+		} catch (e) {
+			console.error("Error loading comments:", e);
+			setCommentError("Impossible de charger les commentaires.");
+		} finally {
+			setCommentLoading(false);
+		}
+	};
+
+	const submitComment = async () => {
+		if (!userComment.trim()) return;
+
+		try {
+			const token = localStorage.getItem("access_token");
+			const res = await fetch("/api/comments", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+					...(token ? { Authorization: `Bearer ${token}` } : {}),
+				},
+				body: JSON.stringify({ content: userComment }),
+			});
+
+			if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+
+			setUserComment("");
+			await loadComments();
+		} catch (e) {
+			console.error("Error posting comment:", e);
+			setCommentError("Impossible d’envoyer le commentaire.");
+		}
+	};
+
+	React.useEffect(() => {
+		if (id) {
+			getMovieDetails(parseInt(id, 10));
+			loadComments();
+		} else {
+			setError("ID de film invalide.");
+		}
+	}, [id]);
+
+	function toHoursAndMinutes(totalMinutes: number | undefined) {
+		const hours = Math.floor((totalMinutes ?? 0) / 60);
+		const minutes = (totalMinutes ?? 0) % 60;
+
+		return `${hours}h${minutes > 0 ? `${minutes}m` : ""}`;
+	}
 
 	return (
 		<div className={styles.wrapper}>
 			<div className={styles.contentPart}>
 				<div className={styles.videoPart}>
-					<video
-						className={styles.video}
-						src="/videos/santa.mp4"
-						controls
-					>
+					<video className={styles.video} src="/videos/santa.mp4" controls>
 						<p>{t("video.error")}</p>
 					</video>
 				</div>
+
 				<div className={styles.miscellaneousPart}>
 					<div className={styles.mainInfos}>
-						<h2>{t("video.title")}</h2>
-						<p className={styles.summary}>
-							tres long resumetres long resumetres long resumetres
-							long resumetres long resume tres long resumetres
-							long resumetres long resumetres long resumetres long
-							resume tres long resumetres long resumetres long
-							resumetres long resumetres long resume
-						</p>
+						<h2>{movieDetails?.title}</h2>
+						<p className={styles.summary}>{movieDetails?.overview}</p>
 					</div>
+
 					<div className={styles.rightInfos}>
 						<div className={styles.meta}>
-							<p>{t("video.year")}</p>
-							<p>{t("video.length")}</p>
-							<p>{t("video.grade")}</p>
+							<p>{movieDetails?.release_date}</p>
+							<p>{toHoursAndMinutes(movieDetails?.runtime)}</p>
+							<p>{movieDetails ? `${Math.trunc(movieDetails.score * 10)}%` : ""}</p>
 						</div>
 						<div className={styles.cover}>
 							<img
-								src="/assets/Vertical_placeholder.svg"
-								alt="cover"
+								src={movieDetails?.poster_path}
+								alt={`${movieDetails?.title} Poster`}
 							/>
 						</div>
 					</div>
@@ -181,56 +172,74 @@ export default function WIPVideo() {
 				<div className={styles.cast}>
 					<h3>{t("video.casting")}</h3>
 					<ul className={styles.castList}>
-						<li>
-							<img
-								src="/assets/Vertical_placeholder.svg"
-								alt="casting"
-							/>
-						</li>
-						<li>
-							<img
-								src="/assets/Vertical_placeholder.svg"
-								alt="casting"
-							/>
-						</li>
-						<li>
-							<img
-								src="/assets/Vertical_placeholder.svg"
-								alt="casting"
-							/>
-						</li>
-						<li>
-							<img
-								src="/assets/Vertical_placeholder.svg"
-								alt="casting"
-							/>
-						</li>
-						<li>
-							<img
-								src="/assets/Vertical_placeholder.svg"
-								alt="casting"
-							/>
-						</li>
-						<li>
-							<img
-								src="/assets/Vertical_placeholder.svg"
-								alt="casting"
-							/>
-						</li>
+						{movieDetails?.cast.map((member, index) => (
+							<li key={index} className={styles.actorCard}>
+								<img
+									src={member.actor_picture_path}
+									alt={member.actor_name}
+								/>
+								<div>
+									<p>{member.actor_name}</p>
+									<p>{member.character_name}</p>
+								</div>
+							</li>
+						))}
 					</ul>
 				</div>
 			</div>
 
 			<div className={styles.commentsPart}>
+				<div className={styles.commentInput}>
+					<Input
+						type="text"
+						placeholder={t("video.comments")}
+						value={userComment}
+						variant="comment"
+						onChange={(e) => setUserComment(e.target.value)}
+						onKeyDown={(e) => {
+							if (e.key === "Enter") submitComment();
+						}}
+						size="large"
+						shape="square"
+						required
+					/>
+					<Button
+						size="large"
+						shape="square"
+						text="SEND"
+						className={styles.retroSend}
+						onClick={submitComment}
+					/>
+
+
+				</div>
+
 				<h2>{t("video.comments")}</h2>
 
+				{commentLoading && <p>Chargement...</p>}
+				{commentError && <p>{commentError}</p>}
+
 				<div className={styles.commentsList}>
-					{comments.map((comment) => (
-						<div key={comment.id} className={styles.comment}>
-							<h3>{comment.pseudo}</h3>
-							<p>{comment.text}</p>
-						</div>
-					))}
+					{comments.map((comment, idx) => {
+						const author =
+							comment.username ??
+							comment.pseudo ??
+							comment.author ??
+							comment.user ??
+							"Anonymous";
+
+						const content =
+							comment.content ??
+							comment.text ??
+							"";
+
+						return (
+							<div key={comment.id ?? idx} className={styles.comment}>
+								<h3>{author}</h3>
+								<p>{content}</p>
+							</div>
+						);
+					})}
 				</div>
 			</div>
 		</div>

@@ -99,4 +99,3 @@ async def send_email(data: EmailRequest):
 
 	print(message)
 	return {"returnValue": True}
-

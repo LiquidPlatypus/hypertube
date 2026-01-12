@@ -28,12 +28,11 @@ export const router = createBrowserRouter([
 						),
 					},
 					{
-						path: "/WIPvideo",
+						path: "/movie/:id",
 						element: (
 							<WIPVideo />
 						),
 					},
-					
 				],
 			},
 			// Auth routes
@@ -45,7 +44,6 @@ export const router = createBrowserRouter([
 				path: "auth/register",
 				element: <LoginPage />,
 			},
-			
 		],
 	},
 ]);

@@ -5,6 +5,7 @@ import MainLayout from "./layout/MainLayout.tsx";
 import LoginLayout from "./layout/LoginLayout.tsx";
 import { initLanguage, loadLanguage } from "./lang/i18n.tsx";
 import { GoogleOAuthProvider } from "@react-oauth/google";
+import {SearchProvider} from "./utils/searchContext.tsx";
 
 function App() {
 	const { pathname } = useLocation();
@@ -29,9 +30,11 @@ function App() {
 
 	return (
 		<GoogleOAuthProvider clientId="504765868462-ssreveurjgq1i8tuoinem6fcp0g8kv90.apps.googleusercontent.com">
-			<Layout>
-				<Outlet />
-			</Layout>
+			<SearchProvider>
+				<Layout>
+					<Outlet />
+				</Layout>
+			</SearchProvider>
 		</GoogleOAuthProvider>
 	);
 }

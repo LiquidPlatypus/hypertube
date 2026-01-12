@@ -1,23 +1,29 @@
 .Thumbnail {
 	position: relative;
-	aspect-ratio: 16/11;
 	width: 100%;
-	border-radius: 2rem;
+
+	border-top: 5px solid #e7e7e2;
+	border-left: 5px solid #1a1a1a;
+	border-bottom: 5px solid #000;
+	border-right: 5px solid #C0BDBDFF;
+
 	transition: transform 0.25s ease, box-shadow 0.25s ease;
+
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 	justify-content: flex-start;
+
 	cursor: pointer;
-	background: rgba(10, 10, 10, 0.3);
-	backdrop-filter: blur(6px);
+	background: rgba(17, 17, 17, 0.9);
 	overflow: hidden;
+
+	box-shadow: -7px 5px 1px #282828;
 }
 
 .Thumbnail:hover {
 	transform: scale(1.08);
-	box-shadow:
-			0 10px 20px rgba(0, 0, 0, 0.25);
+	box-shadow: -13px 10px 1px #282828;
 }
 
 .CoverWrapper {
@@ -75,4 +81,33 @@
 	display: flex;
 	align-items: center;
 	gap: 0.2rem;
+}
+
+@media (max-width: 600px) {
+	.Thumbnail:hover {
+		transform: scale(1);
+		box-shadow: -7px 5px 1px #282828;
+	}
+
+	.Thumbnail:hover .image {
+		filter: brightness(1) contrast(1);
+	}
+
+	.Title {
+		font-size: 0.9rem;
+	}
+
+	.Meta {
+		font-size: 0.7rem;
+	}
+}
+
+@media (max-width: 500px) {
+	.Title {
+		font-size: 0.7rem;
+	}
+
+	.Meta {
+		font-size: 0.5rem;
+	}
 }

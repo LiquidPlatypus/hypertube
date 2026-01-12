@@ -1,13 +1,9 @@
 .wrapper {
 	display: flex;
 	align-items: flex-start;
-
 	width: 100%;
-
 	font-family: "CommodoreRounded", serif;
 	font-size: 20px;
-
-	overflow-x: hidden;
 }
 
 @media (max-width: 1920px) {
@@ -195,6 +191,7 @@
 .rightInfos {
 	display: flex;
 	text-align: right;
+	justify-content: flex-end;
 }
 
 .meta {
@@ -202,7 +199,8 @@
 }
 
 .cover {
-	margin-top: 1.9rem;
+	margin-top: 1.6rem;
+	width: 50%;
 }
 
 .cover img {
@@ -229,6 +227,15 @@
 	padding-left: 0;
 }
 
+.actorCard {
+	display: flex;
+	flex-direction: column;
+}
+
+.actorCard img {
+	width: 75%;
+}
+
 .commentsPart {
 	display: flex;
 	flex-direction: column;
@@ -236,6 +243,35 @@
 	margin-right: 1.5rem;
 
 	text-align: left;
+}
+
+.commentInput {
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	column-gap: 1rem;
+	box-sizing: border-box;
+}
+
+.commentInput :global(.wrapper) {
+	flex: 1 1 auto;
+	width: 100%;
+	max-width: 100%;
+}
+
+.commentInput :global(.input) {
+	width: 100%;
+	max-width: 100%;
+	box-sizing: border-box;
+}
+
+.commentInput input:hover {
+	border-color: black;
+}
+
+.commentInput input:focus {
+	border-color: black;
+	box-shadow: 0 0 5px black;
 }
 
 .commentsList {
@@ -256,3 +292,30 @@
 
 	word-wrap: break-word;
 }
+
+.retroSend {
+  font-family: "CommodoreRounded", monospace;
+  font-size: 16px;
+  background: #f7c600;
+  color: black;
+  border: 3px solid black;
+  box-shadow: 4px 4px 0px black;
+  padding: 12px 20px;
+  margin-top: 0.8rem;
+  cursor: pointer;
+  transition: all 0.1s ease-in-out;
+  text-transform: uppercase;
+}
+
+.retroSend:hover {
+  background: #ff3c7d;
+  color: white;
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0px black;
+}
+
+.retroSend:active {
+  transform: translate(4px, 4px);
+  box-shadow: 0px 0px 0px black;
+}
+
