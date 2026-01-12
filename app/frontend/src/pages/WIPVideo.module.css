@@ -59,10 +59,6 @@
 		scrollbar-width: thin;
 	}
 
-	.castList li {
-		flex: 0 0 auto;
-	}
-
 	.cast {
 		width: 100%;
 		padding-right: 1.5rem;
@@ -130,11 +126,12 @@
 	}
 
 	.castList {
-		column-gap: 1.5rem !important;
+		column-gap: 0rem !important;
 	}
 
-	.castList img {
-		max-height: 100px !important;
+	.actorCard img {
+		width: 80px !important;
+		height: 120px !important;
 	}
 
 	.commentsPart {
@@ -234,10 +231,23 @@
 .actorCard {
 	display: flex;
 	flex-direction: column;
+	flex-shrink: 0;
 }
 
 .actorCard img {
-	width: 75%;
+	width: 150px;
+	height: 225px;
+	object-fit: cover;
+}
+
+.actorCard div {
+	margin-top: 0.5rem;
+	max-width: 150px;
+}
+
+.actorCard div p {
+	margin: 0.25rem 0;
+	word-wrap: break-word;
 }
 
 .commentsPart {
