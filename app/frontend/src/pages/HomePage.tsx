@@ -28,6 +28,8 @@ export default function HomePage() {
 	const [comment, setComment] = useState("");
 	const [comments, setComments] = useState<Map<number, string>>(new Map());
 
+	let chunk: number = 0;
+
 	const testGetUserInfo = async (e: React.MouseEvent<HTMLButtonElement>) => {
 		e.preventDefault();
 		try {
@@ -194,10 +196,12 @@ export default function HomePage() {
 				headers: {
 					Authorization: `Bearer ${token}`,
 				},
+				body: JSON.stringify({ chunk }),
 			});
 			if (!response.ok)
 				throw new Error("Server Error");
 			const data = await response.json();
+			chunk += 10;
 			for (const it in data.comments) {
 				setComments(prevState => {
 					const clone = new Map(prevState);

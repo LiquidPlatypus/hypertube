@@ -175,7 +175,12 @@ class Storage:
 						return comment
 		return None
 
-	def get_comments(self):
-		return self.comments
+	def get_comments(self, chunk):
+		chunk_comments = []
+		max = chunk + 10
+		while (self.comments[chunk] and chunk <= max):
+			chunk_comments.append(self.comments[chunk])
+			chunk += 1
+		return chunk_comments
 
 storage = Storage()
