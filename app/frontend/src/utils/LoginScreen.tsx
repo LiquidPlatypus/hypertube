@@ -97,7 +97,7 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 		}
 	};
 
-	// OAuth handlers (TODO)
+	// OAuth handlers
 	const handleGoogleLogin = async (credentialResponse: GoogleCredentialResponse) => {
 		if (!credentialResponse.credential) return;
 
@@ -132,7 +132,45 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 		}
 	};
 
-	// const handleIntra42Login = () => console.log("TODO: redirect to /api/auth/intra42");
+	const FT_AUTHORIZE_URL = "https://api.intra.42.fr/oauth/authorize";
+
+	const handleIntra42Login = () => {
+		const clientId = import.meta.env.VITE_FT_CLIENT_ID;
+		const redirectUri = import.meta.env.VITE_FT_REDIRECT_URI;
+
+		if (!clientId || !redirectUri) {
+			setMessage("Config 42 manquante (VITE_FT_CLIENT_ID / VITE_FT_REDIRECT_URI).");
+			return;
+		}
+
+		const state = crypto.randomUUID();
+		sessionStorage.setItem("ft_oauth_state", state);
+
+		const params = new URLSearchParams({
+			client_id: clientId,
+			redirect_uri: redirectUri,
+			response_type: "code",
+			scope: "public",
+			state,
+		});
+
+		// ✅ Ouvre la popup
+		const w = 520;
+		const h = 700;
+		const left = window.screenX + window.outerWidth - w - 20;
+		const top = window.screenY + 80;
+
+		const popup = window.open(
+			`${FT_AUTHORIZE_URL}?${params.toString()}`,
+			"ft_oauth",
+			`width=${w},height=${h},left=${left},top=${top}`
+		);
+
+		if (!popup) {
+			setMessage("Popup bloquée par le navigateur (désactive le bloqueur).");
+			return;
+		}
+	};
 
 	return (
 		<div className={styles.LoginScreen}>
@@ -201,8 +239,8 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 							text="Intra 42" 
 							size="large" 
 							shape="pill"  
-							onClick={() => alert("Login via Intra 42 non encore implémenté")}
-							// onClick={handleIntra42Login} 
+							// onClick={() => alert("Login via Intra 42 non encore implémenté")}
+							onClick={handleIntra42Login} 
 							/>
  					</div>
 				</>

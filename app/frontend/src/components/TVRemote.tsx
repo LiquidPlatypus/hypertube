@@ -50,19 +50,22 @@ export default function TVRemote({
 	}
 
 	const handleLogout = () => {
-		try {
-			localStorage.removeItem("access_token");
-			navigate('/auth/login');
-		} catch (error) {
-			console.error("Logout failed:", error);
-		}
-	}
-	useEffect(() => {
-		if (disableSearch) setShowSearch(false);
-	}, [disableSearch]);
+		localStorage.removeItem("access_token");
+		localStorage.setItem("just_logged_out", "true");
+
+		const overlay = document.createElement("div");
+		overlay.className = styles.LogoutOverlay;
+		document.body.appendChild(overlay);
+
+
+		setTimeout(() => {
+			document.body.removeChild(overlay);
+			navigate("/auth/login");
+		}, 1500);
+	};
 
 	return (
-		<div className={styles.TVRemote}>
+		<div className={styles.TVRemote} >
 			<Button
 				size="small"
 				shape="square"
@@ -100,6 +103,7 @@ export default function TVRemote({
 				variant="remote"
 				onClick={goToProfile}
 			/>
+			<div data-keep-search-open>
 			<Button
 				text="EN/FR"
 				size="small"
@@ -107,7 +111,10 @@ export default function TVRemote({
 				className={styles.LangBtn}
 				variant="remote"
 				onClick={handleChangeLang}
+				
 			/>
+			</div>
+			<div data-keep-search-open>
 			<Button
 				text="FX"
 				size="small"
@@ -116,7 +123,9 @@ export default function TVRemote({
 				variant="remote"
 				onClick={onToggleFx}
 				aria-pressed="false"
+				
 			/>
+			</div>
 			<Button
 				text=""
 				size="small"

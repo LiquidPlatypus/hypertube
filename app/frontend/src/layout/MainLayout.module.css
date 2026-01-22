@@ -58,10 +58,16 @@
 
 .Scanline {
   height: 1.3vh;
-  background: rgba(19, 18, 18, 0.24);
+  background: rgba(58, 56, 56, 0.24);
   animation: Scan 6s linear infinite;
-  z-index: 0;
+  z-index: 10;
 }
+
+.ScanlineOff {
+  opacity: 0;
+  animation: none !important;
+}
+
 
 /* Header et footer */
 .MainHeader,

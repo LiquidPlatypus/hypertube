@@ -19,6 +19,12 @@ export default function MainLayout({ children }: MainLayoutProps) {
   const [thumbTop, setThumbTop] = useState(0);
   const [thumbHeight, setThumbHeight] = useState(40);
 
+  const [fxEnabled, setFxEnabled] = useState(true);
+
+  const handleToggleFx = () => {
+    setFxEnabled((prev) => !prev);
+  };
+
   const recalc = () => {
     const scroller = scrollerRef.current;
     const track = trackRef.current;
@@ -84,7 +90,8 @@ export default function MainLayout({ children }: MainLayoutProps) {
       </header>
 
       <div className={styles.CRT}></div>
-      <div className={styles.Scanline}></div>
+      {fxEnabled && <div className={styles.Scanline}></div>}
+
 
       <div className={styles.BackgroundWrapper}>
         <div className={styles.Background}></div>
@@ -110,6 +117,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
         <TVRemote
           isOpen={isRemoteOpen}
           onToggleRemote={() => setIsRemoteOpen((prev) => !prev)}
+          onToggleFx={handleToggleFx}
         />
       </div>
     </div>

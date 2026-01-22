@@ -1,9 +1,13 @@
 .wrapper {
 	display: flex;
 	align-items: flex-start;
+
 	width: 100%;
+
 	font-family: "CommodoreRounded", serif;
 	font-size: 20px;
+
+	overflow-x: hidden;
 }
 
 @media (max-width: 1920px) {
@@ -53,10 +57,6 @@
 		column-gap: 1.5rem;
 		padding-bottom: 1rem;
 		scrollbar-width: thin;
-	}
-
-	.castList li {
-		flex: 0 0 auto;
 	}
 
 	.cast {
@@ -126,11 +126,12 @@
 	}
 
 	.castList {
-		column-gap: 1.5rem !important;
+		column-gap: 0rem !important;
 	}
 
-	.castList img {
-		max-height: 100px !important;
+	.actorCard img {
+		width: 80px !important;
+		height: 120px !important;
 	}
 
 	.commentsPart {
@@ -230,10 +231,23 @@
 .actorCard {
 	display: flex;
 	flex-direction: column;
+	flex-shrink: 0;
 }
 
 .actorCard img {
-	width: 75%;
+	width: 150px;
+	height: 225px;
+	object-fit: cover;
+}
+
+.actorCard div {
+	margin-top: 0.5rem;
+	max-width: 150px;
+}
+
+.actorCard div p {
+	margin: 0.25rem 0;
+	word-wrap: break-word;
 }
 
 .commentsPart {
@@ -292,30 +306,3 @@
 
 	word-wrap: break-word;
 }
-
-.retroSend {
-  font-family: "CommodoreRounded", monospace;
-  font-size: 16px;
-  background: #f7c600;
-  color: black;
-  border: 3px solid black;
-  box-shadow: 4px 4px 0px black;
-  padding: 12px 20px;
-  margin-top: 0.8rem;
-  cursor: pointer;
-  transition: all 0.1s ease-in-out;
-  text-transform: uppercase;
-}
-
-.retroSend:hover {
-  background: #ff3c7d;
-  color: white;
-  transform: translate(2px, 2px);
-  box-shadow: 2px 2px 0px black;
-}
-
-.retroSend:active {
-  transform: translate(4px, 4px);
-  box-shadow: 0px 0px 0px black;
-}
-

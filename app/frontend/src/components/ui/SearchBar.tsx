@@ -66,21 +66,20 @@ export default function SearchBar({ closeSearch }: SearchBarProps) {
 
   const containerRef = useRef<HTMLDivElement>(null);
 	useEffect(() => {
-		const handleClickOutside = (event: MouseEvent) => {
-			if (
-			containerRef.current &&
-			!containerRef.current.contains(event.target as Node)
-			) {
-			closeSearch();
-			}
-	};
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (!target) return;
 
-  document.addEventListener("mousedown", handleClickOutside);
+      if (target.closest("[data-keep-search-open]")) return;
 
-  return () => {
-    document.removeEventListener("mousedown", handleClickOutside);
-  };
-}, [closeSearch]);
+      if (containerRef.current && !containerRef.current.contains(target)) {
+        closeSearch();
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [closeSearch]);
+
 
 
   useEffect(() => {
