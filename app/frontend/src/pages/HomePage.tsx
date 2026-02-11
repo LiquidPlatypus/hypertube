@@ -27,6 +27,7 @@ export default function HomePage() {
 	const navigate = useNavigate();
 	const [comment, setComment] = useState("");
 	const [comments, setComments] = useState<Map<number, string>>(new Map());
+	const [chunk, setChunk] = useState(0);
 
 	const testGetUserInfo = async (e: React.MouseEvent<HTMLButtonElement>) => {
 		e.preventDefault();
@@ -189,6 +190,7 @@ export default function HomePage() {
 	const getComments = async () => {
 		const token = localStorage.getItem("access_token");
 		try {
+			// const pos = Number(chunk)
 			const response = await fetch("/api/comments", {
 				method: "GET",
 				headers: {
@@ -289,6 +291,7 @@ export default function HomePage() {
 						/>
 						<button type="submit">submit</button>
 					</form>
+					<button onChange={() => setChunk(chunk + 10)}>get more comment</button>
 					{/* <button onClick={getComments}>get comments</button> */}
 					{/* <p>{comments}</p> */}
 					{Array.from(comments.entries()).map(([id, content]) => (
