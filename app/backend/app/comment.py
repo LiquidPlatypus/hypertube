@@ -1,9 +1,9 @@
-from fastapi import APIRouter, Request
 from .database import storage
-from fastapi import HTTPException, Depends
+from fastapi import HTTPException, Depends, APIRouter
 from .utils import verif_access_token
-from .model import CommentForm, CustomCommentForm, ChunkInfoForm
 import datetime
+from .model import CommentForm, CustomCommentForm, ChunkCommentForm
+import string, random
 
 router = APIRouter()
 
@@ -36,12 +36,6 @@ async def modif_comment_byid(data: CustomCommentForm, current_user=Depends(verif
 	return {"comment": comment}
 
 @router.get("/api/comments")
-async def get_comments(current_user=Depends(verif_access_token)):
-	comments_list = storage.get_comments() # split par film quand on stockera les urls de films dans la DB
-	# it = data.pos
-	# end = data.pos + 10
-	# comments = []
-	# while (comments_list[it] != None and it < end):
-	# 	comments.append(comments_list[it])
-	# 	it += 1
-	return {"comments": comments_list}
+async def get_comments(data: ChunkCommentForm, current_user=Depends(verif_access_token)):
+	comments = storage.get_comments(data.chunk)
+	return {"comments": comments}
