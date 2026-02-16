@@ -176,16 +176,10 @@ export default function EntryPage() {
 
 	return (
 		<div>
-			<div>
-				<h2>Lecteur video</h2>
-                <video
-                    controls
-                    width="100%"
-                    style={{ maxWidth: "800px" }}
-                >
-                    <source src="/api/stream/video" type="video/mp4" />
-                    Your browser does not support the video tag.
-                </video>
+
+				
+					<button onClick={() => navigate(`/thumbnails`)}>Thumbnails</button>
+				
 				
 				<GoogleOAuthProvider clientId="504765868462-ssreveurjgq1i8tuoinem6fcp0g8kv90.apps.googleusercontent.com">
 					<GoogleLogin
@@ -329,6 +323,5 @@ export default function EntryPage() {
 					</form>
 				)}
 			</div>
-		</div>
 	);
 };

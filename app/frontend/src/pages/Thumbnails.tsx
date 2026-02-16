@@ -55,17 +55,6 @@ export default function Thumbnails() {
     return (
         <div className="min-h-screen bg-gray-100 flex flex-col items-center p-4 sm:p-8 font-sans">
             <div className="bg-white p-6 sm:p-10 rounded-xl shadow-2xl w-full max-w-2xl mt-4 sm:mt-10 border border-gray-200">
-                {/* Lecteur Vidéo */}
-                <h2 className="text-3xl font-extrabold text-indigo-700 mb-6 border-b-4 border-indigo-100 pb-2">Lecteur Vidéo</h2>
-                <div className="mb-8 w-full">
-                    <video
-                        controls
-                        className="w-full aspect-video rounded-xl shadow-xl bg-gray-900 border border-indigo-300"
-                        src="/api/stream/video"
-                    >
-                        Votre navigateur ne supporte pas la balise vidéo.
-                    </video>
-                </div>
 
                 {/* Barre de recherche */}
                 <h2 className="text-2xl font-semibold text-gray-700 mb-4">Rechercher un film/torrent</h2>

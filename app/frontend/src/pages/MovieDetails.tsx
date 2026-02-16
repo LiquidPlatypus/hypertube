@@ -17,6 +17,7 @@ interface Movie {
         character_name: string;
         actor_picture_path: string;
     }[];
+    mp4_path?: string;
 }
 
 export default function MovieDetails() {
@@ -26,10 +27,11 @@ export default function MovieDetails() {
     const [error, setError] = useState('');
     const { id } = useParams<{ id: string }>();
 
-
     const getMovieDetails = async (movieId: number) => {
         setLoading(true);
+        setError('');
         try {
+            // API call to fetch movie details
             const url = `/api/movie/${movieId}`;
             const response = await fetch(url, {
                 method: "GET",
@@ -37,30 +39,26 @@ export default function MovieDetails() {
                     "Content-Type": "application/json",
                 },
             });
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             const data: Movie = await response.json();
             setMovieDetails(data);
+            console.log("film chargé:", data.title, data.mp4_path ? "disponible" : "non disponible");
         } catch (err) {
-            setError('Erreur lors de la recherche des films. Le backend est-il lancé ?');
-            console.error("Error fetching Movies:", err);  // Debug: Afficher l'erreur
+            setError('Erreur MovieDetails()');
+            console.error("Error fetching movie Details:", err);
         }
         setLoading(false);
     }
 
+    // Fetch movie details on component mount
     React.useEffect(() => {
-        if (id) {
-            getMovieDetails(parseInt(id, 10));
-        } else {
-            setError("ID de film invalide.");
-        }
+        if (id) getMovieDetails(parseInt(id, 10));
     }, [navigate]);
+
 
     return (
         <div className="min-h-screen bg-gray-100 flex flex-col items-center p-4 sm:p-8 font-sans">
             <div className="bg-white p-6 sm:p-10 rounded-xl shadow-2xl w-full max-w-4xl mt-4 sm:mt-10 border border-gray-200">
-                {/* Détails du film */}
                 <h2 className="text-3xl font-extrabold text-indigo-700 mb-6 border-b-4 border-indigo-100 pb-2">Détails du Film</h2>
                 <div className="mb-8 w-full">
                 </div>
@@ -68,6 +66,9 @@ export default function MovieDetails() {
                 {error && <p className="text-center text-red-500 mt-6">{error}</p>}
                 {movieDetails && (
                     <div className="mt-6">
+                        <div className="mb-8 w-full">
+
+                        </div>
                         <h3 className="text-2xl font-bold mb-2">{movieDetails.title} ({new Date(movieDetails.release_date).getFullYear()})</h3>
                         <p className="italic text-gray-600 mb-4">{movieDetails.tagline}</p>
                         <div className="flex mb-6">

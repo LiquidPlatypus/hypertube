@@ -27,7 +27,7 @@ DB = declarative_base()
 
 
 def init_db():
-    max_attempts = 10
+    max_attempts = 5
     attempt = 0
     while attempt < max_attempts:
         try:
@@ -62,6 +62,7 @@ class Storage:
 		self.password = []
 		self.profile_pic = []
 		self.comments = []
+		self.movies = []
 
 	def add_user(self, username: str, email: str, password: str, firstname: str, lastname: str):
 		"""
@@ -176,5 +177,35 @@ class Storage:
 
 	def get_comments(self):
 		return self.comments
+
+	def add_movie(self, title: str, release_date: str, mp4_path: str):
+		"""
+		DESK:
+		Store movie in DB
+		"""
+		movie = {"title": title, "release_date": release_date, "mp4_path": mp4}
+		self.movies.append(movie)
+		return movie
+	
+	def get_movie(self, title: str, release_date: str):
+		"""
+		DESK:
+		Get mp4_path from a move in DB with title and release_date
+		"""
+		for m in self.movies:
+			if m["title"] == title and m["release_date"] == release_date:
+				return m.mp4_path
+		return None
+
+	def remove_movie(self, title: str, release_date: str):
+		"""
+		DESK:
+		Remove movie in DB with title and release_date
+		"""
+		for m in self.movies:
+			if m["title"] == title and m["release_date"] == release_date:
+				self.movies.remove(m)
+				return True
+		return False
 
 storage = Storage()

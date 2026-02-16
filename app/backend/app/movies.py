@@ -1,14 +1,19 @@
-from fastapi import FastAPI, HTTPException, status, Query, APIRouter
+from fastapi import FastAPI, HTTPException, status, Query, APIRouter, Depends
 from fastapi.responses import JSONResponse
 import requests
-import tmdbsimple as tmdb
-# from auth import tmdb
+from fastapi import Request
+from auth import tmdb
 import os
+import pprint
+import libtorrent
+import time
+from database import get_db, init_db, SessionLocal
+from models_db import add_movie, get_movie_by_tmdb_id, get_movie_by_title_and_date, list_movies
+from fastapi import BackgroundTasks
 
 router = APIRouter()
+active_downloads = {}
 
-tmdb.API_KEY = os.getenv("TMDB_API_KEY")
-tmdb.REQUESTS_TIMEOUT = 5
 BITSEARCH_API_KEY = os.getenv("BITSEARCH_API_KEY")
 
 @router.get("/api/thumbnails", response_class=JSONResponse)
@@ -33,16 +38,18 @@ def get_thumbnails(query: str = Query(None, min_length=1), page: int = Query(1, 
             "id": movie["id"],
             "title": movie["original_title"],
             "poster_path": f"https://image.tmdb.org/t/p/w500{movie['poster_path']}",
-            "release_date": movie["release_date"],
-            "score": movie["vote_average"]
+            "release_date": movie["release_date"] if "release_date" in movie else "N/A",
+            "score": movie["vote_average"] if "vote_average" in movie else "N/A",
         })
     return JSONResponse(content=thumbnails_data)
 
+
+
 @router.get("/api/movie/{movie_id}", response_class=JSONResponse)
-def get_movie_details(movie_id: int):
+def get_movie_details(movie_id: int, session = Depends(get_db)):
     """
     Get detailed information about a movie from TMDB API. \n
-    Returns a dictionaire with keys: title, tagline, overview, poster_path, release_date, runtime, score, \n
+    Returns a dictionary with keys: title, tagline, overview, poster_path, release_date, runtime, score, \n
     and cast (list of dictionaires with keys: actor_name, character_name, actor_picture).
     """
     movie_data = {}
@@ -65,6 +72,11 @@ def get_movie_details(movie_id: int):
             "actor_picture_path": f"https://image.tmdb.org/t/p/w500{actor['profile_path']}"
         })
     movie_data["cast"] = cast_data
+    movie_data["mp4_path"] = ""
+    
+    stored_movie = get_movie_by_tmdb_id(session, movie_id)
+    if stored_movie:
+        movie_data["mp4_path"] = stored_movie.mp4_path
 
     return JSONResponse(content=movie_data)
 

@@ -5,7 +5,7 @@ from fastapi.responses import JSONResponse
 from auth import router as auth_router
 from utils import verif_access_token
 from users import router as users_router
-from stream import router as stream_router
+#from stream import router as stream_router
 from movies import router as movies_router
 from comment import router as comment_router
 
@@ -57,7 +57,7 @@ async def verif_header(request: Request, call_next):
 
 app.include_router(auth_router)
 app.include_router(users_router)
-app.include_router(stream_router)
+#app.include_router(stream_router)
 app.include_router(movies_router)
 app.include_router(comment_router)
 

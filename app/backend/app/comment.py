@@ -1,8 +1,8 @@
 from fastapi import APIRouter
-from .database import storage
+from database import storage
 from fastapi import HTTPException, Depends
-from .utils import verif_access_token
-from .model import CommentForm, CustomCommentForm
+from utils import verif_access_token
+from model import CommentForm, CustomCommentForm
 import datetime
 
 router = APIRouter()
