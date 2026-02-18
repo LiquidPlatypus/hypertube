@@ -5,7 +5,15 @@ STOP=\033[0m
 
 all: 
 	@echo "$(CYA)=== Building & starting containers...$(STOP)"
-	@sudo docker-compose up
+	@sudo docker-compose up -d
+
+logs: #Tails logs of all containers
+	@echo "$(CYA)=== Tailing logs...$(STOP)"
+	@sudo docker-compose logs -f
+
+restart: #Restarts all containers
+	@echo "$(CYA)=== Restarting containers...$(STOP)"
+	@sudo docker-compose restart $(s)
 
 build: #Builds all containers
 	@echo "$(CYA)=== Building containers...$(STOP)"

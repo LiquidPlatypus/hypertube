@@ -8,16 +8,24 @@ import pprint
 import libtorrent
 import time
 from database import get_db, init_db, SessionLocal
-from models_db import add_movie, get_movie_by_tmdb_id, get_movie_by_title_and_date, list_movies
-from fastapi import BackgroundTasks
+from pydantic import BaseModel
+from typing import Optional, List
+from models_db import get_movie_by_tmdb_id
 
 router = APIRouter()
-active_downloads = {}
 
 BITSEARCH_API_KEY = os.getenv("BITSEARCH_API_KEY")
 
+
+class MovieThumbnail(BaseModel):
+    id: int
+    title: str
+    poster_path: Optional[str]
+    release_date: str
+    score: float
+
 @router.get("/api/thumbnails", response_class=JSONResponse)
-def get_thumbnails(query: str = Query(None, min_length=1), page: int = Query(1, ge=1)):
+def get_thumbnails(query: Optional[str] = Query(None), page: int = Query(1, ge=1)):
     """
     Get a list of movies thumbnails from TMDB API. params: query (str), page (int) \n
     If query is provided, search for movies matching the query. Else, get popular movies (updated daily). \n
@@ -34,12 +42,14 @@ def get_thumbnails(query: str = Query(None, min_length=1), page: int = Query(1, 
         thumbnails_search_results = tmdb.Movies().popular(page=page)
 
     for movie in thumbnails_search_results["results"]:
+        poster = movie.get("poster_path")
+        full_poster_path = f"https://image.tmdb.org/t/p/w500{poster}" if poster else None
         thumbnails_data.append({
             "id": movie["id"],
-            "title": movie["original_title"],
-            "poster_path": f"https://image.tmdb.org/t/p/w500{movie['poster_path']}",
-            "release_date": movie["release_date"] if "release_date" in movie else "N/A",
-            "score": movie["vote_average"] if "vote_average" in movie else "N/A",
+            "title": movie.get("title") or movie.get("original_title"),
+            "poster_path": full_poster_path,
+            "release_date": movie.get("release_date", "N/A"),
+            "score": round(movie.get("vote_average", 0), 1)
         })
     return JSONResponse(content=thumbnails_data)
 
