@@ -1,5 +1,6 @@
 from .database import storage
-from fastapi import HTTPException, Depends, APIRouter
+from fastapi import HTTPException, Depends, APIRouter, Query
+from fastapi.responses import JSONResponse
 from .utils import verif_access_token
 import datetime
 from .model import CommentForm, CustomCommentForm, ChunkCommentForm
@@ -35,7 +36,7 @@ async def modif_comment_byid(data: CustomCommentForm, current_user=Depends(verif
 	print(comment)
 	return {"comment": comment}
 
-@router.get("/api/comments")
-async def get_comments(data: ChunkCommentForm, current_user=Depends(verif_access_token)):
-	comments = storage.get_comments(data.chunk)
+@router.get("/api/comments", response_class=JSONResponse)
+async def get_comments(pos: int = Query(1, ge=1), current_user=Depends(verif_access_token)):
+	comments = storage.get_comments(pos)
 	return {"comments": comments}

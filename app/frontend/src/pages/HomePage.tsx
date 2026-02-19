@@ -1,4 +1,4 @@
-import React, { useState, type SyntheticEvent, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 export interface User {
@@ -9,11 +9,6 @@ export interface User {
 		"firstname": string,
 		"lastname": string,
 	}
-}
-
-function ft_atoc(data: any) {
-	const final_string: string = '[' + data.author + ']:: ' + data.content + '//' + data.date;
-	return final_string;
 }
 
 export default function HomePage() {
@@ -28,8 +23,6 @@ export default function HomePage() {
 	const [comment, setComment] = useState("");
 	const [comments, setComments] = useState<Map<number, string>>(new Map());
 	const [chunk, setChunk] = useState(0);
-
-	let chunk: number = 0;
 
 	const testGetUserInfo = async (e: React.MouseEvent<HTMLButtonElement>) => {
 		e.preventDefault();
@@ -192,18 +185,16 @@ export default function HomePage() {
 	const getComments = async () => {
 		const token = localStorage.getItem("access_token");
 		try {
-			// const pos = Number(chunk)
-			const response = await fetch("/api/comments", {
+			const response = await fetch(`/api/comments?pos=${chunk}`, {
 				method: "GET",
 				headers: {
 					Authorization: `Bearer ${token}`,
+					"Content-Type": "application/json",
 				},
-				body: JSON.stringify({ chunk }),
 			});
 			if (!response.ok)
 				throw new Error("Server Error");
 			const data = await response.json();
-			chunk += 10;
 			for (const it in data.comments) {
 				setComments(prevState => {
 					const clone = new Map(prevState);
@@ -213,6 +204,7 @@ export default function HomePage() {
 					return clone;
 				});
 			}
+			setChunk(chunk + 10);
 		} catch (error) {
 			console.error(error);
 			setComment("Error server");
