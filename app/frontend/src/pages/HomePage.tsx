@@ -189,12 +189,12 @@ export default function HomePage() {
 				method: "GET",
 				headers: {
 					Authorization: `Bearer ${token}`,
-					"Content-Type": "application/json",
 				},
 			});
 			if (!response.ok)
-				throw new Error("Server Error");
+				throw new Error(`Server Error :${response.status}`);
 			const data = await response.json();
+			console.log("test")
 			for (const it in data.comments) {
 				setComments(prevState => {
 					const clone = new Map(prevState);
@@ -210,7 +210,10 @@ export default function HomePage() {
 			setComment("Error server");
 		}
 	}
-
+	const observerTrigger = async () => {
+		setChunk(chunk + 10);
+		getComments();
+	}
 	useEffect(() => {
 		getComments();
 	}, []);
@@ -287,7 +290,7 @@ export default function HomePage() {
 						/>
 						<button type="submit">submit</button>
 					</form>
-					<button onChange={() => setChunk(chunk + 10)}>get more comment</button>
+					<button onClick={observerTrigger}>get more comment</button>
 					{/* <button onClick={getComments}>get comments</button> */}
 					{/* <p>{comments}</p> */}
 					{Array.from(comments.entries()).map(([id, content]) => (

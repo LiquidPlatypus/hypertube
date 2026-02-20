@@ -4,6 +4,7 @@ from fastapi.responses import JSONResponse
 from .utils import verif_access_token
 import datetime
 from .model import CommentForm, CustomCommentForm, ChunkCommentForm
+from typing import Optional
 import string, random
 
 router = APIRouter()
@@ -37,6 +38,6 @@ async def modif_comment_byid(data: CustomCommentForm, current_user=Depends(verif
 	return {"comment": comment}
 
 @router.get("/api/comments", response_class=JSONResponse)
-async def get_comments(pos: int = Query(1, ge=1), current_user=Depends(verif_access_token)):
+async def get_comments(pos: int = Query(0, ge=0), current_user=Depends(verif_access_token)):
 	comments = storage.get_comments(pos)
 	return {"comments": comments}
