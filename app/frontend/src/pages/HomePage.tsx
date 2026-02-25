@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 
 export interface User {
@@ -23,6 +23,9 @@ export default function HomePage() {
 	const [comment, setComment] = useState("");
 	const [comments, setComments] = useState<Map<number, string>>(new Map());
 	const [chunk, setChunk] = useState(0);
+	const [loading, setLoading] = useState<boolean>(false);
+	const [isEmpty, setIsEmpty] = useState<boolean>(false);
+	const observer = React.useRef<IntersectionObserver | null>(null);
 
 	const testGetUserInfo = async (e: React.MouseEvent<HTMLButtonElement>) => {
 		e.preventDefault();
@@ -183,6 +186,8 @@ export default function HomePage() {
 	}
 
 	const getComments = async () => {
+		setLoading(true);
+
 		const token = localStorage.getItem("access_token");
 		try {
 			const response = await fetch(`/api/comments?pos=${chunk}`, {
@@ -194,10 +199,12 @@ export default function HomePage() {
 			if (!response.ok)
 				throw new Error(`Server Error :${response.status}`);
 			const data = await response.json();
-			console.log("test")
+			if (data.length === 0)
+				setIsEmpty(true);
+			setIsEmpty(false)
 			for (const it in data.comments) {
-				setComments(prevState => {
-					const clone = new Map(prevState);
+				setComments(self => {
+					const clone = new Map(self);
 					if (clone.get(data.comments[it].id))
 						return clone;
 					clone.set(data.comments[it].id, data.comments[it].content);
@@ -208,12 +215,28 @@ export default function HomePage() {
 		} catch (error) {
 			console.error(error);
 			setComment("Error server");
+		} finally {
+			setLoading(false);
 		}
 	}
+
 	const observerTrigger = async () => {
+		if (loading) return
 		setChunk(chunk + 10);
 		getComments();
 	}
+    const lastComment = useCallback((node: HTMLDivElement) => {
+        if (loading) return;
+        if (observer.current) observer.current.disconnect();		// disconect old observer if is exist
+
+        observer.current = new IntersectionObserver(entries => {	// entries is array of observed element
+            if (entries[0].isIntersecting && !isEmpty) {			// isIntersecting set on True if element is visible
+                observerTrigger();									// function to refill comments map
+            }
+        });
+        if (node) observer.current.observe(node);					// define the node (html element of the last comment) to be observed
+    }, [loading, isEmpty]);
+
 	useEffect(() => {
 		getComments();
 	}, []);
@@ -291,11 +314,18 @@ export default function HomePage() {
 						<button type="submit">submit</button>
 					</form>
 					<button onClick={observerTrigger}>get more comment</button>
-					{/* <button onClick={getComments}>get comments</button> */}
-					{/* <p>{comments}</p> */}
-					{Array.from(comments.entries()).map(([id, content]) => (
-						<p key={id}>{content}</p>
-					))}
+					{Array.from(comments.entries()).map(([id, content], index, array) => {
+						const isLast = index === array.length - 1;
+						return (
+							<div
+								ref={isLast ? lastComment : null}
+							>
+								<p key={id}>
+									{content}
+								</p>
+							</div>
+						);
+					})}
 				</div>
 		</div>
 	);
