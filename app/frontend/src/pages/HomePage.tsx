@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { data, useNavigate } from "react-router-dom";
 
 export interface User {
 	"user": {
@@ -9,6 +9,13 @@ export interface User {
 		"firstname": string,
 		"lastname": string,
 	}
+}
+
+interface Comment {
+	"id": number;
+	"content": string;
+	"author": string;
+	"date": string;
 }
 
 export default function HomePage() {
@@ -21,7 +28,7 @@ export default function HomePage() {
 	const [profilePic, setProfilePic] = useState<string | null>(null);
 	const navigate = useNavigate();
 	const [comment, setComment] = useState("");
-	const [comments, setComments] = useState<Map<number, string>>(new Map());
+	const [comments, setComments] = useState<Map<number, Comment>>(new Map());
 	const [chunk, setChunk] = useState(0);
 	const [loading, setLoading] = useState<boolean>(false);
 	const [isEmpty, setIsEmpty] = useState<boolean>(false);
@@ -172,11 +179,11 @@ export default function HomePage() {
 			});
 			if (!response.ok)
 				throw new Error("Server Error");
-			const data = await response.json();
-			console.log(data.comment);
-			setComments(prevState => {
-				const clone = new Map(prevState);
-				clone.set(data.comment.id, data.comment.content);
+			const res = await response.json();
+			const data: Comment = res.comment;
+			setComments(prevSelf => {
+				const clone = new Map(prevSelf);
+				clone.set(data.id, data);
 				return clone;
 			});
 		} catch (error) {
@@ -198,16 +205,18 @@ export default function HomePage() {
 			});
 			if (!response.ok)
 				throw new Error(`Server Error :${response.status}`);
-			const data = await response.json();
-			if (data.length === 0)
+			const res = await response.json();
+			const data: Comment[] = res.comments
+			if (data.length === 0 || !data.length)
 				setIsEmpty(true);
-			setIsEmpty(false)
-			for (const it in data.comments) {
-				setComments(self => {
-					const clone = new Map(self);
-					if (clone.get(data.comments[it].id))
+			else
+				setIsEmpty(false)
+			for (const it in data) {
+				setComments(prevSelf => {
+					const clone = new Map(prevSelf);
+					if (clone.get(data[it].id))
 						return clone;
-					clone.set(data.comments[it].id, data.comments[it].content);
+					clone.set(data[it].id, data[it]);
 					return clone;
 				});
 			}
@@ -227,11 +236,11 @@ export default function HomePage() {
 	}
     const lastComment = useCallback((node: HTMLDivElement) => {
         if (loading) return;
-        if (observer.current) observer.current.disconnect();		// disconect old observer if is exist
+        if (observer.current) observer.current.disconnect();		// disconect observer when it doing verification
 
         observer.current = new IntersectionObserver(entries => {	// entries is array of observed element
             if (entries[0].isIntersecting && !isEmpty) {			// isIntersecting set on True if element is visible
-                observerTrigger();									// function to refill comments map
+				observerTrigger();									// function to refill comments map
             }
         });
         if (node) observer.current.observe(node);					// define the node (html element of the last comment) to be observed
@@ -313,15 +322,20 @@ export default function HomePage() {
 						/>
 						<button type="submit">submit</button>
 					</form>
-					<button onClick={observerTrigger}>get more comment</button>
-					{Array.from(comments.entries()).map(([id, content], index, array) => {
+					{/* <button onClick={observerTrigger}>get more comment</button> */}
+					{Array.from(comments.entries()).map(([id, comment], index, array) => {
 						const isLast = index === array.length - 1;
+						if (!id)
+							return (
+								<p>Comment list is Empty</p>
+							);
 						return (
 							<div
+								key={id}
 								ref={isLast ? lastComment : null}
 							>
-								<p key={id}>
-									{content}
+								<p>
+									{comment.author}: {comment.content}
 								</p>
 							</div>
 						);
