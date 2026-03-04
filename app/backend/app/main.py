@@ -8,6 +8,7 @@ from users import router as users_router
 #from stream import router as stream_router
 from movies import router as movies_router
 from comment import router as comment_router
+import shutil
 
 # Models Pydantic
 from model import RegisterRequest, LoginRequest, ModifyFormRequest, PasswordForm, EmailRequest, NewPasswordRequest
@@ -20,17 +21,42 @@ from database import get_db, DB, engine
 app = FastAPI()
 
 app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+	CORSMiddleware,
+	allow_origins=["http://localhost:5173"],
+	allow_credentials=True,
+	allow_methods=["*"],
+	allow_headers=["*"],
 )
 
-# Init DB
+# cleanup des dl incomplets au demarrage de l'app
+def cleanup_incomplete_downloads():
+	download_dir = "./downloads/"
+	if not os.path.exists(download_dir):
+		return
+
+	db = get_db()
+	try:
+		# on liste les fichiers presents dans ./downloads
+		for filename in os.listdir(download_dir):
+			file_path = os.path.join(download_dir, filename)
+
+			# si fichiers listés dans db, il est complet
+			is_complete = db.query(Movie).filter(Movie.mp4_path == file_path).first()
+			# si incomplet, on le supprime.
+			if not is_complete:
+				print(f"Suppression du fichier incomplet : {file_path}")
+				if os.path.isfile(file_path):
+					os.remove(file_path)
+				elif os.path.isdir(file_path):
+					shutil.rmtree(file_path)
+	finally:
+		db.close()
+
+# Init
 @app.on_event("startup")
 def on_startup():
-    DB.metadata.create_all(bind=engine)
+	DB.metadata.create_all(bind=engine)
+	cleanup_incomplete_downloads()
 
 # Middleware
 @app.middleware("http")
@@ -69,3 +95,4 @@ async def verify_user_token(token: str):
 @app.get("/api/hello")
 async def get_hello():
 	return {"message": "Hello from FastAPI 👋"}
+

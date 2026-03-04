@@ -23,6 +23,10 @@ clean: #Stops and remove all containers volumes and networks
 	@echo "$(CYA)=== Stopping and cleaning containers, volumes and networks...$(STOP)"
 	@sudo docker-compose down --remove-orphans -v
 
+rebuild: #removes rebuilds, and restart a single container
+	@echo "$(CYA)=== Rebuilding and restarting container...$(STOP)"
+	@sudo docker-compose up --build -d $(s)
+
 iclean: #Removes all images
 	@echo "$(RED)!!!=== Do you really want to remove all images ?$(STOP)"
 	@read -p "Confirm (y/n) : " confirm && [ "$$confirm" = "y" ] || (echo "$(YEL)Aborted.$(STOP)" && exit 1)

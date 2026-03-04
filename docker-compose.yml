@@ -48,6 +48,15 @@ services:
       - hypertube-network
     restart: on-failure
 
+  torrent_search_api:
+    build: ./torrent_search_api
+    container_name: torrent_search_api
+    ports:
+      - 3001:3001
+    networks:
+      - hypertube-network
+    restart: on-failure
+
   mariadb:
     image: mariadb:latest
     container_name: mariadb
