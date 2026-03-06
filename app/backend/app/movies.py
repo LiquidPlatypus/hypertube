@@ -141,43 +141,38 @@ def search_torrent(request: TorrentRequest):
     search_query = f"{request.title} {request.year} 1080p"
     print(f"Recherche torrent pour: {search_query}")
 
-    try: 
-        # appel YTS
-        search_response = requests.get(
-        f"{torrent_search_api_url}/api/all/{search_query}",
-            timeout=1
-        )
+    providers = [
+        '1337x', 'yts', 'piratebay', 'rarbg', 'kickass', 
+        'limetorrent', 'bitsearch', 'glodls', 'magnetdl', 
+        'nyaasi', 'tgx', 'torlock', 'torrentfunk', 
+        'torrentproject', 'eztv', 'ettv', 'zooqle'
+    ]
 
-        data = search_response.json()
+    for provider in providers:
+        try:
+            print(f"📡 Test sur {provider}...", end="")
+            response = requests.get(f"{torrent_search_api_url}/{provider}/{search_query}/1", timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                if isinstance(data, list) and len(data) > 0:
+                    first_result = data[0]
+                    magnet = first_result.get("Magnet") or first_result.get("magnet")
+                    
+                    if magnet:
+                        print(f" ✅ MAGNET TROUVÉ")
+                        return {
+                            "status": "found",
+                            "magnet": magnet
+                        }
+                print(" ⚪ Aucun résultat")
+            else:
+                print(f" ❌ Erreur HTTP: {response.status_code}")
+        except:
+            continue
 
-        pprint.pprint(data)
-
-        if data["status"] == "ok" and data["data"]["movie_count"] > 0:
-            movie = data["data"]["movies"][0]
-            torrent = movie["torrents"][0]
-            hash = torrent["hash"]
-            movie_title = movie["title"]
-            magnet = f"magnet:?xt=urn:btih:{hash}&dn={movie_title}&tr=udp://open.demonii.com:1337/announce&tr=udp://tracker.openbittorrent.com:80"
-            file_name = f"{movie_title}.mp4"
-
-            # on renvoie le magnet et le file_name a react qui va appeler le endpoint de dl du torrent
-            return {
-                "status": "found",
-                "magnet": magnet,
-                "file_name": file_name
-            }
-        
-        else:
-            return {
-                "status": "not found",
-                "message": "Aucun torrent trouvé pour ce film."
-            }
-    
-    except requests.exceptions.RequestException as e:
-        print(f"Erreur lors de la communication avec YTS: {str(e)}")  
-        raise HTTPException(status_code=502, detail=f"Erreur de communication avec YTS: {str(e)}")
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    return { "status": "not found" }
 
 
 # filtre les fichiers du torrent pour ne télécharger que le .mp4

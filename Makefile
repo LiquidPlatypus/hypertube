@@ -9,7 +9,7 @@ all:
 
 logs: #Tails logs of all containers
 	@echo "$(CYA)=== Tailing logs...$(STOP)"
-	@sudo docker-compose logs -f
+	@sudo docker-compose logs -f hypertube_backend react_dev 
 
 restart: #Restarts all containers
 	@echo "$(CYA)=== Restarting containers...$(STOP)"

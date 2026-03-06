@@ -28,18 +28,19 @@ export default function MovieDetails() {
     const { id } = useParams<{ id: string }>();
     const [isDownloading, setIsDownloading] = useState(false);
     // const [downloadProgress, setDownloadProgress] = useState({ progress: 0, speed: 0, status: ''});
-    const [YTSStatus, setYTSStatus ] = useState('');
+    const [isSearchingMagnet, setIsSearchingMagnet] = useState(false);
+    const [searchMagnetPerformed, setSearchMagnetPerformed] = useState(false);
+    const [magnet, setMagnet] = useState(null);
 
-
-    // recupere les details du film cible depuis le backend et on les stocke dans movieDetails
+    //: recupere les details du film cible depuis le backend et on les stocke dans movieDetails
     const getMovieDetails = async (movieId: number) => {
 
-        // on indique qu'on est en train de charger des resultats et on set erreur a vide pour reset l'affichage des erreurs précédentes
+        //: on indique qu'on est en train de charger des resultats et on set erreur a vide pour reset l'affichage des erreurs précédentes
         setLoading(true);
         setError('');
 
         try {
-            // appel backend pour recup les details du film via son id
+            //: appel backend pour recup les details du film via son id
             const url = `/api/movie/${movieId}`;
             const response = await fetch(url, {
                 method: "GET",
@@ -47,31 +48,41 @@ export default function MovieDetails() {
                     "Content-Type": "application/json",
                 },
             });
-            // si la reponse est pas ok, on throw direct au catch
+            //: si la reponse est pas ok, on throw direct au catch
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
-            // on range les details du film dans l'interface Movie et on les stocke dans le state pour affichage
+            //: on range les details du film dans l'interface Movie et on les stocke dans le state pour affichage
             const data: Movie = await response.json();
             setMovieDetails(data);
 
             console.log("film chargé:", data.title, data.mp4_path ? "mp4 disponible" : "mp4 non disponible");
         } catch (err) {
-            // en cas de throw, on affiche un message d'erreur et on log dans la console
+            //: en cas de throw, on affiche un message d'erreur et on log dans la console
             setError('Erreur MovieDetails()');
             console.error("Error fetching movie Details:", err);
         }
-        // on remet loading a false
+        //: on remet loading a false
         setLoading(false);
     }
 
-    // appel le back pour chercher, puis telecharger le torrent du film cible.
-    const handleDownload = async () => {
+    const renderButtonText = () => {
+        if (isSearchingMagnet) return "Recherche de sources...";
+        if (searchMagnetPerformed && !magnet) return "Aucune source trouvée.";
+        if (magnet) return "Télécharger";
+        if (isDownloading) return "Téléchargement en cours...";
+        return "Recherche de source...";
+    };
+
+ 
+    // appel le back pour chercher un torrent parmis une liste de providers
+    const searchTorrent = async () => {
         if (!movieDetails) return;
 
-        // On signale qu'on est en train de chercher un torrent
-        setYTSStatus ("Recherche de torrent...");
+        setIsSearchingMagnet(true);
+        setSearchMagnetPerformed(false);
+        setMagnet(null);
 
-        // on cherche un torrent du film
+        //: on cherche un torrent du film
         try {
             const url = `/api/torrent/search`;
             const searchResponse = await fetch(url, {
@@ -86,30 +97,27 @@ export default function MovieDetails() {
             const searchData = await searchResponse.json();
             if (searchData.status == "found") {
                 // on a trouvé un torrent, on lance le dl
-                setYTSStatus ("Torrent trouvé. Initialisation du téléchargement...");
-                const url = `/api/torrent/download`;
-                const dlResponse = await fetch(url, {
-                    method: "POST",
-                    headers: {"Content-Type": "application/json", },
-                    body: JSON.stringify({
-                        id: movieDetails.id,
-                        magnet: searchData.magnet
-                    }),
-                });
-                if (dlResponse.ok) {
-                    setYTSStatus ("Téléchargement lancé !");
-                    // setIsDownloading(true) pour commencer le polling du status du torrent dans le useEffect
-                    setIsDownloading(true);
-                }
-            } else {
-                setYTSStatus("Torrent indisponible. Retentez dans 24h.");
-                setIsDownloading(false);
-                return;
+                setMagnet(searchData.magnet);
+                // const url = `/api/torrent/download`;
+                // const dlResponse = await fetch(url, {
+                //     method: "POST",
+                //     headers: {"Content-Type": "application/json", },
+                //     body: JSON.stringify({
+                //         id: movieDetails.id,
+                //         magnet: searchData.magnet
+                //     }),
+                // });
+                // if (dlResponse.ok) {
+                //     // setIsDownloading(true) pour commencer le polling du status du torrent dans le useEffect
+                //     setIsDownloading(true);
+                // }
             }
         } catch (err) {
-            setYTSStatus ("Erreur lors de la recherche du torrent");
-            setIsDownloading(false);
             console.error("Error while searching for torrent:", err);
+        }
+        finally {
+            setIsSearchingMagnet(false);
+            setSearchMagnetPerformed(true);
         }
     };
 
@@ -124,7 +132,6 @@ export default function MovieDetails() {
             });
             if (response.ok) {
                 setIsDownloading(false);
-                setYTSStatus("Téléchargement arrêté.");
             }
         } catch (err) {
         console.log("Erreur lors de la tentative d'arrêt du téléchargement: ", err);
@@ -135,6 +142,10 @@ export default function MovieDetails() {
     React.useEffect(() => {
         if (id) getMovieDetails(parseInt(id, 10));
     }, [navigate]);
+
+    React.useEffect(() => {
+        if (movieDetails) searchTorrent();
+    }, [movieDetails])
 
     // actualisation du status du 
     // arret du telechargement si on quitte la page
@@ -150,9 +161,7 @@ export default function MovieDetails() {
                     console.log("Status du torrent:", data);
 
                     if (data.status === 'active') {
-                        setYTSStatus(`Téléchargement en cours... ${data.progress}%  (${data.speed} Mo/s)`);
                         if (data.is_finished) {
-                            setYTSStatus("Téléchargement terminé !");
                             setIsDownloading(false);
                             clearInterval(interval);
                         }
@@ -228,27 +237,14 @@ export default function MovieDetails() {
                                     <div className="flex gap-4 mb-6">
 
                                         {/* bouton download */}
-                                        {!isDownloading ? (
-                                            <button
-                                                onClick={handleDownload}
-                                                className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg shadow transition"
-                                            >
-                                                Télécharger le torrent
-                                            </button>
-                                        ) : (
-                                            <button
-                                                onClick={handleStopDownload}
-                                                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg shadow transition"
-                                            >
-                                                Arrêter le téléchargement
-                                            </button>
-                                        )}
-                                        {YTSStatus && (
-                                            <p className="text-sm mt-2 text-indigo-600 font-medium italic">
-                                                {YTSStatus}
-                                            </p>
-                                        )}
-
+                                        <button
+                                            disabled={isSearchingMagnet || !magnet || !!movieDetails.mp4_path}
+                                            className={`px-4 py-2 rounded-lg transition-all ${
+                                                magnet ? "bg-green-600 text-white" : "bg-gray-200 text-gray-500"
+                                            }`}
+                                        >
+                                            {renderButtonText()}
+                                        </button>
 
                                     </div>
 
