@@ -24,11 +24,11 @@ torrent_search_api_url = os.getenv("TORRENT_SEARCH_API_URL")
 ses = libtorrent.session()
 ses.listen_on(6881, 6891)
 
-# dictionnaire pour stocker les handles de téléchargement en cours
-# ex: {movie_id: torrent_handle}
+#: dictionnaire pour stocker les handles de téléchargement en cours
+#: ex: {movie_id: torrent_handle}
 active_downloads = {}
 
-# data transfer object
+#: data transfer object
 class MovieThumbnail(BaseModel):
     id: int
     title: str
@@ -58,21 +58,21 @@ class DownloadRequest(BaseModel):
     magnet: str
 
 #! THUMBNAILS endpoint
-# recupere une liste de films depuis TMDB API
-# si query, recherche de films correspondant a la query
-# sinon, recupere les films populaires du moment
-# response_model: List[MovieThumbnail] pour ne retourner que les infos voulues, et forcer la validation des données
+#: recupere une liste de films depuis TMDB API
+#: si query, recherche de films correspondant a la query
+#: sinon, recupere les films populaires du moment
+#: response_model: List[MovieThumbnail] pour ne retourner que les infos voulues, et forcer la validation des données
 @router.get("/api/thumbnails", response_model=List[MovieThumbnail])
 def get_thumbnails(query: Optional[str] = Query(None), page: int = Query(1, ge=1)):
     
     thumbnails_data = list[MovieThumbnail]()    
 
     if query and len(query) >= 1:
-        # search using query, then select only movies
+        #: recherche de films correspondant a la query
         search = tmdb.Search()
         thumbnails_search_results = search.movie(query=query, page=page)
     else:
-        # no query, get popular movies (updated daily)
+        #: sans query, recupere les films populaires du moment
         thumbnails_search_results = tmdb.Movies().popular(page=page)
 
     for movie in thumbnails_search_results["results"]:
@@ -90,16 +90,16 @@ def get_thumbnails(query: Optional[str] = Query(None), page: int = Query(1, ge=1
 
 
 #! MOVIE DETAILS endpoint
-# recupere les details d'un film depuis TMDB API, en utilisant son id
-# response_model: MovieDetails pour ne retourner que les infos voulues, et forcer la validation des données
+#: recupere les details d'un film depuis TMDB API, en utilisant son id
+#: response_model: MovieDetails pour ne retourner que les infos voulues, et forcer la validation des données
 @router.get("/api/movie/{movie_id}", response_model=MovieDetails)
 def get_movie_details(movie_id: int, session = Depends(get_db)):
 
-    # recupere les infos du film et de son casting depuis TMDB API
+    #: recupere les infos du film et de son casting depuis TMDB API
     movie_search_results = tmdb.Movies(movie_id).info()
     creddits_search_results = tmdb.Movies(movie_id).credits()
 
-    # stock les infos dans un objet MovieDetails, en formatant comme voulu
+    #: stock les infos dans un objet MovieDetails, en formatant comme voulu
     data = MovieDetails(
         id=movie_id,
         title=movie_search_results["original_title"],
@@ -109,11 +109,11 @@ def get_movie_details(movie_id: int, session = Depends(get_db)):
         release_date=movie_search_results["release_date"],
         runtime=movie_search_results["runtime"],
         score=movie_search_results["vote_average"],
-        cast=[], # liste d'objet CastMember, on rempli ensuite
+        cast=[], #: liste d'objet CastMember, on rempli ensuite
         mp4_path=None
     )
 
-    # On recupere les 5 premiers cast members, et on les stock dans la liste data.cast, en formatant comme voulu
+    #: On recupere les 5 premiers cast members, et on les stock dans la liste data.cast, en formatant comme voulu
     for actor in creddits_search_results.get("cast", [])[:5]: 
        profile = actor.get("profile_path")
        path = f"https://image.tmdb.org/t/p/w500{profile}" if profile else None
@@ -132,14 +132,12 @@ def get_movie_details(movie_id: int, session = Depends(get_db)):
     return data
 
 #! TORRENT SEARCH endpoint
-# call le torrent_search_api container pour trouver un torrent du film cible
-# si on le trouve, on commence le telechargement
-# sinon, on affiche un message a l'utilisateur
+#: call le torrent_search_api container pour trouver un torrent du film cible
+#: si on le trouve, on commence le telechargement
+#: sinon, on affiche un message a l'utilisateur
 @router.post("/api/torrent/search")
 def search_torrent(request: TorrentRequest):
-    # setup de la search_query
     search_query = f"{request.title} {request.year} 1080p"
-    print(f"Recherche torrent pour: {search_query}")
 
     providers = [
         '1337x', 'yts', 'piratebay', 'rarbg', 'kickass', 
@@ -148,6 +146,8 @@ def search_torrent(request: TorrentRequest):
         'torrentproject', 'eztv', 'ettv', 'zooqle'
     ]
 
+    #: on interroge les providers un par un, jusqu'a trouver un torrent qui correspond a notre recherche
+    #: on s'arrete au premier résultat trouvé, et si aucun resultat n'est trouvé, on affiche un message a l'utilisateur
     for provider in providers:
         try:
             print(f"📡 Test sur {provider}...", end="")
@@ -155,7 +155,6 @@ def search_torrent(request: TorrentRequest):
             
             if response.status_code == 200:
                 data = response.json()
-                
                 if isinstance(data, list) and len(data) > 0:
                     first_result = data[0]
                     magnet = first_result.get("Magnet") or first_result.get("magnet")
@@ -175,19 +174,22 @@ def search_torrent(request: TorrentRequest):
     return { "status": "not found" }
 
 
-# filtre les fichiers du torrent pour ne télécharger que le .mp4
+#todo A REVOIR: filtre les fichiers du torrent pour ne télécharger que le .mp4
 def filter_torrent_files(handle):
+    #: attend que les métadonnées soient disponibles
     while not handle.has_metadata():
-        time.sleep(1)  # attend que les métadonnées soient disponibles
+        time.sleep(1)
     
     info = handle.get_torrent_info()
     files = info.files()
-    priorities = [0] * files.num_files()  # par défaut, on ne télécharge aucun fichier
+    #: on met une priorité 0 a tout les fichiers par default, pour ne pas les télécharger
+    priorities = [0] * files.num_files()
 
     mp4_found = False
     for i, f in enumerate(files):
         if f.path.lower().endswith(".mp4"):
-            priorities[i] = 7  # on télécharge ce fichier
+            #: on télécharge ce fichier en lui donnant une priorité max
+            priorities[i] = 7 
             mp4_found = True
 
     if not mp4_found:
@@ -195,14 +197,15 @@ def filter_torrent_files(handle):
 
     
 #! TORRENT DOWNLOAD START endpoint
+#todo A REVOIR: lance le téléchargement du torrent, et stock le handle dans active_downloads
+#todo pour pouvoir suivre son avancement et le stopper si besoin
 @router.post("/api/torrent/download")
 def start_download(request: DownloadRequest):
-    # check si on a deja un dl en cours pour ce film
     if request.id in active_downloads:
         return {"message": "Téléchargement déjà en cours pour ce film."}
 
     params = {
-        "save_path": "./downloads/",  # chemin de sauvegarde du
+        "save_path": "./downloads/",
         "storage_mode": libtorrent.storage_mode_t.storage_mode_sparse,
     }
 
@@ -215,6 +218,8 @@ def start_download(request: DownloadRequest):
     return {"status": "started", "message": "Téléchargement du torrent lancé."}
 
 #! TORRENT DOWNLOAD STATUS endpoint
+#todo A REVOIR: retourne le status du téléchargement en cours pour un film donné,
+#todo en utilisant le handle stocké dans active_downloads
 @router.get("/api/torrent/status/{movie_id}")
 def download_status(movie_id: int):
     handle = active_downloads.get(movie_id)
@@ -243,6 +248,7 @@ def download_status(movie_id: int):
     }
 
 #! TORRENT DOWNLOAD STOP endpoint
+#todo A REVOIR
 @router.post("/api/torrent/stop/{movie_id}")
 def stop_download(movie_id: int):
     handle = active_downloads.get(movie_id)
@@ -255,7 +261,7 @@ def stop_download(movie_id: int):
     return {"status": "not found", "message": "Aucun téléchargement en cours pour ce film."}
     
 
-# enregistre le chemin du mp4 (completement téléchargé) en base de données, et supprime le torrent de la session
+#todo A REVOIR: enregistre le chemin du mp4 (completement téléchargé) en base de données, et supprime le torrent de la session
 def finalize_download(movie_id: int, handle, db: Session):
     try:
         info = handle;get_torrent_info()

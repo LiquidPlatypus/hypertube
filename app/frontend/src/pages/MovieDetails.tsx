@@ -65,6 +65,7 @@ export default function MovieDetails() {
         setLoading(false);
     }
 
+    //: détermine le texte à afficher sur le bouton de téléchargement en fonction de l'état de la recherche du torrent
     const renderButtonText = () => {
         if (isSearchingMagnet) return "Recherche de sources...";
         if (searchMagnetPerformed && !magnet) return "Aucune source trouvée.";
@@ -74,7 +75,7 @@ export default function MovieDetails() {
     };
 
  
-    // appel le back pour chercher un torrent parmis une liste de providers
+    //: appel le back pour chercher un torrent parmis une liste de providers
     const searchTorrent = async () => {
         if (!movieDetails) return;
 
@@ -96,7 +97,7 @@ export default function MovieDetails() {
 
             const searchData = await searchResponse.json();
             if (searchData.status == "found") {
-                // on a trouvé un torrent, on lance le dl
+                //: torrent trouvé
                 setMagnet(searchData.magnet);
                 // const url = `/api/torrent/download`;
                 // const dlResponse = await fetch(url, {
@@ -116,12 +117,13 @@ export default function MovieDetails() {
             console.error("Error while searching for torrent:", err);
         }
         finally {
+            //: fin de la recherche de torrent
             setIsSearchingMagnet(false);
             setSearchMagnetPerformed(true);
         }
     };
 
-    // appel le bacj pour stopper le telechargement en cours
+    //todo : A REVOIR : appel le back pour stopper le telechargement en cours
     const handleStopDownload = async () => {
         if (!movieDetails) return;
 
@@ -138,21 +140,21 @@ export default function MovieDetails() {
         }
     };
 
-    // fetch movie details quand le composant est monté
+    //: fetch movie details quand le composant est monté
     React.useEffect(() => {
         if (id) getMovieDetails(parseInt(id, 10));
     }, [navigate]);
 
+    //: lance la recherche de torrent dès que les details du film sont chargés
     React.useEffect(() => {
         if (movieDetails) searchTorrent();
     }, [movieDetails])
 
-    // actualisation du status du 
-    // arret du telechargement si on quitte la page
+    //todo : A REVOIR:  arret du telechargement si on quitte la page
     React.useEffect(() => {
         let interval: ReturnType<typeof setInterval>;
         
-        // si on est en train de chercher un torrent, on met à jour le status toutes les 5 secondes
+        //: si on est en train de chercher un torrent, on met à jour le status toutes les 5 secondes
         if (movieDetails && isDownloading) {
             interval = setInterval(async () => {
                 try {
@@ -174,7 +176,7 @@ export default function MovieDetails() {
 
         }
 
-        // on quitte la page
+        //: on quitte la page
         return () => {
             if (interval) clearInterval(interval);
             if (isDownloading) handleStopDownload();
@@ -182,6 +184,7 @@ export default function MovieDetails() {
     }, [isDownloading, movieDetails]);
 
 
+    //: PAGE
     return (
         <div className="min-h-screen bg-gray-50 p-4 sm:p-8 font-sans">
             <div className="max-w-5xl mx-auto bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100">
