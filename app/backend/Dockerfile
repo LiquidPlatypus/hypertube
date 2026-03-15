@@ -6,7 +6,7 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
 RUN apt-get update && apt-get install -y build-essential python3-dev \
-    libtorrent-rasterbar-dev libboost-python-dev libboost-system-dev
+    libtorrent-rasterbar-dev libboost-python-dev libboost-system-dev ffmpeg
 
 
 COPY requirements.txt .

@@ -27,9 +27,10 @@ export default function MovieDetails() {
     const [error, setError] = useState('');
     const { id } = useParams<{ id: string }>();
     const [isDownloading, setIsDownloading] = useState(false);
-    // const [downloadProgress, setDownloadProgress] = useState({ progress: 0, speed: 0, status: ''});
+    const [isStreamable, setIsStreamable] = useState(false);
+    const [videoUrl, setVideoUrl] = useState<string | null>(null);
+    const [downloadProgress, setDownloadProgress] = useState({ progress: 0, speed: 0, status: ''});
     const [isSearchingMagnet, setIsSearchingMagnet] = useState(false);
-    const [searchMagnetPerformed, setSearchMagnetPerformed] = useState(false);
     const [magnet, setMagnet] = useState(null);
 
     //: recupere les details du film cible depuis le backend et on les stocke dans movieDetails
@@ -67,11 +68,23 @@ export default function MovieDetails() {
 
     //: détermine le texte à afficher sur le bouton de téléchargement en fonction de l'état de la recherche du torrent
     const renderButtonText = () => {
-        if (isSearchingMagnet) return "Recherche de sources...";
-        if (searchMagnetPerformed && !magnet) return "Aucune source trouvée.";
-        if (magnet) return "Télécharger";
-        if (isDownloading) return "Téléchargement en cours...";
-        return "Recherche de source...";
+        // Si on n'a pas encore lancé le download
+        if (!isDownloading) return "Télécharger et Regarder";
+
+        // Si on est en train de récupérer les infos du status
+        switch (downloadProgress.status) {
+            case 'checking':
+                return `Vérification des fichiers : ${downloadProgress.progress}%`;
+            case 'downloading_metadata':
+                return "Récupération des métadonnées...";
+            case 'downloading':
+                return `Téléchargement : ${downloadProgress.progress}% (${downloadProgress.speed} KB/s)`;
+            case 'finished':
+            case 'seeding':
+                return "Prêt à visionner";
+            default:
+                return "Initialisation...";
+        }
     };
 
  
@@ -80,7 +93,6 @@ export default function MovieDetails() {
         if (!movieDetails) return;
 
         setIsSearchingMagnet(true);
-        setSearchMagnetPerformed(false);
         setMagnet(null);
 
         //: on cherche un torrent du film
@@ -99,19 +111,7 @@ export default function MovieDetails() {
             if (searchData.status == "found") {
                 //: torrent trouvé
                 setMagnet(searchData.magnet);
-                // const url = `/api/torrent/download`;
-                // const dlResponse = await fetch(url, {
-                //     method: "POST",
-                //     headers: {"Content-Type": "application/json", },
-                //     body: JSON.stringify({
-                //         id: movieDetails.id,
-                //         magnet: searchData.magnet
-                //     }),
-                // });
-                // if (dlResponse.ok) {
-                //     // setIsDownloading(true) pour commencer le polling du status du torrent dans le useEffect
-                //     setIsDownloading(true);
-                // }
+
             }
         } catch (err) {
             console.error("Error while searching for torrent:", err);
@@ -119,26 +119,38 @@ export default function MovieDetails() {
         finally {
             //: fin de la recherche de torrent
             setIsSearchingMagnet(false);
-            setSearchMagnetPerformed(true);
         }
     };
 
-    //todo : A REVOIR : appel le back pour stopper le telechargement en cours
-    const handleStopDownload = async () => {
-        if (!movieDetails) return;
+    const handleDownload = async () => {
+       if (!magnet || !movieDetails) {
+        console.error("Magnet ou détails manquants", { magnet, movieDetails });
+        return;
+        }
+        
+        console.log("Envoi du download pour ID:", movieDetails.id);
 
         try {
-            const response = await fetch(`/api/torrent/stop/${movieDetails.id}`, {
+            const res = await fetch("/api/torrent/download", {
                 method: "POST",
-                headers: {"Content-Type": "application/json", },
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ 
+                    id: Number(movieDetails.id), // Force le type Number
+                    magnet: magnet 
+                }),
             });
-            if (response.ok) {
-                setIsDownloading(false);
+
+            if (!res.ok) {
+                const errorData = await res.json();
+                console.error("Erreur serveur détaillée:", errorData);
+                return;
             }
+
+            setIsDownloading(true);
         } catch (err) {
-        console.log("Erreur lors de la tentative d'arrêt du téléchargement: ", err);
+            console.error("Erreur fetch download:", err);
         }
-    };
+    }
 
     //: fetch movie details quand le composant est monté
     React.useEffect(() => {
@@ -150,38 +162,43 @@ export default function MovieDetails() {
         if (movieDetails) searchTorrent();
     }, [movieDetails])
 
-    //todo : A REVOIR:  arret du telechargement si on quitte la page
     React.useEffect(() => {
-        let interval: ReturnType<typeof setInterval>;
-        
-        //: si on est en train de chercher un torrent, on met à jour le status toutes les 5 secondes
-        if (movieDetails && isDownloading) {
-            interval = setInterval(async () => {
-                try {
-                    const response = await fetch(`/api/torrent/status/${movieDetails.id}`);
-                    const data = await response.json();
-                    console.log("Status du torrent:", data);
+    // On ne lance le polling que si on est en mode téléchargement
+    if (!isDownloading || !id) return;
 
-                    if (data.status === 'active') {
-                        if (data.is_finished) {
-                            setIsDownloading(false);
-                            clearInterval(interval);
-                        }
-                    }
-                } catch (err) {
-                    console.error("Error fetching torrent status:", err);
-                }
-            }, 5000);
+    const fetchStatus = async () => {
+        try {
+            const res = await fetch(`/api/torrent/status/${id}`);
+            if (!res.ok) return;
+            
+            const data = await res.json();
+            console.log("Flux de données reçu:", data); // Pour vérifier dans F12
 
+            // MISE À JOUR DU STATE
+            setDownloadProgress({
+                progress: data.progress, // Vérifie bien que le nom correspond au JSON du back
+                speed: data.speed,
+                status: data.status
+            });
 
+            // Si le backend dit que c'est streamable, on active le player
+            if (data.is_streamable && !isStreamable) {
+                setIsStreamable(true);
+                setVideoUrl(`/api/stream/${id}`);
+            }
+        } catch (err) {
+            console.error("Erreur Polling:", err);
         }
+    };
 
-        //: on quitte la page
-        return () => {
-            if (interval) clearInterval(interval);
-            if (isDownloading) handleStopDownload();
-        }
-    }, [isDownloading, movieDetails]);
+    // On lance le premier appel immédiatement
+    fetchStatus();
+
+    // Puis on définit l'intervalle
+    const interval = setInterval(fetchStatus, 2000);
+
+    return () => clearInterval(interval);
+}, [isDownloading, id, isStreamable]); // Dépendances critiques
 
 
     //: PAGE
@@ -237,19 +254,36 @@ export default function MovieDetails() {
                                         </span>
                                     </div>
 
-                                    <div className="flex gap-4 mb-6">
+<div className="flex flex-col gap-6">
+    {/* Lecteur Vidéo */}
+    <div className="relative aspect-video bg-black rounded-xl overflow-hidden shadow-2xl">
+        {!isStreamable ? (
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-white bg-gray-900/80">
+                {isDownloading && <div className="w-48 h-1 bg-gray-700 mt-4 rounded-full overflow-hidden">
+                    <div className="h-full bg-indigo-500 transition-all" style={{ width: `${downloadProgress.progress}%` }}></div>
+                </div>}
+            </div>
+        ) : (
+            <video 
+                controls 
+                className="w-full h-full"
+                src={videoUrl || ""}
+                poster={movieDetails.poster_path}
+            />
+        )}
+    </div>
 
-                                        {/* bouton download */}
-                                        <button
-                                            disabled={isSearchingMagnet || !magnet || !!movieDetails.mp4_path}
-                                            className={`px-4 py-2 rounded-lg transition-all ${
-                                                magnet ? "bg-green-600 text-white" : "bg-gray-200 text-gray-500"
-                                            }`}
-                                        >
-                                            {renderButtonText()}
-                                        </button>
-
-                                    </div>
+    {/* Bouton d'action */}
+    <button
+        onClick={handleDownload}
+        disabled={isSearchingMagnet || !magnet || isDownloading}
+        className={`w-full py-4 rounded-xl font-bold text-lg transition-all ${
+            magnet && !isDownloading ? "bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg" : "bg-gray-200 text-gray-500 cursor-not-allowed"
+        }`}
+    >
+        {renderButtonText()}
+    </button>
+</div>
 
                                     <h3 className="text-lg font-bold text-gray-800 mb-2">Synopsis</h3>
                                     <p className="text-gray-600 leading-relaxed text-justify">

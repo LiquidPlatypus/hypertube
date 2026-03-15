@@ -16,13 +16,15 @@ from typing import List
 import shutil
 from sqlalchemy.orm import Session
 from models_db import Movie
+from fastapi import BackgroundTasks
+from fastapi.responses import FileResponse
+from fastapi.responses import StreamingResponse
+import subprocess
+import asyncio
 
 router = APIRouter()
 
 torrent_search_api_url = os.getenv("TORRENT_SEARCH_API_URL")
-
-ses = libtorrent.session()
-ses.listen_on(6881, 6891)
 
 #: dictionnaire pour stocker les handles de téléchargement en cours
 #: ex: {movie_id: torrent_handle}
@@ -173,128 +175,207 @@ def search_torrent(request: TorrentRequest):
 
     return { "status": "not found" }
 
-
-#todo A REVOIR: filtre les fichiers du torrent pour ne télécharger que le .mp4
-def filter_torrent_files(handle):
-    #: attend que les métadonnées soient disponibles
-    while not handle.has_metadata():
-        time.sleep(1)
-    
-    info = handle.get_torrent_info()
-    files = info.files()
-    #: on met une priorité 0 a tout les fichiers par default, pour ne pas les télécharger
-    priorities = [0] * files.num_files()
-
-    mp4_found = False
-    for i, f in enumerate(files):
-        if f.path.lower().endswith(".mp4"):
-            #: on télécharge ce fichier en lui donnant une priorité max
-            priorities[i] = 7 
-            mp4_found = True
-
-    if not mp4_found:
-        print("Aucun fichier .mp4 trouvé dans ce torrent.")
-
     
 #! TORRENT DOWNLOAD START endpoint
-#todo A REVOIR: lance le téléchargement du torrent, et stock le handle dans active_downloads
-#todo pour pouvoir suivre son avancement et le stopper si besoin
 @router.post("/api/torrent/download")
-def start_download(request: DownloadRequest):
-    if request.id in active_downloads:
-        return {"message": "Téléchargement déjà en cours pour ce film."}
+async def download_movie(request: Request, background_tasks: BackgroundTasks):
+    body = await request.json()
+    movie_id = body.get("id")
+    magnet = body.get("magnet")
+
+    if not movie_id or not magnet:
+        raise HTTPException(status_code=400, detail="ID ou Magnet manquant")
+
+    handle = start_sequential_download(magnet, int(movie_id))
+    handle.set_sequential_download(True)
+    
+    for i in range(20):
+        handle.piece_priority(i, 7) # priorité max pour les 20 premiers morceaux (environ les 10 premières secondes du film)
+
+    return {"status": "started"}
+
+def start_sequential_download(magnet: str, movie_id: int):
+    print(f"DEBUG: Initialisation session libtorrent pour movie_id: {movie_id}")
+    
+    ses = libtorrent.session()
+    # On force l'écoute sur tous les réseaux du container
+    ses.listen_on(6881, 6891)
+    
+    # Optionnel: on ajoute des trackers de secours si le magnet est trop court
+    if "tr=" not in magnet:
+        print("DEBUG: Ajout manuel de trackers au magnet nu")
+        trackers = [
+            "udp://tracker.opentrackr.org:1337/announce",
+            "udp://tracker.openbittorrent.com:6969/announce"
+        ]
+        magnet += "".join([f"&tr={t}" for t in trackers])
 
     params = {
-        "save_path": "./downloads/",
-        "storage_mode": libtorrent.storage_mode_t.storage_mode_sparse,
+        'save_path': f'./downloads/{movie_id}',
+        'storage_mode': libtorrent.storage_mode_t.storage_mode_sparse,
     }
 
-    handle = libtorrent.add_magnet_uri(ses, request.magnet, params)
-    active_downloads[request.id] = handle
-
-    thread = threading.Thread(target=filter_torrent_files, args=(handle,))
-    thread.start()
-
-    return {"status": "started", "message": "Téléchargement du torrent lancé."}
+    handle = libtorrent.add_magnet_uri(ses, magnet, params)
+    
+    print(f"DEBUG: Magnet ajouté au handle. En attente de peers...")
+    active_downloads[movie_id] = {"session": ses, "handle": handle}
+    return handle
 
 #! TORRENT DOWNLOAD STATUS endpoint
-#todo A REVOIR: retourne le status du téléchargement en cours pour un film donné,
-#todo en utilisant le handle stocké dans active_downloads
 @router.get("/api/torrent/status/{movie_id}")
-def download_status(movie_id: int):
-    handle = active_downloads.get(movie_id)
-    if not handle:
+def get_download_status(movie_id: int):
+    download_data = active_downloads.get(movie_id)
+    if not download_data:
         return {"status": "inactive"}
     
-    status = handle.status()
-    progress = round(status.progress * 100, 2)  # en pourcentage
-    download_speed = round(status.download_rate / 1000000, 2)  # en Mo/s
-    state_str = str(status.state)
+    handle = download_data["handle"]
+    s = handle.status()
+    
+    # Traduction de l'état en texte lisible
+    state_str = ['queued', 'checking', 'downloading_metadata', 'downloading', 
+                 'finished', 'seeding', 'allocating', 'checking_fastresume'][s.state]
 
-    if handle.is_seed():
-        finalize_download(movie_id, handle, SessionLocal()) 
-        return {
-            "status": "finished",
-            "progress": 100.0,
-        }
-
-    print(f"Status du téléchargement pour le film {movie_id} : {progress}% à {download_speed} Mo/s, état: {state_str}")
+    # LOGS CRITIQUES DANS TON TERMINAL
+    print(f"--- TORRENT DEBUG (ID: {movie_id}) ---")
+    print(f"État: {state_str}")
+    print(f"Progrès: {s.progress * 100:.2f}%")
+    print(f"Vitesse: {s.download_rate / 1000:.1f} kB/s")
+    print(f"Peers connectés: {s.num_peers}")
+    
     return {
-        "status": "active",
-        "progress": progress,
-        "speed": download_speed,
-        "state": state_str,
-        "is_finished": handle.is_seed(),
+        "status": state_str,
+        "is_streamable": s.progress > 0.05, 
+        "progress": round(s.progress * 100),
+        "speed": round(s.download_rate / 1000, 1),
+        "peers": s.num_peers
     }
 
-#! TORRENT DOWNLOAD STOP endpoint
-#todo A REVOIR
-@router.post("/api/torrent/stop/{movie_id}")
-def stop_download(movie_id: int):
-    handle = active_downloads.get(movie_id)
 
-    if handle:
-        ses.remove_torrent(handle)
-        del active_downloads[movie_id]
-        print(f"Téléchargement pour le film {movie_id} arrêté.")
-        return {"status": "stopped", "message": "Téléchargement annulé, fichiers supprimés."}
-    return {"status": "not found", "message": "Aucun téléchargement en cours pour ce film."}
-    
+@router.get("/api/stream/{movie_id}")
+async def stream_movie(movie_id: int, request: Request):
+    base_path = f"./downloads/{movie_id}"
+    video_file = None
 
-#todo A REVOIR: enregistre le chemin du mp4 (completement téléchargé) en base de données, et supprime le torrent de la session
-def finalize_download(movie_id: int, handle, db: Session):
-    try:
-        info = handle;get_torrent_info()
-        status = handle.status()
-
-        target_file = None
-        for i in range(info.num_files()):
-            if handle.file_priority(i) == 7:  # si ce fichier était prioritaire, c'est notre .mp4
-                target_file = info.files().file_path(i)
+    for root, dirs, files in os.walk(base_path):
+        for file in files:
+            if file.endswith((".mp4", ".mkv", ".avi")):
+                video_file = os.path.join(root, file)
                 break
-        if not target_file:
-            return
+        if video_file:
+            break
 
-        source_path = os.path.join("./downloads/", target_file)
-        final_path = os.path.join("./movies")
-        if not os.path.exists(final_path):
-            os.makedirs(final_path)
-        
-        final_filename = f"movie_{movie_id}.mp4"
-        final_path = os.path.join(final_path, final_filename)
+    if not video_file:
+        raise HTTPException(status_code=404, detail="Fichier introuvable")
 
-        shutil.move(source_path, final_path)
-        
-        movie = db.query(Movie).filter(Movie.tmdb_id == movie_id).first()
-        if movie:
-            movie.mp4_path = final_path
-            db.commit()
-            print(f'Film {movie_id} sauvegardé en BDD : {final_path}')
-        
-        ses.remove_torrent(handle)
-        if movie_id in active_downloads:
-            del active_downloads[movie_id]
-        
-    except Exception as e:
-        print(f"Erreur lors de la finalisation du téléchargement et mise en BDD : {e}")
-        db.rollback()
+    # CAS 1 : MP4 natif (YTS, la majorité des torrents) 
+    # → on sert directement avec Range support natif → pas de saccades, audio intact
+    if video_file.endswith(".mp4"):
+        return _serve_with_range(video_file, request)
+
+    # CAS 2 : MKV/AVI → remuxage ffmpeg
+    return await _ffmpeg_stream(video_file)
+
+
+def _serve_with_range(filepath: str, request: Request):
+    """Gère les Range requests du navigateur pour seeking/buffering."""
+    file_size = os.path.getsize(filepath)
+    range_header = request.headers.get("Range")
+
+    if range_header:
+        range_val = range_header.replace("bytes=", "")
+        start_str, _, end_str = range_val.partition("-")
+        start = int(start_str) if start_str else 0
+        end = int(end_str) if end_str else file_size - 1
+        end = min(end, file_size - 1)
+        length = end - start + 1
+
+        def iter_range():
+            with open(filepath, "rb") as f:
+                f.seek(start)
+                remaining = length
+                while remaining > 0:
+                    chunk = f.read(min(256 * 1024, remaining))
+                    if not chunk:
+                        break
+                    remaining -= len(chunk)
+                    yield chunk
+
+        return StreamingResponse(
+            iter_range(),
+            status_code=206,
+            media_type="video/mp4",
+            headers={
+                "Content-Range": f"bytes {start}-{end}/{file_size}",
+                "Accept-Ranges": "bytes",
+                "Content-Length": str(length),
+            }
+        )
+
+    # Requête initiale sans Range
+    def iter_full():
+        with open(filepath, "rb") as f:
+            while chunk := f.read(256 * 1024):
+                yield chunk
+
+    return StreamingResponse(
+        iter_full(),
+        media_type="video/mp4",
+        headers={
+            "Accept-Ranges": "bytes",
+            "Content-Length": str(file_size),
+        }
+    )
+
+
+async def _ffmpeg_stream(video_file: str):
+    """Remuxe MKV → MP4 fragmenté via pipe ffmpeg."""
+    command = [
+        "ffmpeg",
+        "-fflags", "+genpts",
+        "-analyzeduration", "20M",  # laisse ffmpeg analyser plus longtemps le fichier partiel
+        "-probesize", "20M",
+        "-i", video_file,
+        "-map", "0:V:0",    # meilleur flux vidéo
+        "-map", "0:a:0",    # premier flux audio
+        "-c:v", "copy",
+        "-c:a", "aac",      # transcode en AAC (seul codec audio supporté nativement par les navigateurs)
+        "-b:a", "192k",
+        "-ac", "2",
+        "-sn",              # ignore les sous-titres
+        "-f", "mp4",
+        "-movflags", "frag_keyframe+empty_moov+default_base_moof",
+        "-loglevel", "warning",
+        "pipe:1"
+    ]
+
+    process = subprocess.Popen(
+        command,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        bufsize=0
+    )
+
+    # Thread séparé pour logger stderr ffmpeg → indispensable pour débugger
+    def log_stderr():
+        for line in process.stderr:
+            print(f"[FFMPEG STDERR] {line.decode().strip()}")
+
+    threading.Thread(target=log_stderr, daemon=True).start()
+
+    async def iterfile():
+        loop = asyncio.get_event_loop()
+        try:
+            while True:
+                chunk = await loop.run_in_executor(None, process.stdout.read, 256 * 1024)
+                if not chunk:
+                    break
+                yield chunk
+        finally:
+            process.terminate()
+            process.wait()
+
+    return StreamingResponse(
+        iterfile(),
+        media_type="video/mp4",
+        headers={"Cache-Control": "no-cache"}
+    )
