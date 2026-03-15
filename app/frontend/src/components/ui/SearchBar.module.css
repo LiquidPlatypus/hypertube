@@ -1,0 +1,19 @@
+.SearchBar {
+	position: relative;
+	font-family: "CommodoreRounded", serif;
+}
+
+.SearchBar:hover {
+	border-color: black;
+}
+
+.SearchBar:focus {
+	border-color: black;
+	box-shadow: 0 0 5px black;
+}
+
+.SearchBar::placeholder {
+	font-family: "CommodoreRounded", serif;
+	color: gray;
+	opacity: 0.5;
+}

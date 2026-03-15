@@ -1,0 +1,113 @@
+.Thumbnail {
+	position: relative;
+	width: 100%;
+
+	border-top: 5px solid #e7e7e2;
+	border-left: 5px solid #1a1a1a;
+	border-bottom: 5px solid #000;
+	border-right: 5px solid #C0BDBDFF;
+
+	transition: transform 0.25s ease, box-shadow 0.25s ease;
+
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: flex-start;
+
+	cursor: pointer;
+	background: rgba(17, 17, 17, 0.9);
+	overflow: hidden;
+
+	box-shadow: -7px 5px 1px #282828;
+}
+
+.Thumbnail:hover {
+	transform: scale(1.08);
+	box-shadow: -13px 10px 1px #282828;
+}
+
+.CoverWrapper {
+	width: 100%;
+	height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: inherit;
+	overflow: hidden;
+}
+
+.Image {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	border-radius: inherit;
+	filter: brightness(0.95) contrast(1.05);
+	transition: filter 0.25s ease;
+}
+
+.Thumbnail:hover .image {
+	filter: brightness(1.05) contrast(1.1);
+}
+
+.Infos {
+	padding: 0.6rem 1rem 1rem;
+	text-align: left;
+	color: #e9e9e9;
+	width: 100%;
+}
+
+.Title {
+	font-family: CommodoreRounded, serif;
+	font-size: 1.1rem;
+	font-weight: 600;
+	margin: 0.4rem 0 0.2rem 1rem;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.Meta {
+	font-family: CommodoreRounded, serif;
+	display: flex;
+	justify-content: flex-start;
+	gap: 1rem;
+	margin-left: 1rem;
+	font-size: 0.9rem;
+	color: #cfcfcf;
+}
+
+.Year,
+.Rating {
+	display: flex;
+	align-items: center;
+	gap: 0.2rem;
+}
+
+@media (max-width: 600px) {
+	.Thumbnail:hover {
+		transform: scale(1);
+		box-shadow: -7px 5px 1px #282828;
+	}
+
+	.Thumbnail:hover .image {
+		filter: brightness(1) contrast(1);
+	}
+
+	.Title {
+		font-size: 0.9rem;
+	}
+
+	.Meta {
+		font-size: 0.7rem;
+	}
+}
+
+@media (max-width: 500px) {
+	.Title {
+		font-size: 0.7rem;
+	}
+
+	.Meta {
+		font-size: 0.5rem;
+	}
+}

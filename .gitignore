@@ -8,3 +8,4 @@ test
 app/backend/app/__pycache__/
 app/backend/app/repositories/__pycache__/
 app/backend/app/downloads
+app/backend/app/.env

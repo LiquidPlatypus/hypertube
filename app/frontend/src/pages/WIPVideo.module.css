@@ -1,0 +1,308 @@
+.wrapper {
+	display: flex;
+	align-items: flex-start;
+
+	width: 100%;
+
+	font-family: "CommodoreRounded", serif;
+	font-size: 20px;
+
+	overflow-x: hidden;
+}
+
+@media (max-width: 1920px) {
+	.wrapper {
+		flex-direction: column;
+		align-items: center;
+	}
+
+	.contentPart {
+		margin: 0 1.5rem;
+	}
+
+	.miscellaneousPart {
+		flex-direction: column;
+		align-items: flex-start;
+		max-height: none;
+	}
+
+	.rightInfos {
+		text-align: left;
+	}
+
+	.summary {
+		max-width: 100%;
+	}
+
+	.commentsPart {
+		width: 100%;
+		margin: 2rem 10rem;
+		max-height: none;
+	}
+
+	.commentsList {
+		max-height: none !important;
+		max-width: 100% !important;
+		overflow-y: visible !important;
+	}
+
+	.comment p {
+		padding-left: 1.5rem;
+	}
+}
+
+@media (max-width: 1650px) {
+	.castList {
+		overflow-x: scroll;
+		column-gap: 1.5rem;
+		padding-bottom: 1rem;
+		scrollbar-width: thin;
+	}
+
+	.cast {
+		width: 100%;
+		padding-right: 1.5rem;
+	}
+}
+
+@media (max-width: 900px) {
+	.contentPart {
+		margin: 0 1.5rem;
+	}
+
+	.commentsPart {
+		width: 100%;
+		margin: 1.5rem;
+		max-height: none;
+		align-self: stretch;
+	}
+
+	.commentsList {
+		max-height: none;
+		overflow-y: visible;
+	}
+
+	.comment p {
+		padding-left: 1.5rem;
+	}
+}
+
+@media (max-width: 600px) {
+	.contentPart {
+		align-items: center;
+	}
+
+	.videoPart {
+		align-self: center !important;
+		max-width: 375px !important;
+	}
+
+	.miscellaneousPart {
+		font-size: 8px;
+		margin: 0 9rem;
+
+		max-width: 360px !important;
+	}
+
+	.mainInfos {
+		max-width: 200px !important;
+	}
+
+	.rightInfos {
+		margin-top: 0.2rem;
+	}
+
+	.meta {
+		margin-right: 0.5rem !important;
+	}
+
+	.cover {
+		margin-top: 0.5rem !important;
+	}
+
+	.cast {
+		margin-top: 0 !important;
+		margin-left: 19.5rem !important;
+	}
+
+	.castList {
+		column-gap: 0rem !important;
+	}
+
+	.actorCard img {
+		width: 80px !important;
+		height: 120px !important;
+	}
+
+	.commentsPart {
+		font-size: 8px;
+	}
+
+	.commentsList {
+		margin-right: 3.5rem;
+	}
+}
+
+.contentPart {
+	display: flex;
+	flex-direction: column;
+	flex: 1 1 auto;
+	box-sizing: border-box;
+
+	margin: 0 clamp(1.5rem, 6vw, 10rem);
+	max-width: clamp(40rem, 90vw, 90rem);
+}
+
+.videoPart {
+	display: flex;
+	flex-direction: column;
+	align-self: flex-start;
+	width: 100%;
+	max-width: 100%;
+	box-sizing: border-box;
+}
+
+.video {
+	display: block;
+	width: 100%;
+	max-width: 100%;
+	height: auto;
+	aspect-ratio: 16 / 9;
+	object-fit: contain;
+}
+
+.miscellaneousPart {
+	display: flex;
+	flex-direction: row;
+	max-width: clamp(40rem, 90vw, 90rem);
+	justify-content: space-between;
+	align-items: flex-start;
+	gap: 2rem;
+	max-height: min(60vh, 32rem);
+}
+
+.mainInfos {
+	text-align: left;
+}
+
+.summary {
+	max-width: 50rem;
+}
+
+.rightInfos {
+	display: flex;
+	text-align: right;
+	justify-content: flex-end;
+}
+
+.meta {
+	margin-right: 1rem;
+}
+
+.cover {
+	margin-top: 1.6rem;
+	width: 50%;
+}
+
+.cover img {
+	width: 100%;
+	height: auto;
+	object-fit: cover;
+}
+
+.cast {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+
+	margin-top: 5rem;
+}
+
+.castList {
+	list-style: none;
+
+	display: flex;
+	width: 100%;
+	column-gap: 5rem;
+
+	padding-left: 0;
+}
+
+.actorCard {
+	display: flex;
+	flex-direction: column;
+	flex-shrink: 0;
+}
+
+.actorCard img {
+	width: 150px;
+	height: 225px;
+	object-fit: cover;
+}
+
+.actorCard div {
+	margin-top: 0.5rem;
+	max-width: 150px;
+}
+
+.actorCard div p {
+	margin: 0.25rem 0;
+	word-wrap: break-word;
+}
+
+.commentsPart {
+	display: flex;
+	flex-direction: column;
+
+	margin-right: 1.5rem;
+
+	text-align: left;
+}
+
+.commentInput {
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	column-gap: 1rem;
+	box-sizing: border-box;
+}
+
+.commentInput :global(.wrapper) {
+	flex: 1 1 auto;
+	width: 100%;
+	max-width: 100%;
+}
+
+.commentInput :global(.input) {
+	width: 100%;
+	max-width: 100%;
+	box-sizing: border-box;
+}
+
+.commentInput input:hover {
+	border-color: black;
+}
+
+.commentInput input:focus {
+	border-color: black;
+	box-shadow: 0 0 5px black;
+}
+
+.commentsList {
+	flex: 1 1 auto;
+	padding-right: 0.5rem;
+	max-height: 100vh;
+	max-width: 50vh;
+	overflow-y: auto;
+}
+
+
+.comment {
+	padding-bottom: 1rem;
+}
+
+.comment p {
+	padding-left: 1.5rem;
+
+	word-wrap: break-word;
+}
