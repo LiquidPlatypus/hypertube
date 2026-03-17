@@ -4,7 +4,7 @@
 	flex-direction: column;
 	align-items: center;
 	justify-content: space-between;
-	background-image: url("../../public/assets/backgrounds/fond.png");
+	background-image: url("/assets/backgrounds/fond.png");
 	background-position: center;
 	background-repeat: repeat;
 }

@@ -61,7 +61,7 @@
 	right: 0;
 	width: 100%;
 	height: 100%;
-	background-image: url("/public/assets/whitenoise.gif");
+	background-image: url("/assets/whitenoise.gif");
 	filter: opacity(0.12);
 
 	z-index: 9;
