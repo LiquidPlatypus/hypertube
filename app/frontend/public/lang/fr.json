@@ -1,4 +1,9 @@
 {
+	"error": "Erreur: ",
+	"error.unknow": "Erreur inconnue",
+	"error.fetchMovie": "Erreur récupération films:",
+	"error.invalidId": "ID du film invalide.",
+
 	"login.title": "Connexion",
 	"login.button": "Connexion",
 	"login.submit": "Se connecter",
@@ -35,5 +40,7 @@
 	"video.length": "Durée",
 	"video.grade": "Note",
 	"video.casting": "Distribution",
-	"video.comments": "Commentaires"
+	"video.comments": "Commentaires",
+
+	"loading": "Chargement..."
 }

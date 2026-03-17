@@ -1,4 +1,9 @@
 {
+	"error": "Error: ",
+	"error.unknow": "Unknow error",
+	"error.fetchMovie": "Error Fetching Movies:",
+	"error.invalidId": "Invalid Movie ID.",
+
 	"login.title": "Login",
 	"login.button": "Login",
 	"login.submit": "Login",
@@ -35,5 +40,7 @@
 	"video.length": "Length",
 	"video.grade": "Grade",
 	"video.casting": "Casting",
-	"video.comments": "Comments"
+	"video.comments": "Comments",
+
+	"loading": "Loading..."
 }
