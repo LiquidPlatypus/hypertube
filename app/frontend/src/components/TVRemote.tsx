@@ -1,5 +1,5 @@
 import {useNavigate} from "react-router-dom";
-import { useState } from "react";
+import {useEffect, useState} from "react";
 import { createPortal } from "react-dom";
 
 import Button from "./ui/Button.tsx";
@@ -48,6 +48,17 @@ export default function TVRemote({
 			console.error("Logout failed:", error);
 		}
 	}
+
+	useEffect(() => {
+		if (!showSearch) return ;
+
+		const onKeyDown = (e: KeyboardEvent) => {
+			if (e.key === "Escape") setShowSearch(false);
+		}
+
+		window.addEventListener("keydown", onKeyDown);
+		return () => window.removeEventListener("keydown", onKeyDown);
+	}, [showSearch]);
 
 	return (
 		<div className={styles.TVRemote}>
@@ -115,12 +126,19 @@ export default function TVRemote({
 				onClick={handleLogout}
 			/>
 
-			{showSearch && createPortal(
-				<div className={styles.SearchContainer}>
-					<SearchBar />
-				</div>,
-				document.body
-			)}
+			{showSearch &&
+				createPortal(
+					<div
+						className={styles.SearchContainer}
+						onClick={() => setShowSearch(false)}
+					>
+						<div onClick={(e) => e.stopPropagation()}>
+							<SearchBar />
+						</div>
+					</div>,
+					document.body
+				)
+			}
 		</div>
 	);
 }
