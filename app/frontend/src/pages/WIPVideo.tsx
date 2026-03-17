@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
 import Button from "../components/ui/Button.tsx";
 import Input from "../components/ui/Input.tsx";
@@ -49,18 +49,19 @@ interface Movie {
 }
 
 export default function WIPVideo() {
-	const navigate = useNavigate();
-	const [Loading, setLoading] = useState(false);
+	const [loading, setLoading] = useState(false);
+	const [showLoader, setShowLoader] = useState(false);
 	const [movieDetails, setMovieDetails] = useState<Movie | null>(null);
-	const [error, setError] = useState('');
+	const [error, setError] = useState<string | null>(null);
+	const [userComment, setUserComment] = useState("");
 	const { id } = useParams<{ id: string }>();
 
 	const { t } = useTranslation();
 
-	const [userComment, setUserComment] = useState("");
-
 	const getMovieDetails = async (movieId: number) => {
 		setLoading(true);
+		setError(null);
+
 		try {
 			const url = `/api/movie/${movieId}`;
 			const response = await fetch(url, {
@@ -69,36 +70,67 @@ export default function WIPVideo() {
 					"Content-Type": "application/json",
 				},
 			});
+
 			if (!response.ok) {
-				throw new Error(`HTTP eroror! status: ${response.status}`);
+				throw new Error(`HTTP error! status: ${response.status}`);
 			}
+
 			const data: Movie = await response.json();
-			console.log(data);
 			setMovieDetails(data);
 		} catch (err) {
-			setError('Erreur lors de la recherche des films.');
+			setMovieDetails(null);
+			setError(t("error"));
 			console.error("Error fetching Movies:", err);
+		} finally {
+			setLoading(false);
 		}
-		setLoading(false);
-	}
+	};
 
 	React.useEffect(() => {
-		if (id) {
-			getMovieDetails(parseInt(id, 10));
-		} else {
-			setError("ID de film invalide.");
-		}
-	}, [navigate]);
+		let cancelled = false;
 
-	function toHoursAndMinutes(totalMinutes: number | undefined) {
+		if (!id) {
+			setError(t("error.invalidID"));
+			return ;
+		}
+
+		// Show loader only if load time > 250ms.
+		setShowLoader(false);
+		const loaderTimer = window.setTimeout(() => {
+			if (!cancelled) setShowLoader(true);
+		}, 250);
+
+		getMovieDetails(parseInt(id, 10)).finally(() => {
+			window.clearTimeout(loaderTimer);
+			if (!cancelled) setShowLoader(false);
+		});
+
+		return () => {
+			cancelled = true;
+			window.clearTimeout(loaderTimer);
+		};
+	}, [id]);
+
+	function toHoursAndMinutes(totalMinutes?: number) {
+		if (totalMinutes === undefined) return ;
 		const hours = Math.floor(totalMinutes / 60);
 		const minutes = totalMinutes % 60;
 
 		return (`${hours}h${minutes > 0 ? `${minutes}m` : ''}`);
 	}
 
+	const truncRating = movieDetails ? `${Math.trunc(movieDetails.score * 10)}%` : "";
+
 	return (
 		<div className={styles.wrapper}>
+			{loading && showLoader && (
+				<div>
+					{t("loading")}
+				</div>
+			)}
+
+			{error && <div>{t("error")}{error}</div>}
+
 			<div className={styles.contentPart}>
 				<div className={styles.videoPart}>
 					<video
@@ -120,7 +152,7 @@ export default function WIPVideo() {
 						<div className={styles.meta}>
 							<p>{movieDetails?.release_date}</p>
 							<p>{toHoursAndMinutes(movieDetails?.runtime)}</p>
-							<p>{`${Math.trunc(movieDetails?.score * 10)}%`}</p>
+							<p>{truncRating}</p>
 						</div>
 						<div className={styles.cover}>
 							<img
