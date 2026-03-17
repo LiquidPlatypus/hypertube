@@ -1,4 +1,3 @@
-import { useState } from "react";
 import Input from "./Input.tsx";
 import { useSearch } from "../../utils/searchContext.tsx";
 
