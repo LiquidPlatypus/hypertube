@@ -17,6 +17,13 @@ export default function ProfilInfo() {
 
 	const { t } = useTranslation();
 
+	const toForm = (u: any) => ({
+		username: u.username ?? "",
+		firstname: u.firstname ?? "",
+		lastname: u.lastname ?? "",
+		email: u.email ?? "",
+	})
+
 	useEffect(() => {
 		const fetchUser = async () => {
 			const token = localStorage.getItem("access_token");
@@ -36,7 +43,13 @@ export default function ProfilInfo() {
 		fetchUser();
 	}, []);
 
+	useEffect(() => {
+		if (!user) return ;
+		if (!isEditing) setFormData(toForm(user));
+	}, [user, isEditing]);
+
 	const handleProfileEdit = () => {
+		if (user) setFormData(toForm(user));
 		setIsEditing(true);
 	}
 
@@ -49,9 +62,6 @@ export default function ProfilInfo() {
 
 	const handleCancel = () => {
 		setIsEditing(false);
-		if (user) {
-			setFormData(user);
-		}
 	}
 
 	const handleSave = async () => {
@@ -81,6 +91,8 @@ export default function ProfilInfo() {
 	}
 
 	if (!user) return <p className={styles.Loading}>Chargement des infos...</p>;
+
+
 
 	return (
 		<div className={styles.Container}>
