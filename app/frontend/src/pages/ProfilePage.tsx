@@ -82,17 +82,26 @@ export default function ProfilInfo() {
 			if (!res.ok)
 				throw new Error(t("profile.failedUpdate"));
 
-			const data = await res.json();
-			setUser(data.user);
+			const res2 = await fetch("/api/me", {
+				method: "GET",
+				headers: {
+					Authorization: `Bearer ${token}`,
+					"Content-Type": "application/json"
+				},
+			})
+
+			if (!res2.ok)
+				throw new Error(t("profile.failedUpdate"));
+
+			const data2 = await res2.json();
+			setUser(data2.user);
 			setIsEditing(false);
 		} catch (error) {
 			console.error("profile.errorUpdate", error);
 		}
 	}
 
-	if (!user) return <p className={styles.Loading}>Chargement des infos...</p>;
-
-
+	if (!user) return <p className={styles.Loading}>{t("loading")}</p>;
 
 	return (
 		<div className={styles.Container}>
