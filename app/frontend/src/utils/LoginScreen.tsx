@@ -149,6 +149,9 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 						onChange={(e) => setLoginUsername(e.target.value)}
 						className={styles.Inputs}
 						required
+
+						name="username"
+						autoComplete="username"
 					/>
 					<Input
 						type="password"
@@ -157,6 +160,9 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 						onChange={(e) => setLoginPassword(e.target.value)}
 						className={styles.Inputs}
 						required
+
+						name="password"
+						autoComplete="current-password"
 					/>
 					<Button text={t("login.submit")} size="large" shape="pill" />
 					<button onClick={autoLog}>auto-log</button>
@@ -170,6 +176,9 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 						onChange={(e) => setRegisterFirstname(e.target.value)}
 						className={styles.Inputs}
 						required
+
+						name="firstname"
+						autoComplete="firstname"
 					/>
 					<Input
 						type="text"
@@ -178,6 +187,9 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 						onChange={(e) => setRegisterLastname(e.target.value)}
 						className={styles.Inputs}
 						required
+
+						name="lastname"
+						autoComplete="lastname"
 					/>
 					<Input
 						type="text"
@@ -186,6 +198,9 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 						onChange={(e) => setRegisterUsername(e.target.value)}
 						className={styles.Inputs}
 						required
+
+						name="username"
+						autoComplete="username"
 					/>
 					<Input
 						type="email"
@@ -194,6 +209,9 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 						onChange={(e) => setRegisterEmail(e.target.value)}
 						className={styles.Inputs}
 						required
+
+						name="email"
+						autoComplete="email"
 					/>
 					<Input
 						type="password"
@@ -202,6 +220,9 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 						onChange={(e) => setRegisterPassword(e.target.value)}
 						className={styles.Inputs}
 						required
+
+						name="password"
+						autoComplete="password"
 					/>
 					<Input
 						type="password"
@@ -210,6 +231,9 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 						onChange={(e) => setRegisterPasswordConfirmation(e.target.value)}
 						className={styles.Inputs}
 						required
+
+						name="password"
+						autoComplete="password"
 					/>
 					<Button text={t("register.submit")} size="large" shape="pill" />
 				</form>

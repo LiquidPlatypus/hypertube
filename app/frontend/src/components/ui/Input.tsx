@@ -15,6 +15,10 @@ type InputProps = {
 	className?: string;
 	style?: React.CSSProperties;
 	required?: boolean;
+
+	id?: string;
+	name?: string;
+	autoComplete?: string;
 };
 
 export default function Input({
@@ -31,6 +35,9 @@ export default function Input({
 	className = "",
 	style,
 	required = false,
+
+	name,
+	autoComplete,
 }: InputProps) {
 	const classNames = [
 		styles.input,
@@ -54,6 +61,9 @@ export default function Input({
 				className={classNames}
 				style={style}
 				required={required}
+
+				name={name}
+				autoComplete={autoComplete}
 			/>
 			{iconRight && (
 				<img src={iconRight} alt="" className={`${styles.icon} ${styles.right}`} />
