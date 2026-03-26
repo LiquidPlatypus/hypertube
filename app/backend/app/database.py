@@ -159,12 +159,23 @@ class Storage:
 		comment = {"id": len(self.comments) + 1, "content": content, "author": author, "date": date}
 		self.comments.append(comment)
 		return comment
-	
+
 	def get_comment(self, id):
 		for i in self.comments:
 			if i["id"] == id:
 				return i
 		return None
+
+	def get_comments(self, chunk):
+		chunk_comments = []
+		max = chunk + 9
+		while (chunk <= max):
+			try:
+				chunk_comments.append(self.comments[chunk])
+			except:
+				break
+			chunk += 1
+		return chunk_comments
 
 	def custom_comment(self, id: int, new_content: str):
 		for i in self.comments:
@@ -174,9 +185,6 @@ class Storage:
 				self.comments.append(comment)
 				return comment
 		return None
-
-	def get_comments(self):
-		return self.comments
 
 	def add_movie(self, title: str, release_date: str, mp4_path: str):
 		"""

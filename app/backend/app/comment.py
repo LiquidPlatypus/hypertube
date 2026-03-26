@@ -1,6 +1,7 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
 from database import storage
 from fastapi import HTTPException, Depends
+from fastapi.responses import JSONResponse
 from utils import verif_access_token
 from model import CommentForm, CustomCommentForm
 import datetime
@@ -23,7 +24,7 @@ async def post_comment(data: CommentForm, current_user=Depends(verif_access_toke
     comment = storage.add_comment(data.content, current_user["username"])
     print(comment)
     return {"comment": comment}
-    
+
 @router.patch("/api/comments/{id}")
 async def modif_comment_byid(data: CustomCommentForm, current_user=Depends(verif_access_token)):
     comment = storage.custom_comment(id, data.new_content)
@@ -35,7 +36,7 @@ async def modif_comment_byid(data: CustomCommentForm, current_user=Depends(verif
     print(comment)
     return {"comment": comment}
 
-@router.get("/api/comments")
-async def get_comments(current_user=Depends(verif_access_token)):
-    comments = storage.get_comments()
+@router.get("/api/comments", response_class=JSONResponse)
+async def get_comments(pos: int = Query(0, ge=0), current_user=Depends(verif_access_token)):
+    comments = storage.get_comments(pos)
     return {"comments": comments}
