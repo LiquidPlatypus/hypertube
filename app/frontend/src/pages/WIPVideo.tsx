@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useState } from "react";
+import {useState, useCallback, useEffect} from "react";
 import { useParams } from "react-router-dom";
 
 import Button from "../components/ui/Button.tsx";
@@ -8,29 +8,6 @@ import Input from "../components/ui/Input.tsx";
 import { useTranslation } from "../hooks/useTranslation.tsx";
 
 import styles from "./WIPVideo.module.css";
-
-const comments = [
-	{ id: 1, pseudo: "Pseudo", text: "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff" },
-	{ id: 2, pseudo: "Pseudo", text: "fffffffffff" },
-	{ id: 3, pseudo: "Pseudo", text: "fffffffffff" },
-	{ id: 4, pseudo: "Pseudo", text: "fffffffffff" },
-	{ id: 5, pseudo: "Pseudo", text: "fffffffffff" },
-	{ id: 6, pseudo: "Pseudo", text: "fffffffffff" },
-	{ id: 7, pseudo: "Pseudo", text: "fffffffffff" },
-	{ id: 8, pseudo: "Pseudo", text: "ffffffffffffffffffffffffff ffffffffffffffffffffffffffffff" },
-	{ id: 9, pseudo: "Pseudo", text: "fffffffffff" },
-	{ id: 10, pseudo: "Pseudo", text: "fffffffffff" },
-	{ id: 11, pseudo: "Pseudo", text: "fffffffffff" },
-	{ id: 12, pseudo: "Pseudo", text: "ffffffffffffffffffffffffffffffffffffffffffffffffff" },
-	{ id: 13, pseudo: "Pseudo", text: "fffffffffff" },
-	{ id: 14, pseudo: "Pseudo", text: "fffffffffff" },
-	{ id: 15, pseudo: "Pseudo", text: "fffffffffff" },
-	{ id: 16, pseudo: "Pseudo", text: "fffffffffff" },
-	{ id: 17, pseudo: "Pseudo", text: "fffffffffff" },
-	{ id: 18, pseudo: "Pseudo", text: "fffffffffff" },
-	{ id: 19, pseudo: "Pseudo", text: "fffffffffff" },
-	{ id: 20, pseudo: "Pseudo", text: "fffffffffff" },
-]
 
 interface Movie {
 	id: number;
@@ -48,12 +25,23 @@ interface Movie {
 	}[];
 }
 
+interface Comment {
+	id: number;
+	content: string;
+	author: string;
+	date: Date;
+}
+
 export default function WIPVideo() {
 	const [loading, setLoading] = useState(false);
 	const [showLoader, setShowLoader] = useState(false);
 	const [movieDetails, setMovieDetails] = useState<Movie | null>(null);
 	const [error, setError] = useState<string | null>(null);
-	const [userComment, setUserComment] = useState("");
+	const [comment, setComment] = useState("");
+	const [comments, setComments] = useState<Comment[]>([]);
+	const [chunk, setChunk] = useState(0);
+	const [isEmpty, setIsEmpty] = useState<boolean>(false);
+	const observer = React.useRef<IntersectionObserver | null>(null);
 	const { id } = useParams<{ id: string }>();
 
 	const { t } = useTranslation();
@@ -85,6 +73,54 @@ export default function WIPVideo() {
 			setLoading(false);
 		}
 	};
+
+	const getComments = async () => {
+		const token = localStorage.getItem("access_token");
+		const res = await fetch("/api/comments?pos=0", {
+			headers: { Authorization: `Bearer ${token}` },
+		});
+		const json = await res.json();
+		setComments(json.comments ?? []);
+	};
+
+	const postComment = async (e: React.FormEvent) => {
+		e.preventDefault();
+		const token = localStorage.getItem("access_token");
+		const res = await fetch("/api/comments", {
+			method: "POST",
+			headers: {
+				Authorization: `Bearer ${token}`,
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({ content: comment }),
+		});
+		const json = await res.json();
+		setComments((prev) => [json.comment, ...prev]);
+		setComment("");
+	}
+
+	const observerTrigger = async () => {
+		if (loading)
+			return ;
+		setChunk(chunk + 10);
+		await getComments();
+	}
+
+	const lastComment = useCallback((node: HTMLDivElement) => {
+		if (loading) return;
+		if (observer.current) observer.current.disconnect();
+
+		observer.current = new IntersectionObserver(entries => {
+			if (entries[0].isIntersecting && !isEmpty) {
+				observerTrigger();
+			}
+		});
+		if (node) observer.current.observe(node);
+	}, [loading, isEmpty]);
+
+	useEffect(() => {
+		getComments();
+	}, []);
 
 	React.useEffect(() => {
 		let cancelled = false;
@@ -183,13 +219,13 @@ export default function WIPVideo() {
 			</div>
 
 			<div className={styles.commentsPart}>
-				<div className={styles.commentInput}>
+				<form className={styles.commentInput} onSubmit={postComment}>
 					<Input
 						type="text"
 						placeholder={t("video.comments")}
-						value={userComment}
+						value={comment}
 						variant="comment"
-						onChange={(e) => setUserComment(e.target.value)}
+						onChange={(e) => setComment(e.target.value)}
 						size="large"
 						shape="square"
 						required
@@ -197,16 +233,18 @@ export default function WIPVideo() {
 					<Button
 						size="large"
 						shape="square"
+						type="submit"
 					/>
-				</div>
+				</form>
 
 				<h2>{t("video.comments")}</h2>
 
 				<div className={styles.commentsList}>
-					{comments.map((comment) => (
-						<div key={comment.id} className={styles.comment}>
-							<h3>{comment.pseudo}</h3>
-							<p>{comment.text}</p>
+					{comments.map((c) => (
+						<div key={c.id} className={styles.comment}>
+							<h3>{c.author}</h3>
+							<p>{c.content}</p>
+							<small>{new Date(c.date).toLocaleString()}</small>
 						</div>
 					))}
 				</div>
