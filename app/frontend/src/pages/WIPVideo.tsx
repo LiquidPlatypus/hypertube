@@ -231,6 +231,7 @@ export default function WIPVideo() {
 						required
 					/>
 					<Button
+						text={t("video.post")}
 						size="large"
 						shape="square"
 						type="submit"
@@ -243,8 +244,8 @@ export default function WIPVideo() {
 					{comments.map((c) => (
 						<div key={c.id} className={styles.comment}>
 							<h3>{c.author}</h3>
-							<p>{c.content}</p>
 							<small>{new Date(c.date).toLocaleString()}</small>
+							<p>{c.content}</p>
 						</div>
 					))}
 				</div>
