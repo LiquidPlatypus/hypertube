@@ -65,7 +65,7 @@ export default function TVRemote({
 			<Button
 				size="small"
 				shape="square"
-				icon="assets/Arrow.svg"
+				icon="/assets/Arrow.svg"
 				className={`${styles.remoteToggleBtn} ${
 					isOpen ? styles.remoteToggleBtnOpen : ""
 				}`}
@@ -76,7 +76,7 @@ export default function TVRemote({
 			<Button
 				size="small"
 				shape="square"
-				icon="assets/HomeW.svg"
+				icon="/assets/HomeW.svg"
 				className={styles.HomeBtn}
 				variant="remote"
 				onClick={goHome}
@@ -85,7 +85,7 @@ export default function TVRemote({
 				text=""
 				size="small"
 				shape="square"
-				icon="assets/SearchW.svg"
+				icon="/assets/SearchW.svg"
 				className={styles.SearchBtn}
 				variant="remote"
 				onClick={showSearchBar}
@@ -94,7 +94,7 @@ export default function TVRemote({
 				text=""
 				size="small"
 				shape="square"
-				icon="assets/Profil.png"
+				icon="/assets/Profil.png"
 				className={styles.ProfileBtn}
 				variant="remote"
 				onClick={goToProfile}
@@ -120,7 +120,7 @@ export default function TVRemote({
 				text=""
 				size="small"
 				shape="square"
-				icon="assets/LogoutW.svg"
+				icon="/assets/LogoutW.svg"
 				className={styles.LogoutBtn}
 				variant="remote"
 				onClick={handleLogout}
