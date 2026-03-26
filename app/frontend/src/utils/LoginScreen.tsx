@@ -164,7 +164,7 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 						name="password"
 						autoComplete="current-password"
 					/>
-					<Button text={t("login.submit")} size="large" shape="pill" />
+					<Button text={t("login.submit")} size="large" shape="pill" type="submit"/>
 					<button onClick={autoLog}>auto-log</button>
 				</form>
 			) : (
@@ -235,7 +235,7 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 						name="password"
 						autoComplete="password"
 					/>
-					<Button text={t("register.submit")} size="large" shape="pill" />
+					<Button text={t("register.submit")} size="large" shape="pill" type="submit"/>
 				</form>
 			)}
 		</div>
