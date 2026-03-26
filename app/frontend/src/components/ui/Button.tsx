@@ -5,6 +5,7 @@ type ButtonProps = {
 	text?: string;
 	size?: "small" | "medium" | "large";
 	shape?: "rounded" | "square" | "pill";
+	type?: "submit" | "reset" | "button";
 	icon?: string;
 	imageOnly?: boolean;
 	style?: React.CSSProperties;
@@ -18,6 +19,7 @@ export default function Button({
 	text,
 	size = "medium",
 	shape = "rounded",
+	type = "button",
 	icon,
 	imageOnly = false,
 	style,
@@ -42,6 +44,7 @@ export default function Button({
 			onClick={onClick}
 			className={classNames}
 			style={!imageOnly ? style : undefined}
+			type={type}
 		>
 			{icon && (
 				<img
