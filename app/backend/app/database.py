@@ -175,8 +175,16 @@ class Storage:
 				return comment
 		return None
 
-	def get_comments(self):
-		return self.comments
+	def get_comments(self, chunk):
+		chunk_comments = []
+		max = chunk + 9
+		while (chunk <= max):
+			try:
+				chunk_comments.append(self.comments[chunk])
+			except:
+				break
+			chunk += 1
+		return chunk_comments
 
 	def add_movie(self, title: str, release_date: str, mp4_path: str):
 		"""

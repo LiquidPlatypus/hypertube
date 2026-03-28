@@ -1,8 +1,9 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException, Query, Depends
+from fastapi.responses import JSONResponse
 from database import storage
-from fastapi import HTTPException, Depends
 from utils import verif_access_token
-from model import CommentForm, CustomCommentForm
+from model import CommentForm, CustomCommentForm, ChunkCommentForm
+from typing import Optional
 import datetime
 
 router = APIRouter()
@@ -35,7 +36,7 @@ async def modif_comment_byid(data: CustomCommentForm, current_user=Depends(verif
     print(comment)
     return {"comment": comment}
 
-@router.get("/api/comments")
-async def get_comments(current_user=Depends(verif_access_token)):
-    comments = storage.get_comments()
+@router.get("/api/comments", response_class=JSONResponse)
+async def get_comments(pos: int = Query(0, ge=0), current_user=Depends(verif_access_token)):
+    comments = storage.get_comments(pos)
     return {"comments": comments}
