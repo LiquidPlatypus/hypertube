@@ -257,42 +257,49 @@
 	margin-right: 1.5rem;
 
 	text-align: left;
+
+	flex: 1 1 0;
+	min-width: 0;
 }
 
 .commentInput {
 	display: flex;
 	flex-direction: column;
-	width: 100%;
-	column-gap: 1rem;
-	box-sizing: border-box;
+	gap: 1rem;
+	align-items: stretch;
 }
 
-.commentInput :global(.wrapper) {
-	flex: 1 1 auto;
+.commentInput > div {
 	width: 100%;
 	max-width: 100%;
 }
 
-.commentInput :global(.input) {
+.commentInput > div > textarea {
 	width: 100%;
-	max-width: 100%;
-	box-sizing: border-box;
 }
 
-.commentInput input:hover {
+.commentInput textarea:hover {
 	border-color: black;
 }
 
-.commentInput input:focus {
+.commentInput textarea:focus {
 	border-color: black;
 	box-shadow: 0 0 5px black;
+}
+
+.commentInput button {
+	width: 5rem;
+	height: 44px;
+	flex: 0 0 auto;
+	align-self: flex-start;
+	box-sizing: border-box;
 }
 
 .commentsList {
 	flex: 1 1 auto;
 	padding-right: 0.5rem;
 	max-height: 100vh;
-	max-width: 50vh;
+	max-width: 100%;
 	overflow-y: auto;
 }
 

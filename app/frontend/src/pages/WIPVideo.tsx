@@ -3,7 +3,7 @@ import {useState, useCallback, useEffect} from "react";
 import { useParams } from "react-router-dom";
 
 import Button from "../components/ui/Button.tsx";
-import Input from "../components/ui/Input.tsx";
+import Textarea from "../components/ui/Textarea.tsx";
 
 import { useTranslation } from "../hooks/useTranslation.tsx";
 
@@ -42,6 +42,7 @@ export default function WIPVideo() {
 	const [chunk, setChunk] = useState(0);
 	const [isEmpty, setIsEmpty] = useState<boolean>(false);
 	const observer = React.useRef<IntersectionObserver | null>(null);
+	const commentFormRef = React.useRef<HTMLFormElement | null>(null);
 	const { id } = useParams<{ id: string }>();
 
 	const { t } = useTranslation();
@@ -219,15 +220,25 @@ export default function WIPVideo() {
 			</div>
 
 			<div className={styles.commentsPart}>
-				<form className={styles.commentInput} onSubmit={postComment}>
-					<Input
-						type="text"
+				<form ref={commentFormRef} className={styles.commentInput} onSubmit={postComment}>
+					<Textarea
 						placeholder={t("video.comments")}
-						value={comment}
+						rows={1}
+						maxLength={360}
+						wrap="soft"
 						variant="comment"
-						onChange={(e) => setComment(e.target.value)}
 						size="large"
 						shape="square"
+						maxAutoGrowHeightPx={180}
+						value={comment}
+						onChange={e => setComment(e.target.value)}
+						onKeyDown={(e) => {
+							if (e.key === "Enter" && !e.shiftKey) {
+								e.preventDefault();
+								if (comment.trim().length === 0) return;
+								commentFormRef.current?.requestSubmit();
+							}
+						}}
 						required
 					/>
 					<Button
