@@ -1,6 +1,13 @@
 .button {
 	font-weight: bold;
 	transition: all 0.2s ease;
+
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+
+	line-height: 1;
 }
 
 .button:hover {
