@@ -176,7 +176,9 @@ export default function EntryPage() {
 
 	return (
 		<div>
-			<div>
+				
+				<button onClick={() => navigate(`/thumbnails`)}>Thumbnails</button>
+				
 				
 				<GoogleOAuthProvider clientId="504765868462-ssreveurjgq1i8tuoinem6fcp0g8kv90.apps.googleusercontent.com">
 					<GoogleLogin
@@ -320,6 +322,5 @@ export default function EntryPage() {
 					</form>
 				)}
 			</div>
-		</div>
 	);
 };

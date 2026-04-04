@@ -5,7 +5,15 @@ STOP=\033[0m
 
 all: 
 	@echo "$(CYA)=== Building & starting containers...$(STOP)"
-	@sudo docker-compose up
+	@sudo docker-compose up -d
+
+logs: #Tails logs of all containers
+	@echo "$(CYA)=== Tailing logs...$(STOP)"
+	@sudo docker-compose logs -f hypertube_backend react_dev 
+
+restart: #Restarts all containers
+	@echo "$(CYA)=== Restarting containers...$(STOP)"
+	@sudo docker-compose restart $(s)
 
 build: #Builds all containers
 	@echo "$(CYA)=== Building containers...$(STOP)"
@@ -14,6 +22,10 @@ build: #Builds all containers
 clean: #Stops and remove all containers volumes and networks
 	@echo "$(CYA)=== Stopping and cleaning containers, volumes and networks...$(STOP)"
 	@sudo docker-compose down --remove-orphans -v
+
+rebuild: #removes rebuilds, and restart a single container
+	@echo "$(CYA)=== Rebuilding and restarting container...$(STOP)"
+	@sudo docker-compose up --build -d $(s)
 
 iclean: #Removes all images
 	@echo "$(RED)!!!=== Do you really want to remove all images ?$(STOP)"

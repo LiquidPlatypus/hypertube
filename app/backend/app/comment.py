@@ -1,9 +1,9 @@
-from .database import storage
+from database import storage
 from fastapi import HTTPException, Depends, APIRouter, Query
 from fastapi.responses import JSONResponse
-from .utils import verif_access_token
+from utils import verif_access_token
 import datetime
-from .model import CommentForm, CustomCommentForm, ChunkCommentForm
+from model import CommentForm, CustomCommentForm, ChunkCommentForm
 from typing import Optional
 import string, random
 

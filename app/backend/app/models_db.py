@@ -1,6 +1,7 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, Date, DateTime
 from sqlalchemy.orm import relationship
-from .database import DB
+from database import DB
+import datetime
 
 class User(DB):
     __tablename__ = "users"
@@ -16,3 +17,16 @@ class Password(DB):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), unique=True)
     hashed_password = Column(String(255))
+
+class Movie(DB):
+    __tablename__ = "movies"
+    id = Column(Integer, primary_key=True, index=True)
+    tmdb_id = Column(Integer, unique=True, index=False)
+    title = Column(String(255), nullable=False)
+    release_date = Column(Date, nullable=False)
+    mp4_path = Column(String(255))
+    download_date = Column(DateTime, nullable=False, default=datetime.datetime.utcnow)
+
+
+def get_movie_by_tmdb_id(session, tmdb_id):
+    return session.query(Movie).filter(Movie.tmdb_id == tmdb_id).first()

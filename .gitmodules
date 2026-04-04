@@ -1,0 +1,3 @@
+[submodule "torrent_search_api/repo"]
+	path = torrent_search_api/repo
+	url = https://github.com/theriturajps/Torrent-Search-API.git

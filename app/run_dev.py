@@ -24,18 +24,28 @@ def run_front():
     subprocess.run(["npm run dev"], shell=True)
 
 def run_back():
-    uvicorn.run("backend.app.main:app", host="127.0.0.1", port=8000, reload=True)
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    app_path = os.path.join(script_dir, 'backend', 'app')
+    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True, app_dir=app_path)
 
 def print_dev_url():
     time.sleep(3)
     print("\n\n Dev URL :" + bcolors.OKBLUE + " http://localhost:5173/ " + bcolors.ENDC)
 
 if __name__ == "__main__":
-    print_thread = threading.Thread(target=print_dev_url)
-    front_thread = threading.Thread(target=run_front)
-    front_thread.start()
-    print_thread.start()
-    time.sleep(1)
-    print(f"{bcolors.WARNING}Launching backend...{bcolors.ENDC}")
-    time.sleep(1)
-    run_back()
+    try:
+        front_thread = threading.Thread(target=run_front, daemon=True)
+        print_thread = threading.Thread(target=print_dev_url, daemon=True)
+
+        front_thread.start()
+        print_thread.start()
+        
+        time.sleep(1)
+        print(f"{bcolors.WARNING}Launching backend...{bcolors.ENDC}")
+        time.sleep(1)
+        
+        run_back()
+
+    except KeyboardInterrupt:
+        print(f"\n{bcolors.FAIL}Stopping Hypertube...{bcolors.ENDC}")
+        sys.exit(0)

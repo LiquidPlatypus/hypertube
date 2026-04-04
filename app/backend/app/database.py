@@ -15,10 +15,10 @@ MARIADB_DATABASE = getenv("MARIADB_DATABASE")
 SQLALCHEMY_DATABASE_URL = f"mariadb+pymysql://{MARIADB_USER}:{MARIADB_PASSWORD}@{MARIADB_HOST}:3306/{MARIADB_DATABASE}"
 
 engine = create_engine(
-    SQLALCHEMY_DATABASE_URL,
-    pool_pre_ping=True, #verifie la connexion avant de l'utiliser
-    pool_recycle=3600,  #recycle les connexions toutes les heures
-    echo=True           #affiche les requetes sql (debug)
+	SQLALCHEMY_DATABASE_URL,
+	pool_pre_ping=True, #verifie la connexion avant de l'utiliser
+	pool_recycle=3600,  #recycle les connexions toutes les heures
+	echo=True		   #affiche les requetes sql (debug)
 )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -27,32 +27,32 @@ DB = declarative_base()
 
 
 def init_db():
-    max_attempts = 0
-    attempt = 0
-    while attempt < max_attempts:
-        try:
-            # Teste la connexion
-            with engine.connect() as conn:
-                conn.execute(text("SELECT 1"))
-            # Si la connexion réussit, crée les tables
-            DB.metadata.create_all(bind=engine)
-            print("Database tables created.")
-            break
-        except OperationalError:
-            attempt += 1
-            print(f"MariaDB not ready, retrying in 5 seconds... (attempt {attempt}/{max_attempts})")
-            time.sleep(5)
-    else:
-        print("Failed to connect to MariaDB after several attempts.")
+	max_attempts = 5
+	attempt = 0
+	while attempt < max_attempts:
+		try:
+			# Teste la connexion
+			with engine.connect() as conn:
+				conn.execute(text("SELECT 1"))
+			# Si la connexion réussit, crée les tables
+			DB.metadata.create_all(bind=engine)
+			print("Database tables created.")
+			break
+		except OperationalError:
+			attempt += 1
+			print(f"MariaDB not ready, retrying in 5 seconds... (attempt {attempt}/{max_attempts})")
+			time.sleep(5)
+	else:
+		print("Failed to connect to MariaDB after several attempts.")
 
 init_db()
 
 def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+	db = SessionLocal()
+	try:
+		yield db
+	finally:
+		db.close()
 
 
 
@@ -62,6 +62,7 @@ class Storage:
 		self.password = []
 		self.profile_pic = []
 		self.comments = []
+		self.movies = []
 
 	def add_user(self, username: str, email: str, password: str, firstname: str, lastname: str):
 		"""
@@ -159,7 +160,7 @@ class Storage:
 		comment = {"id": len(self.comments) + 1, "content": content, "author": author, "date": date}
 		self.comments.append(comment)
 		return comment
-        
+		
 	def get_comment(self, id):
 		for i in self.comments:
 				if i["id"] == id:
@@ -185,5 +186,35 @@ class Storage:
 				break
 			chunk += 1
 		return chunk_comments
+
+	def add_movie(self, title: str, release_date: str, mp4_path: str):
+		"""
+		DESK:
+		Store movie in DB
+		"""
+		movie = {"title": title, "release_date": release_date, "mp4_path": mp4}
+		self.movies.append(movie)
+		return movie
+	
+	def get_movie(self, title: str, release_date: str):
+		"""
+		DESK:
+		Get mp4_path from a move in DB with title and release_date
+		"""
+		for m in self.movies:
+			if m["title"] == title and m["release_date"] == release_date:
+				return m.mp4_path
+		return None
+
+	def remove_movie(self, title: str, release_date: str):
+		"""
+		DESK:
+		Remove movie in DB with title and release_date
+		"""
+		for m in self.movies:
+			if m["title"] == title and m["release_date"] == release_date:
+				self.movies.remove(m)
+				return True
+		return False
 
 storage = Storage()
