@@ -129,6 +129,8 @@ export default function MovieDetails() {
         }
         
         console.log("Envoi du download pour ID:", movieDetails.id);
+        setIsStreamable(false);
+        setVideoUrl(null);
 
         try {
             const res = await fetch("/api/torrent/download", {
@@ -182,7 +184,7 @@ export default function MovieDetails() {
             });
 
             // Si le backend dit que c'est streamable, on active le player
-            if (data.is_streamable && !isStreamable) {
+            if (data.is_streamable && !isStreamable && data.progress > 0) {
                 setIsStreamable(true);
                 setVideoUrl(`/api/stream/${id}`);
             }

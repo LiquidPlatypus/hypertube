@@ -59,6 +59,15 @@ class DownloadRequest(BaseModel):
     id: int
     magnet: str
 
+_lt_session = None
+
+def get_lt_session():
+    global _lt_session
+    if _lt_session is None:
+        _lt_session = libtorrent.session()
+        _lt_session.listen_on(6881, 6891)
+    return _lt_session
+
 #! THUMBNAILS endpoint
 #: recupere une liste de films depuis TMDB API
 #: si query, recherche de films correspondant a la query
@@ -181,7 +190,8 @@ def search_torrent(request: TorrentRequest):
 async def download_movie(request: Request, background_tasks: BackgroundTasks):
     body = await request.json()
     movie_id = body.get("id")
-    magnet = body.get("magnet")
+    # magnet = body.get("magnet")
+    magnet = "magnet:?xt=urn:btih:83b2c0012bd4b764af8752d5f2d4ed270766932c&dn=test_torrent.mp4&xl=106862658&tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337%2Fannounce&tr=udp%3A%2F%2Fopen.stealth.si%3A80%2Fannounce&tr=udp%3A%2F%2Fevan.im%3A6969%2Fannounce&tr=https%3A%2F%2Ftracker.pmman.tech%3A443%2Fannounce&tr=udp%3A%2F%2Ftracker.torrent.eu.org%3A451%2Fannounce&tr=udp%3A%2F%2Ftracker.plx.im%3A6969%2Fannounce"
 
     if not movie_id or not magnet:
         raise HTTPException(status_code=400, detail="ID ou Magnet manquant")
@@ -197,9 +207,7 @@ async def download_movie(request: Request, background_tasks: BackgroundTasks):
 def start_sequential_download(magnet: str, movie_id: int):
     print(f"DEBUG: Initialisation session libtorrent pour movie_id: {movie_id}")
     
-    ses = libtorrent.session()
-    # On force l'écoute sur tous les réseaux du container
-    ses.listen_on(6881, 6891)
+    ses = get_lt_session()
     
     # Optionnel: on ajoute des trackers de secours si le magnet est trop court
     if "tr=" not in magnet:
@@ -241,10 +249,13 @@ def get_download_status(movie_id: int):
     print(f"Progrès: {s.progress * 100:.2f}%")
     print(f"Vitesse: {s.download_rate / 1000:.1f} kB/s")
     print(f"Peers connectés: {s.num_peers}")
+
+    pieces = handle.status().pieces
+    first_pieces_ready = all(pieces[i] for i in range(min(20, len(pieces))))  # vérifie si les 20 premiers morceaux sont prêts
     
     return {
         "status": state_str,
-        "is_streamable": s.progress > 0.05, 
+        "is_streamable": first_pieces_ready,
         "progress": round(s.progress * 100),
         "speed": round(s.download_rate / 1000, 1),
         "peers": s.num_peers
@@ -267,71 +278,23 @@ async def stream_movie(movie_id: int, request: Request):
     if not video_file:
         raise HTTPException(status_code=404, detail="Fichier introuvable")
 
-    # CAS 1 : MP4 natif (YTS, la majorité des torrents) 
-    # → on sert directement avec Range support natif → pas de saccades, audio intact
-    if video_file.endswith(".mp4"):
-        return _serve_with_range(video_file, request)
+    total_size = None
+    download_data = active_downloads.get(movie_id)
+    if download_data:
+        info = download_data["handle"].torrent_file()
+        if info:
+            total_size = info.total_size()
 
-    # CAS 2 : MKV/AVI → remuxage ffmpeg
     return await _ffmpeg_stream(video_file)
 
-
-def _serve_with_range(filepath: str, request: Request):
-    """Gère les Range requests du navigateur pour seeking/buffering."""
-    file_size = os.path.getsize(filepath)
-    range_header = request.headers.get("Range")
-
-    if range_header:
-        range_val = range_header.replace("bytes=", "")
-        start_str, _, end_str = range_val.partition("-")
-        start = int(start_str) if start_str else 0
-        end = int(end_str) if end_str else file_size - 1
-        end = min(end, file_size - 1)
-        length = end - start + 1
-
-        def iter_range():
-            with open(filepath, "rb") as f:
-                f.seek(start)
-                remaining = length
-                while remaining > 0:
-                    chunk = f.read(min(256 * 1024, remaining))
-                    if not chunk:
-                        break
-                    remaining -= len(chunk)
-                    yield chunk
-
-        return StreamingResponse(
-            iter_range(),
-            status_code=206,
-            media_type="video/mp4",
-            headers={
-                "Content-Range": f"bytes {start}-{end}/{file_size}",
-                "Accept-Ranges": "bytes",
-                "Content-Length": str(length),
-            }
-        )
-
-    # Requête initiale sans Range
-    def iter_full():
-        with open(filepath, "rb") as f:
-            while chunk := f.read(256 * 1024):
-                yield chunk
-
-    return StreamingResponse(
-        iter_full(),
-        media_type="video/mp4",
-        headers={
-            "Accept-Ranges": "bytes",
-            "Content-Length": str(file_size),
-        }
-    )
 
 
 async def _ffmpeg_stream(video_file: str):
     """Remuxe MKV → MP4 fragmenté via pipe ffmpeg."""
     command = [
         "ffmpeg",
-        "-fflags", "+genpts",
+        "-fflags", "+genpts+igndts",
+        "-err_detect", "ignore_err",
         "-analyzeduration", "20M",  # laisse ffmpeg analyser plus longtemps le fichier partiel
         "-probesize", "20M",
         "-i", video_file,
@@ -344,9 +307,10 @@ async def _ffmpeg_stream(video_file: str):
         "-sn",              # ignore les sous-titres
         "-f", "mp4",
         "-movflags", "frag_keyframe+empty_moov+default_base_moof",
-        "-loglevel", "warning",
-        "pipe:1"
+        "-loglevel", "info",
+        "pipe:1"  # sortie vers stdout
     ]
+
 
     process = subprocess.Popen(
         command,
@@ -354,6 +318,12 @@ async def _ffmpeg_stream(video_file: str):
         stderr=subprocess.PIPE,
         bufsize=0
     )
+
+    await asyncio.sleep(2)
+    if process.poll() is not None:
+        stderr_output = process.stderr.read().decode()
+        print(f"FFMPEG ERROR: {stderr_output}")
+        raise HTTPException(status_code=500, detail="Erreur lors du traitement vidéo")
 
     # Thread séparé pour logger stderr ffmpeg → indispensable pour débugger
     def log_stderr():
