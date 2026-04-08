@@ -1,5 +1,5 @@
 import * as React from "react";
-import {useState, useCallback, useEffect} from "react";
+import {useState, useEffect} from "react";
 import { useParams } from "react-router-dom";
 
 import Button from "../components/ui/Button.tsx";
@@ -39,9 +39,6 @@ export default function WIPVideo() {
 	const [error, setError] = useState<string | null>(null);
 	const [comment, setComment] = useState("");
 	const [comments, setComments] = useState<Comment[]>([]);
-	const [chunk, setChunk] = useState(0);
-	const [isEmpty, setIsEmpty] = useState<boolean>(false);
-	const observer = React.useRef<IntersectionObserver | null>(null);
 	const commentFormRef = React.useRef<HTMLFormElement | null>(null);
 	const { id } = useParams<{ id: string }>();
 
@@ -100,27 +97,8 @@ export default function WIPVideo() {
 		setComment("");
 	}
 
-	const observerTrigger = async () => {
-		if (loading)
-			return ;
-		setChunk(chunk + 10);
-		await getComments();
-	}
-
-	const lastComment = useCallback((node: HTMLDivElement) => {
-		if (loading) return;
-		if (observer.current) observer.current.disconnect();
-
-		observer.current = new IntersectionObserver(entries => {
-			if (entries[0].isIntersecting && !isEmpty) {
-				observerTrigger();
-			}
-		});
-		if (node) observer.current.observe(node);
-	}, [loading, isEmpty]);
-
 	useEffect(() => {
-		getComments();
+		void getComments().catch(console.error);
 	}, []);
 
 	React.useEffect(() => {
