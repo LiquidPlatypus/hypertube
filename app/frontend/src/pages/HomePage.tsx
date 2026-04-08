@@ -21,7 +21,7 @@ export default function HomePage() {
 
 	const { searchTerm } = useSearch();
 	const [results, setResults] = useState<any[]>([]);
-	const [loading, setLoading] = useState(false);
+	const [loading, setLoading] = useState(true);
 	const [showLoader, setShowLoader] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 
@@ -88,20 +88,22 @@ export default function HomePage() {
 
 			{error && <div>{t("error")}{error}</div>}
 
-			<ul className={styles.thumbnails}>
-				{results.map((movie: Movie) => (
-					<li key={movie.id}>
-						<Thumbnail
-							thumbnailSrc={movie.poster_path}
-							thumbnailAlt={movie.title}
-							title={movie.title}
-							year={movie.release_date}
-							rating={movie.score}
-							onClick={() => handleThumbnailClick(movie.id)}
-						/>
-					</li>
-				))}
-			</ul>
+			{!loading && (
+				<ul className={styles.thumbnails}>
+					{results.map((movie: Movie) => (
+						<li key={movie.id}>
+							<Thumbnail
+								thumbnailSrc={movie.poster_path}
+								thumbnailAlt={movie.title}
+								title={movie.title}
+								year={movie.release_date}
+								rating={movie.score}
+								onClick={() => handleThumbnailClick(movie.id)}
+							/>
+						</li>
+					))}
+				</ul>
+			)}
 		</div>
 	);
 }

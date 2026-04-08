@@ -33,7 +33,7 @@ interface Comment {
 }
 
 export default function WIPVideo() {
-	const [loading, setLoading] = useState(false);
+	const [loading, setLoading] = useState(true);
 	const [showLoader, setShowLoader] = useState(false);
 	const [movieDetails, setMovieDetails] = useState<Movie | null>(null);
 	const [error, setError] = useState<string | null>(null);
@@ -146,6 +146,7 @@ export default function WIPVideo() {
 
 			{error && <div>{t("error")}{error}</div>}
 
+			{!loading && (
 			<div className={styles.contentPart}>
 				<div className={styles.videoPart}>
 					<video
@@ -196,7 +197,9 @@ export default function WIPVideo() {
 					</ul>
 				</div>
 			</div>
+			)}
 
+			{!loading && (
 			<div className={styles.commentsPart}>
 				<form ref={commentFormRef} className={styles.commentInput} onSubmit={postComment}>
 					<Textarea
@@ -239,6 +242,7 @@ export default function WIPVideo() {
 					))}
 				</div>
 			</div>
+		)}
 		</div>
 	);
 }
