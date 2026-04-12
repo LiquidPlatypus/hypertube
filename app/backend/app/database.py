@@ -178,10 +178,11 @@ class Storage:
 
 	def get_comments(self, chunk):
 		chunk_comments = []
+		len = sum([1 for c in self.comments]) - 1
 		max = chunk + 9
 		while (chunk <= max):
 			try:
-				chunk_comments.append(self.comments[chunk])
+				chunk_comments.append(self.comments[len - chunk])
 			except:
 				break
 			chunk += 1
