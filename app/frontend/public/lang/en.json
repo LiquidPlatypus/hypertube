@@ -42,6 +42,7 @@
 	"video.casting": "Casting",
 	"video.comments": "Comments",
 	"video.post": "Post",
+	"video.noMoreComments": "No more comments.",
 
 	"loading": "Loading..."
 }
