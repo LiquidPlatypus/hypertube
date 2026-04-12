@@ -4,7 +4,7 @@ import requests
 # import tmdbsimple as tmdb
 from auth import tmdb
 from dotenv import load_dotenv
-from .utils import env_path
+from utils import env_path
 import os
 import pprint
 import libtorrent
