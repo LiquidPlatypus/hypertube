@@ -2,6 +2,7 @@ import * as React from "react";
 import styles from "./Input.module.css";
 
 type InputProps = {
+	autoFocus?: boolean;
 	type?: string;
 	placeholder?: string;
 	accept?: string;
@@ -22,6 +23,7 @@ type InputProps = {
 };
 
 export default function Input({
+	autoFocus = false,
 	type = "text",
 	placeholder = "",
 	accept,
@@ -53,6 +55,7 @@ export default function Input({
 				<img src={iconLeft} alt="" className={`${styles.icon} ${styles.left}`} />
 			)}
 			<input
+				autoFocus={autoFocus}
 				type={type}
 				placeholder={placeholder}
 				value={value}

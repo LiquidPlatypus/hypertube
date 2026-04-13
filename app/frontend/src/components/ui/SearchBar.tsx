@@ -9,6 +9,7 @@ export default function SearchBar() {
 	return (
 		<div>
 			<Input
+				autoFocus
 				type="text"
 				placeholder="Search"
 				size="large"
