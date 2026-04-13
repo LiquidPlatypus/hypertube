@@ -1,13 +1,38 @@
+import { useEffect, useState } from "react";
+
 import Input from "./Input.tsx";
 import { useSearch } from "../../utils/searchContext.tsx";
 
 import styles from "./SearchBar.module.css";
+import {useLocation, useNavigate} from "react-router-dom";
 
 export default function SearchBar() {
 	const { searchTerm, setSearchTerm } = useSearch();
+	const [draft, setDraft] = useState(searchTerm);
+
+	const navigate = useNavigate();
+	const { pathname } = useLocation();
+
+	useEffect(() => {
+		setDraft(searchTerm);
+	}, [searchTerm]);
+
+	const submitSearch = () => {
+		const q = draft.trim();
+		setSearchTerm(q);
+
+		if (pathname !== "/" && q.length > 0) {
+			navigate("/");
+		}
+	};
 
 	return (
-		<div>
+		<form
+			onSubmit={(e) => {
+				e.preventDefault();
+				submitSearch();
+			}}
+		>
 			<Input
 				autoFocus
 				type="text"
@@ -16,10 +41,11 @@ export default function SearchBar() {
 				shape="square"
 				style={{ width: "30rem" }}
 				className={styles.SearchBar}
-				value={searchTerm}
-				onChange={(e) => setSearchTerm(e.target.value)}
+				value={draft}
+				onChange={(e) => setDraft(e.target.value)}
 				required
 			/>
-		</div>
+		</form>
 	);
+
 }

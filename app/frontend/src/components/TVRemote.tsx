@@ -4,6 +4,7 @@ import { createPortal } from "react-dom";
 
 import Button from "./ui/Button.tsx";
 import SearchBar from "./ui/SearchBar.tsx";
+import { useSearch } from "../utils/searchContext.tsx";
 import {useTranslation} from "../hooks/useTranslation.tsx";
 
 import styles from "./TVRemote.module.css";
@@ -22,6 +23,7 @@ export default function TVRemote({
 	const navigate = useNavigate();
 	const [showSearch, setShowSearch] = useState(false);
 	const { currentLang, changeLang } = useTranslation();
+	const { setSearchTerm } = useSearch();
 
 	const goHome = () => {
 		navigate("/");
@@ -30,6 +32,11 @@ export default function TVRemote({
 	const showSearchBar = () => {
 		setShowSearch((prev) => !prev);
 	};
+
+	const closeSearch = () => {
+		setShowSearch(false);
+		setSearchTerm("");
+	}
 
 	const goToProfile = () => {
 		navigate("/profile");
@@ -53,7 +60,7 @@ export default function TVRemote({
 		if (!showSearch) return ;
 
 		const onKeyDown = (e: KeyboardEvent) => {
-			if (e.key === "Escape") setShowSearch(false);
+			if (e.key === "Escape") closeSearch();
 		}
 
 		window.addEventListener("keydown", onKeyDown);
@@ -130,7 +137,7 @@ export default function TVRemote({
 				createPortal(
 					<div
 						className={styles.SearchContainer}
-						onClick={() => setShowSearch(false)}
+						onClick={closeSearch}
 					>
 						<div onClick={(e) => e.stopPropagation()}>
 							<SearchBar />

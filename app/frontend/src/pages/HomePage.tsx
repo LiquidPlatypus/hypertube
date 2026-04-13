@@ -110,17 +110,15 @@ export default function HomePage() {
 		observer.current.observe(node);
 	}, [hasMore]);
 
-
-	const handleSearchBar = (e: React.FormEvent) => {
-		e.preventDefault();
-		setResults([]);
-		setPage(1);
-		setHasMore(true);
-	};
-
 	const handleThumbnailClick = (movieId: number) => {
 		navigate(`/movie/${movieId}`);
 	};
+
+	useEffect(() => {
+		setResults([]);
+		setPage(1);
+		setHasMore(true);
+	}, [searchTerm]);
 
 	useEffect(() => {
 		loadMovies(searchTerm, page, page === 1);
