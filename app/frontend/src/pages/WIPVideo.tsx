@@ -74,11 +74,25 @@ export default function WIPVideo() {
 
 	const getComments = async () => {
 		const token = localStorage.getItem("access_token");
-		const res = await fetch("/api/comments?pos=0", {
-			headers: { Authorization: `Bearer ${token}` },
-		});
-		const json = await res.json();
-		setComments(json.comments ?? []);
+		const pageSize = 10;
+		let pos = 0;
+		const all: Comment[] = [];
+
+		while (true) {
+			const res = await fetch(`/api/comments?pos=${pos}`, {
+				headers: { Authorization: `Bearer ${token}` },
+			});
+			const json = await res.json();
+			const chunk: Comment[] = json.comments ?? [];
+
+			all.push(...chunk);
+
+			if (chunk.length < pageSize) break;
+			pos += pageSize;
+		}
+
+		all.sort((a, b) => +new Date(b.date) - +new Date(a.date));
+		setComments(all);
 	};
 
 	const postComment = async (e: React.FormEvent) => {
