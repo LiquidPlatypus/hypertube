@@ -153,13 +153,40 @@ export default function ProfilInfo() {
 
 	const handleCancel = () => {
 		setIsEditing(false);
+		setSelectedFile(null);
 	};
+
+	const uploadSelectedPictureIfAny = async () => {
+		const token = getToken();
+		if (!token || !selectedFile) return;
+
+		const fd = new FormData();
+		fd.append("file", selectedFile);
+
+		const res = await fetch("/api/upload-picture", {
+			method: "POST",
+			headers: { Authorization: `Bearer ${token}` },
+			body: fd,
+		});
+
+		if (!res.ok) {
+			throw new Error(await res.text().catch(() => "Upload failed"));
+		}
+
+		setSelectedFile(null);
+
+		await fetchProfilePic();
+	}
 
 	const handleSave = async () => {
 		const token = getToken();
 		if (!token) return;
 
 		try {
+			// 1) Upload la photo si l’utilisateur en a choisi une
+			await uploadSelectedPictureIfAny();
+
+			// 2) Sauve les champs texte
 			const res = await fetch("/api/modify-profile", {
 				method: "POST",
 				headers: {
@@ -171,6 +198,7 @@ export default function ProfilInfo() {
 
 			if (!res.ok) throw new Error(t("profile.failedUpdate"));
 
+			// 3) Refresh user
 			const res2 = await fetch("/api/me", {
 				method: "GET",
 				headers: {
@@ -187,16 +215,18 @@ export default function ProfilInfo() {
 		} catch (error) {
 			console.error("profile.errorUpdate", error);
 		}
-	}
+	};
 
 	const handlePickFileClick = () => {
+		if (!isEditing) return;
 		fileInputRef.current?.click();
 	};
 
 	const handleFileChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
+		if (!isEditing) return;
 		const f = e.target.files[0] ?? null;
 		setSelectedFile(f);
-	}
+	};
 
 	const handleUploadPicture = async () => {
 		const token = getToken();
@@ -245,38 +275,33 @@ export default function ProfilInfo() {
 					/>
 				</div>
 
-				<input
-					ref={fileInputRef}
-					type="file"
-					accept="image/"
-					style={{ display: "none" }}
-					onChange={handleFileChange}
-				/>
+				{isEditing && (
+					<>
+						<input
+							ref={fileInputRef}
+							type="file"
+							accept="image/*"
+							style={{ display: "none" }}
+							onChange={handleFileChange}
+						/>
 
-				<div style={{ marginTop: "1rem", display: "flex", gap: "0.75rem", alignItems: "center" }}>
-					<Button
-						text={t("profile.editPicture") ?? "Choisir une photo"}
-						size="large"
-						shape="square"
-						variant="profileEdit"
-						onClick={handlePickFileClick}
-					/>
+						<div style={{ marginTop: "1rem" }}>
+							<Button
+								text={t("profile.editPicture")}
+								size="large"
+								shape="square"
+								variant="profileEdit"
+								onClick={handlePickFileClick}
+							/>
+						</div>
 
-					<Button
-						text={t("profile.uploadPicture") ?? "Uploader"}
-						size="large"
-						shape="square"
-						variant="profileEdit"
-						onClick={handleUploadPicture}
-						disabled={!selectedFile}
-					/>
-				</div>
-
-				{selectedFile ? (
-					<p style={{ marginTop: "0.5rem" }}>
-						Fichier sélectionné : <strong>{selectedFile.name}</strong>
-					</p>
-				) : null}
+						{selectedFile ? (
+							<p style={{ marginTop: "0.5rem" }}>
+								{t("profile.selectedFile")} : <strong>{selectedFile.name}</strong>
+							</p>
+						) : null}
+					</>
+				)}
 
 				<div className={styles.TitleBar}>{t("profile.userProfile")}</div>
 
