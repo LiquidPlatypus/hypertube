@@ -33,6 +33,8 @@
 	"profile.edit": "Modifier le profil",
 	"profile.save": "Sauvegarder",
 	"profile.cancel": "Annuler",
+	"profile.editPicture": "Modifier",
+	"profile.selectedFile": "Sélectionné",
 
 	"video.error": "Erreur lors du chargement de la vidéo",
 	"video.title": "Titre",
