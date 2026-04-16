@@ -98,11 +98,8 @@
 	text-shadow: 0 0 25px #3deaea;
 }
 
-.editValues {
-	display: flex;
-	flex-direction: column;
-	margin-top: 1.5rem;
-	row-gap: 0.8rem;
+.EditInput {
+	font-size: 1.9rem;
 }
 
 .buttonGroup {
@@ -112,9 +109,17 @@
 }
 
 @media (max-width: 900px) {
+	.Container {
+		height: auto;
+		justify-content: flex-start;
+		align-items: stretch;
+		padding-bottom: 140px;
+	}
+
 	.CRTBox {
 		flex-direction: column;
 		align-items: center;
+		padding-bottom: 2rem;
 	}
 
 	.RightColumn {
@@ -135,5 +140,10 @@
 	.key,
 	.value p {
 		margin: 0;
+	}
+
+	.EditInput {
+		font-size: 1rem;
+		padding: 0.2rem 0;
 	}
 }

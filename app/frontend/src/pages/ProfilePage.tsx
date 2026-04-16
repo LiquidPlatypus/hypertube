@@ -225,7 +225,7 @@ export default function ProfilInfo() {
 
 	const handleFileChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
 		if (!isEditing) return;
-		const f = e.target.files[0] ?? null;
+		const f = e.currentTarget.files?.[0] ?? null;
 		setSelectedFile(f);
 	};
 
@@ -268,7 +268,6 @@ export default function ProfilInfo() {
 							{selectedFile ? (
 								<p className={styles.SelectedFile} title={selectedFile.name}>
 									{t("profile.selectedFile")} :{selectedFile.name}
-									<strong>{selectedFile.name}</strong>
 								</p>
 							) : null}
 						</div>
