@@ -1,4 +1,4 @@
-import {useEffect, useRef, useState} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import { useTranslation } from "../hooks/useTranslation.tsx";
 
 import Button from "../components/ui/Button.tsx"
@@ -48,6 +48,7 @@ export default function ProfilInfo() {
 
 		const res = await fetch("/api/me/profile-pic", {
 			headers: { Authorization: `Bearer ${token}` },
+			cache: "no-store",
 		});
 
 		if (!res.ok) {
@@ -173,9 +174,9 @@ export default function ProfilInfo() {
 			throw new Error(await res.text().catch(() => "Upload failed"));
 		}
 
-		setSelectedFile(null);
-
 		await fetchProfilePic();
+
+		setSelectedFile(null);
 	}
 
 	const handleSave = async () => {
@@ -186,7 +187,7 @@ export default function ProfilInfo() {
 			// 1) Upload la photo si l’utilisateur en a choisi une
 			await uploadSelectedPictureIfAny();
 
-			// 2) Sauve les champs texte
+			// 2) sauvegarde les champs texte
 			const res = await fetch("/api/modify-profile", {
 				method: "POST",
 				headers: {
@@ -228,33 +229,6 @@ export default function ProfilInfo() {
 		setSelectedFile(f);
 	};
 
-	const handleUploadPicture = async () => {
-		const token = getToken();
-		if (!token || !selectedFile) return;
-
-		const fd = new FormData();
-		fd.append("file", selectedFile);
-
-		const res = await fetch("/api/upload-picture", {
-			method: "POST",
-			headers: {
-				Authorization: `Bearer ${token}`,
-			},
-			body: fd,
-		});
-
-		if (!res.ok) {
-			console.error("Upload failed", await res.text().catch(() => ""));
-			return;
-		}
-
-		// reset input/preview
-		setSelectedFile(null);
-
-		// Re-fetch la photo depuis le backend
-		await fetchProfilePic();
-	};
-
 	if (!user) return <p className={styles.Loading}>{t("loading")}</p>;
 
 	const displayedPic =
@@ -268,24 +242,21 @@ export default function ProfilInfo() {
 	return (
 		<div className={styles.Container}>
 			<div className={styles.CRTBox}>
-				<div>
-					<img
-						src={displayedPic}
-						alt="profile picture"
-					/>
-				</div>
+				<div className={styles.LeftColumn}>
+					<div className={styles.ProfilePic}>
+						<img src={displayedPic} alt="profile picture" />
+					</div>
 
-				{isEditing && (
-					<>
-						<input
-							ref={fileInputRef}
-							type="file"
-							accept="image/*"
-							style={{ display: "none" }}
-							onChange={handleFileChange}
-						/>
+					{isEditing && (
+						<div className={styles.PictureControls}>
+							<input
+								ref={fileInputRef}
+								type="file"
+								accept="image/*"
+								style={{ display: "none" }}
+								onChange={handleFileChange}
+							/>
 
-						<div style={{ marginTop: "1rem" }}>
 							<Button
 								text={t("profile.editPicture")}
 								size="large"
@@ -293,131 +264,133 @@ export default function ProfilInfo() {
 								variant="profileEdit"
 								onClick={handlePickFileClick}
 							/>
+
+							{selectedFile ? (
+								<p className={styles.SelectedFile} title={selectedFile.name}>
+									{t("profile.selectedFile")} :{selectedFile.name}
+									<strong>{selectedFile.name}</strong>
+								</p>
+							) : null}
 						</div>
-
-						{selectedFile ? (
-							<p style={{ marginTop: "0.5rem" }}>
-								{t("profile.selectedFile")} : <strong>{selectedFile.name}</strong>
-							</p>
-						) : null}
-					</>
-				)}
-
-				<div className={styles.TitleBar}>{t("profile.userProfile")}</div>
-
-				<div className={styles.InfosTab}>
-					<div className={styles.row}>
-						<p className={styles.key}>{t("register.placeholder.firstname")}</p>
-						<div className={styles.value}>
-							{isEditing ? (
-								<Input
-									type="text"
-									placeholder={t("register.placeholder.firstname")}
-									value={formData.firstname}
-									variant="profileEdit"
-									onChange={(e) => handleInputChange("firstname", e.target.value)}
-									size="medium"
-									shape="square"
-									className={styles.EditInput}
-									required
-								/>
-							) : (
-								<p>{user.firstname}</p>
-							)}
-						</div>
-					</div>
-
-					<div className={styles.row}>
-						<p className={styles.key}>{t("register.placeholder.lastname")}</p>
-						<div className={styles.value}>
-							{isEditing ? (
-								<Input
-									type="text"
-									placeholder={t("register.placeholder.lastname")}
-									value={formData.lastname}
-									variant="profileEdit"
-									onChange={(e) => handleInputChange("lastname", e.target.value)}
-									size="medium"
-									shape="square"
-									className={styles.EditInput}
-									required
-								/>
-							) : (
-								<p>{user.lastname}</p>
-							)}
-						</div>
-					</div>
-
-					<div className={styles.row}>
-						<p className={styles.key}>{t("profile.username")}</p>
-						<div className={styles.value}>
-							{isEditing ? (
-								<Input
-									type="text"
-									placeholder={t("register.placeholder.username")}
-									value={formData.username}
-									variant="profileEdit"
-									onChange={(e) => handleInputChange("username", e.target.value)}
-									size="medium"
-									shape="square"
-									className={styles.EditInput}
-									required
-								/>
-							) : (
-								<p>{user.username}</p>
-							)}
-						</div>
-					</div>
-
-					<div className={styles.row}>
-						<p className={styles.key}>{t("profile.email")}</p>
-						<div className={styles.value}>
-							{isEditing ? (
-								<Input
-									type="email"
-									placeholder={t("register.placeholder.email")}
-									value={formData.email}
-									variant="profileEdit"
-									onChange={(e) => handleInputChange("email", e.target.value)}
-									size="medium"
-									shape="square"
-									className={styles.EditInput}
-									required
-								/>
-							) : (
-								<p>{user.email}</p>
-							)}
-						</div>
-					</div>
+					)}
 				</div>
 
+				<div className={styles.RightColumn}>
+					<div className={styles.TitleBar}>{t("profile.userProfile")}</div>
 
-				{isEditing ? (
-					<div className={styles.buttonGroup}>
-						<Button
-							text={t("profile.save")}
-							size="large"
-							shape="square"
-							variant="profileEdit"
-							onClick={handleSave}
-						/>
-						<Button
-							text={t("profile.cancel")}
-							size="large"
-							shape="square"
-							variant="profileEdit"
-							onClick={handleCancel}
-						/>
+					<div className={styles.InfosTab}>
+						<div className={styles.row}>
+							<p className={styles.key}>{t("register.placeholder.firstname")}</p>
+							<div className={styles.value}>
+								{isEditing ? (
+									<Input
+										type="text"
+										placeholder={t("register.placeholder.firstname")}
+										value={formData.firstname}
+										variant="profileEdit"
+										onChange={(e) => handleInputChange("firstname", e.target.value)}
+										size="medium"
+										shape="square"
+										className={styles.EditInput}
+										required
+									/>
+								) : (
+									<p>{user.firstname}</p>
+								)}
+							</div>
+						</div>
+
+						<div className={styles.row}>
+							<p className={styles.key}>{t("register.placeholder.lastname")}</p>
+							<div className={styles.value}>
+								{isEditing ? (
+									<Input
+										type="text"
+										placeholder={t("register.placeholder.lastname")}
+										value={formData.lastname}
+										variant="profileEdit"
+										onChange={(e) => handleInputChange("lastname", e.target.value)}
+										size="medium"
+										shape="square"
+										className={styles.EditInput}
+										required
+									/>
+								) : (
+									<p>{user.lastname}</p>
+								)}
+							</div>
+						</div>
+
+						<div className={styles.row}>
+							<p className={styles.key}>{t("profile.username")}</p>
+							<div className={styles.value}>
+								{isEditing ? (
+									<Input
+										type="text"
+										placeholder={t("register.placeholder.username")}
+										value={formData.username}
+										variant="profileEdit"
+										onChange={(e) => handleInputChange("username", e.target.value)}
+										size="medium"
+										shape="square"
+										className={styles.EditInput}
+										required
+									/>
+								) : (
+									<p>{user.username}</p>
+								)}
+							</div>
+						</div>
+
+						<div className={styles.row}>
+							<p className={styles.key}>{t("profile.email")}</p>
+							<div className={styles.value}>
+								{isEditing ? (
+									<Input
+										type="email"
+										placeholder={t("register.placeholder.email")}
+										value={formData.email}
+										variant="profileEdit"
+										onChange={(e) => handleInputChange("email", e.target.value)}
+										size="medium"
+										shape="square"
+										className={styles.EditInput}
+										required
+									/>
+								) : (
+									<p>{user.email}</p>
+								)}
+							</div>
+						</div>
 					</div>
-				) : (
-					<Button
-						text={t("profile.edit")}
-						size="large"
-						shape="square"
-						variant="profileEdit"
-						onClick={handleProfileEdit}
-					/>
-				)}
+
+					{isEditing ? (
+						<div className={styles.buttonGroup}>
+							<Button
+								text={t("profile.save")}
+								size="large"
+								shape="square"
+								variant="profileEdit"
+								onClick={handleSave}
+							/>
+							<Button
+								text={t("profile.cancel")}
+								size="large"
+								shape="square"
+								variant="profileEdit"
+								onClick={handleCancel}
+							/>
+						</div>
+					) : (
+						<Button
+							text={t("profile.edit")}
+							size="large"
+							shape="square"
+							variant="profileEdit"
+							onClick={handleProfileEdit}
+						/>
+					)}
+				</div>
 			</div>
 		</div>
 	);

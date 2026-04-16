@@ -13,10 +13,52 @@
 
 /* Zone style OSD cathodique */
 .CRTBox {
-	padding: 2rem 3rem;
+	display: flex;
+	align-items: flex-start;
+	gap: 3rem;
 
+	padding: 2rem 3rem;
 	text-align: left;
 	position: relative;
+}
+
+.LeftColumn {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 1rem;
+}
+
+.ProfilePic img {
+	width: 180px;
+	height: 180px;
+	object-fit: cover;
+}
+
+.PictureControls {
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+	align-items: center;
+}
+
+.SelectedFile {
+	margin: 0;
+	color: #3deaea;
+	text-shadow: 0 0 25px #3deaea;
+
+	max-width: 200px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+
+	font-size: 1rem;
+	opacity: 0.9;
+}
+
+.RightColumn {
+	display: flex;
+	flex-direction: column;
 }
 
 /* Encadré titre OSD */
@@ -70,6 +112,15 @@
 }
 
 @media (max-width: 900px) {
+	.CRTBox {
+		flex-direction: column;
+		align-items: center;
+	}
+
+	.RightColumn {
+		width: 100%;
+	}
+
 	.InfosTab {
 		font-size: 1rem;
 		gap: 2rem;
