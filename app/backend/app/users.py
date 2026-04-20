@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, File, UploadFile
+from fastapi import APIRouter, Depends, File, UploadFile, HTTPException
 from model import ModifyFormRequest, PasswordForm, NewPasswordRequest, EmailRequest
 from database import storage
 from utils import create_access_token, verif_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
@@ -100,3 +100,30 @@ async def send_email(data: EmailRequest):
 	print(message)
 	return {"returnValue": True}
 
+@router.get("/api/users/{user_id}")
+async def get_user_public(user_id: int, current_user=Depends(verif_access_token)):
+	u = storage.get_user_by_id(user_id)
+	if not u:
+		raise HTTPException(status_code=404, detail="User not found")
+
+	# NE RENVOIE PAS L'EMAIL
+	public = {
+		"id": u["id"],
+		"username": u["username"],
+		"firstname": u["firstname"],
+		"lastname": u["lastname"],
+	}
+	return {"user": public}
+
+@router.get("/api/users/{user_id}/profile-pic")
+async def get_user_profile_pic(user_id: int, current_user=Depends(verif_access_token)):
+	u = storage.get_user_by_id(user_id)
+	if not u:
+		raise HTTPException(status_code=404, detail="User not found")
+
+	url = storage.get_profile_pic(user_id)
+	if url and url[:4] == "http":
+		return url
+	if url is None:
+		return None
+	return FileResponse(url)
