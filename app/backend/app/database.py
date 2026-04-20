@@ -148,7 +148,7 @@ class Storage:
 				return i["image_url"]
 		return None
 	
-	def add_comment(self, content: str, author: str):
+	def add_comment(self, content: str, author: str, author_id: int):
 		"""
 		DESK:
 		Set in DB the comment and metadata of this
@@ -156,7 +156,12 @@ class Storage:
 		author : author username
 		"""
 		date = datetime.datetime.now()
-		comment = {"id": len(self.comments) + 1, "content": content, "author": author, "date": date}
+		comment = {"id": len(self.comments) + 1,
+				   "content": content,
+				   "author": author,
+				   "author_id": author_id,
+				   "date": date,
+		}
 		self.comments.append(comment)
 		return comment
 

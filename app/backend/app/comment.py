@@ -21,7 +21,7 @@ async def get_comment_byid(id: int, current_user=Depends(verif_access_token)):
 
 @router.post("/api/comments")
 async def post_comment(data: CommentForm, current_user=Depends(verif_access_token)):
-    comment = storage.add_comment(data.content, current_user["username"])
+    comment = storage.add_comment(data.content, current_user["username"], current_user["id"])
     print(comment)
     return {"comment": comment}
 
