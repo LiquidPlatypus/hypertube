@@ -9,7 +9,13 @@
 	"login.submit": "Se connecter",
 	"login.placeholder.username": "Nom d'utilisateur",
 	"login.placeholder.password": "Mot de passe",
+	"login.intra42": "Intra 42",
 	"login.error.incorrect": "Nom d'utilisateur ou mot de passe incorrect",
+	"login.error.oauth": "Erreur OAuth",
+	"login.error.googleConfigMissing": "Config Google manquante (VITE_GOOGLE_CLIENT_ID).",
+	"login.error.ftConfigMissing": "Config 42 manquante (VITE_FT_CLIENT_ID / VITE_FT_REDIRECT_URI",
+	"login.error.popupBlocked": "Popup bloquée par le navigateur (désactive le bloqueur)",
+	"login.error.oauthState": "État OAuth invalide, réessaie.",
 
 	"register.title": "Inscription",
 	"register.button": "Inscription",

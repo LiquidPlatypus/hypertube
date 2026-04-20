@@ -9,7 +9,13 @@
 	"login.submit": "Login",
 	"login.placeholder.username": "Username",
 	"login.placeholder.password": "Password",
+	"login.intra42": "Intra 42",
 	"login.error.incorrect": "Incorrect username or password",
+	"login.error.oauth": "OAuth error",
+	"login.error.ftConfigMissing": "42 config missing (VITE_FT_CLIENT_ID / VITE_FT_REDIRECT_URI",
+	"login.error.googleConfigMissing": "Google config missing (VITE_GOOGLE_CLIENT_ID).",
+	"login.error.popupBlocked": "Popup blocked by the browser (deactivate blocker)",
+	"login.error.oauthState": "OAuth state invalid, try again.",
 
 	"register.title": "Register",
 	"register.button": "Register",
