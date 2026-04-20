@@ -322,3 +322,12 @@
 
 	word-wrap: break-word;
 }
+
+.comment h3 a {
+	color: inherit;
+	text-decoration: underline;
+}
+
+.comment h3 a:hover {
+	text-decoration: none;
+}
