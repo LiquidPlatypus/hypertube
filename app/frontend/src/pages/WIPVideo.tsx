@@ -1,6 +1,6 @@
 import * as React from "react";
 import {useState, useEffect} from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 
 import Button from "../components/ui/Button.tsx";
 import Textarea from "../components/ui/Textarea.tsx";
@@ -29,7 +29,8 @@ interface Comment {
 	id: number;
 	content: string;
 	author: string;
-	date: Date;
+	author_id?: number;
+	date: string;
 }
 
 export default function WIPVideo() {
@@ -246,7 +247,13 @@ export default function WIPVideo() {
 				<div className={styles.commentsList}>
 					{comments.map((c) => (
 						<div key={c.id} className={styles.comment}>
-							<h3>{c.author}</h3>
+							<h3>
+								{c.author_id ? (
+									<Link to={`/users/${c.author_id}`}>{c.author}</Link>
+								) : (
+									c.author
+								)}
+							</h3>
 							<small>{new Date(c.date).toLocaleString()}</small>
 							<p>{c.content}</p>
 						</div>
