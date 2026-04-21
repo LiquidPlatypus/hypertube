@@ -1,6 +1,6 @@
 from model import RegisterRequest, LoginRequest, GoogleToken, SuccessException
-from database import storage
-from fastapi import APIRouter, HTTPException
+from database import storage, get_storage, Storage
+from fastapi import APIRouter, HTTPException, Depends
 from google.oauth2 import id_token
 from google.auth.transport import requests
 from datetime import timedelta

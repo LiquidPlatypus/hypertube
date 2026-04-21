@@ -1,68 +1,47 @@
-from sqlalchemy import create_engine, text
-from os import getenv
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
-import time
-from sqlalchemy.exc import OperationalError
 import datetime
+from models_db import DB
+from fastapi import Depends
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import relationship, Session
+from sqlalchemy import Column, Integer, String, ForeignKey, Date, DateTime
+from models_db import get_db
 
+class User(DB):
+    __tablename__ = "users"
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String(50), unique=True, index=True)
+    email = Column(String(100), unique=True, index=True)
+    firstname = Column(String(50))
+    lastname = Column(String(50))
+    password = relationship("Password", uselist=False)
 
-MARIADB_USER = getenv("MARIADB_USER")
-MARIADB_PASSWORD = getenv("MARIADB_PASSWORD")
-MARIADB_HOST = getenv("MARIADB_HOST")
-MARIADB_DATABASE = getenv("MARIADB_DATABASE")
+class Password(DB):
+    __tablename__ = "passwords"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), unique=True)
+    hashed_password = Column(String(255))
 
-SQLALCHEMY_DATABASE_URL = f"mariadb+pymysql://{MARIADB_USER}:{MARIADB_PASSWORD}@{MARIADB_HOST}:3306/{MARIADB_DATABASE}"
+class Movie(DB):
+    __tablename__ = "movies"
+    id = Column(Integer, primary_key=True, index=True)
+    tmdb_id = Column(Integer, unique=True, index=False)
+    title = Column(String(255), nullable=False)
+    release_date = Column(Date, nullable=False)
+    mp4_path = Column(String(255))
+    download_date = Column(DateTime, nullable=False, default=datetime.datetime.utcnow)
 
-engine = create_engine(
-	SQLALCHEMY_DATABASE_URL,
-	pool_pre_ping=True, #verifie la connexion avant de l'utiliser
-	pool_recycle=3600,  #recycle les connexions toutes les heures
-	echo=True		   #affiche les requetes sql (debug)
-)
-
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-DB = declarative_base()
-
-
-def init_db():
-	max_attempts = 5
-	attempt = 0
-	while attempt < max_attempts:
-		try:
-			# Teste la connexion
-			with engine.connect() as conn:
-				conn.execute(text("SELECT 1"))
-			# Si la connexion réussit, crée les tables
-			DB.metadata.create_all(bind=engine)
-			print("Database tables created.")
-			break
-		except OperationalError:
-			attempt += 1
-			print(f"MariaDB not ready, retrying in 5 seconds... (attempt {attempt}/{max_attempts})")
-			time.sleep(5)
-	else:
-		print("Failed to connect to MariaDB after several attempts.")
-
-init_db()
-
-def get_db():
-	db = SessionLocal()
-	try:
-		yield db
-	finally:
-		db.close()
-
-
+def get_movie_by_tmdb_id(session, tmdb_id):
+    return session.query(Movie).filter(Movie.tmdb_id == tmdb_id).first()
 
 class Storage:
-	def __init__(self):
+
+	def __init__(self, db):
 		self.users = []
 		self.password = []
 		self.profile_pic = []
 		self.comments = []
 		self.movies = []
+		self.session = db
 
 	def add_user(self, username: str, email: str, password: str, firstname: str, lastname: str):
 		"""
@@ -70,10 +49,28 @@ class Storage:
 		Take all information and set in objet user before storaged in DB
 		\n/!\\ PASSWORD NOT HASHED
 		"""
+
+		pwd = Password(hashed_password=password)
+		user = User(
+			username=username,
+			email=email,
+			firstname=firstname,
+			lastname=lastname,
+			password=pwd,
+		)
+
 		user = {"id": len(self.users) + 1, "username": username, "email": email, "firstname": firstname, "lastname": lastname}
 		self.users.append(user)
 
 		self.password.append({"user_id": user["id"], "password": password})
+		# try:
+		# 	self.session.add(user)
+		# 	self.session.commit()
+		# 	# self.refresh(user)
+		# 	print(user.id)
+		# except IntegrityError as Ie:
+		# 	print(f"test :: {Ie}")
+
 		return user
 
 	def get_user_by_id(self, user_id: int):
@@ -218,4 +215,7 @@ class Storage:
 				return True
 		return False
 
-storage = Storage()
+def get_storage(db: Session = Depends(get_db)):
+	return Storage(db)
+
+storage = Storage(db = Depends(get_db))

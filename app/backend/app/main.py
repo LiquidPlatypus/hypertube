@@ -13,9 +13,9 @@ import shutil
 # Models Pydantic
 from model import RegisterRequest, LoginRequest, ModifyFormRequest, PasswordForm, EmailRequest, NewPasswordRequest
 # Models SQLAlchemy et Repository
-from models_db import User, Password
+from database import User, Password
 from repositories.user_repository import UserRepository
-from database import get_db, DB, engine 
+from models_db import get_db, DB, engine
 
 # INIT
 app = FastAPI()
