@@ -7,7 +7,7 @@ import Textarea from "../components/ui/Textarea.tsx";
 
 import { useTranslation } from "../hooks/useTranslation.tsx";
 
-import styles from "./WIPVideo.module.css";
+import styles from "./VideoPage.module.css";
 
 interface Movie {
 	id: number;
@@ -33,7 +33,7 @@ interface Comment {
 	date: string;
 }
 
-export default function WIPVideo() {
+export default function VideoPage() {
 	const [loading, setLoading] = useState(false);
 	const [showLoader, setShowLoader] = useState(false);
 	const [movieDetails, setMovieDetails] = useState<Movie | null>(null);

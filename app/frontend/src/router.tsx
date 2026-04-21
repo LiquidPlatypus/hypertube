@@ -4,7 +4,7 @@ import ProtectedRoute from "./utils/ProtectedRoute.tsx";
 import HomePage from "./pages/HomePage.tsx";
 import LoginPage from "./pages/LoginPage.tsx";
 import ProfilInfo from "./pages/ProfilePage.tsx";
-import WIPVideo from "./pages/WIPVideo.tsx";
+import VideoPage from "./pages/VideoPage.tsx";
 import PublicProfile from "./pages/PublicProfile.tsx";
 
 export const router = createBrowserRouter([
@@ -31,7 +31,7 @@ export const router = createBrowserRouter([
 					{
 						path: "/movie/:id",
 						element: (
-							<WIPVideo />
+							<VideoPage />
 						),
 					},
 					{
