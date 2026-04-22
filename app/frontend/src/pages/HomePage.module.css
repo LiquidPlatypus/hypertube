@@ -3,10 +3,12 @@
 	display: flex;
 	justify-content: center;
 	align-items: flex-start;
+	box-sizing: border-box;
 }
 
 .thumbnails {
 	width: 100%;
+	box-sizing: border-box;
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
 	row-gap: 3rem;
