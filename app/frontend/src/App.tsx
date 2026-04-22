@@ -6,6 +6,7 @@ import LoginLayout from "./layout/LoginLayout.tsx";
 import {SearchProvider} from "./utils/searchContext.tsx";
 
 import { initLanguage, loadLanguage } from "./lang/i18n.tsx";
+import {FilterProvider} from "./utils/filterContext.tsx";
 
 function App() {
 	const { pathname } = useLocation();
@@ -30,9 +31,11 @@ function App() {
 
 	return (
 		<SearchProvider>
-			<Layout>
-				<Outlet />
-			</Layout>
+			<FilterProvider>
+				<Layout>
+					<Outlet />
+				</Layout>
+			</FilterProvider>
 		</SearchProvider>
 	);
 }
