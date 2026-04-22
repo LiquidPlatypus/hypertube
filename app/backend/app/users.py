@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, File, UploadFile
 from model import ModifyFormRequest, PasswordForm, NewPasswordRequest, EmailRequest
-from database import storage
+from database import Storage, get_storage
 from utils import create_access_token, verif_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
 from fastapi.responses import FileResponse
 from datetime import timedelta
@@ -24,7 +24,7 @@ UPLOAD_DIR = os.path.join(BASE_DIR, "../profile-pic")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 @router.post("/api/modify-profile")
-async def modify_user(data: ModifyFormRequest, current_user=Depends(verif_access_token)):
+async def modify_user(data: ModifyFormRequest, current_user=Depends(verif_access_token), storage: Storage = Depends(get_storage)):
 	"""
 	Return Value :
 	True if information was correct and changed or else False
@@ -35,7 +35,8 @@ async def modify_user(data: ModifyFormRequest, current_user=Depends(verif_access
 @router.post("/api/upload-picture")
 async def upload_picture(
 	file: UploadFile = File(...),
-	current_user=Depends(verif_access_token)
+	current_user=Depends(verif_access_token),
+	storage: Storage=Depends(get_storage)
 ):
 	file_path = os.path.join(UPLOAD_DIR, file.filename)
 
@@ -45,7 +46,7 @@ async def upload_picture(
 	return {"returnValue": True}
 
 @router.get("/api/me/profile-pic")
-async def get_current_profile_pic(current_user=Depends(verif_access_token)):
+async def get_current_profile_pic(current_user=Depends(verif_access_token), storage: Storage = Depends(get_storage)):
 	url = storage.get_profile_pic(current_user["id"])
 	if url and url[:4] == "http":
 		return url
@@ -58,7 +59,7 @@ async def read_user_me(current_user=Depends(verif_access_token)):
 	return {"user": current_user}
 
 @router.post("/api/reset-password")
-async def reset_password(data: PasswordForm, current_user=Depends(verif_access_token)):
+async def reset_password(data: PasswordForm, current_user=Depends(verif_access_token), storage: Storage = Depends(get_storage)):
 	"""
 	Return Value :
 	True if information was correct and changed or else False
@@ -69,7 +70,7 @@ async def reset_password(data: PasswordForm, current_user=Depends(verif_access_t
 	return {"returnValue": False}
 
 @router.post("/api/reset-forgot-password")
-async def reset_forgot_password(data: NewPasswordRequest, current_user=Depends(verif_access_token)):
+async def reset_forgot_password(data: NewPasswordRequest, current_user=Depends(verif_access_token), storage: Storage = Depends(get_storage)):
 	storage.modify_password(data.newpassword, current_user["id"])
 	return {"returnValue": True}
 
@@ -80,7 +81,7 @@ async def forgot_password(current_user=Depends(verif_access_token)):
 	return {"returnValue": True}
 
 @router.post("/api/send-email")
-async def send_email(data: EmailRequest):
+async def send_email(data: EmailRequest, storage: Storage = Depends(get_storage)):
 	access_token = None
 	user_list = storage.get_all_users()
 	for u in user_list:

@@ -1,4 +1,4 @@
-from database import storage
+from database import Storage, get_storage
 from fastapi import HTTPException, Depends, APIRouter, Query
 from fastapi.responses import JSONResponse
 from utils import verif_access_token
@@ -10,7 +10,7 @@ import string, random
 router = APIRouter()
 
 @router.get("/api/comments/{id}")
-async def get_comment_byid(id: int, current_user=Depends(verif_access_token)):
+async def get_comment_byid(id: int, current_user=Depends(verif_access_token), storage: Storage = Depends(get_storage)):
 	comment = storage.get_comment(id)
 	if not id or comment == None:
 		raise HTTPException(
@@ -21,13 +21,13 @@ async def get_comment_byid(id: int, current_user=Depends(verif_access_token)):
 	return {"comment": comment}
 
 @router.post("/api/comments")
-async def post_comment(data: CommentForm, current_user=Depends(verif_access_token)):
+async def post_comment(data: CommentForm, current_user=Depends(verif_access_token), storage: Storage = Depends(get_storage)):
 	comment = storage.add_comment(data.content, current_user["username"])
 	print(comment)
 	return {"comment": comment}
 	
 @router.patch("/api/comments/{id}")
-async def modif_comment_byid(data: CustomCommentForm, current_user=Depends(verif_access_token)):
+async def modif_comment_byid(data: CustomCommentForm, current_user=Depends(verif_access_token), storage: Storage = Depends(get_storage)):
 	comment = storage.custom_comment(data.id, data.new_content)
 	if not data.id or comment == None:
 		raise HTTPException(
@@ -38,6 +38,6 @@ async def modif_comment_byid(data: CustomCommentForm, current_user=Depends(verif
 	return {"comment": comment}
 
 @router.get("/api/comments", response_class=JSONResponse)
-async def get_comments(pos: int = Query(0, ge=0), current_user=Depends(verif_access_token)):
+async def get_comments(pos: int = Query(0, ge=0), current_user=Depends(verif_access_token), storage: Storage = Depends(get_storage)):
 	comments = storage.get_comments(pos)
 	return {"comments": comments}

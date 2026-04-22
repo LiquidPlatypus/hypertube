@@ -1,5 +1,5 @@
 from model import RegisterRequest, LoginRequest, GoogleToken, SuccessException
-from database import storage, get_storage, Storage
+from database import get_storage, Storage
 from fastapi import APIRouter, HTTPException, Depends
 from google.oauth2 import id_token
 from google.auth.transport import requests
@@ -14,7 +14,7 @@ tmdb.API_KEY = os.getenv("TMDB_API_KEY")
 tmdb.REQUESTS_TIMEOUT = 5
 
 @router.post("/api/register")
-async def register(data: RegisterRequest):
+async def register(data: RegisterRequest, storage: Storage = Depends(get_storage)):
 	"""
 	Return Value : \n
 	True if account was be created or else False
@@ -28,7 +28,7 @@ async def register(data: RegisterRequest):
 	return {"returnValue": True}
 
 @router.post("/api/login")
-async def login(data: LoginRequest):
+async def login(data: LoginRequest, storage: Storage = Depends(get_storage)):
 	"""
 	Return Value : \n
 	The access token and token type or raise 401 error
@@ -46,7 +46,7 @@ async def login(data: LoginRequest):
 	)
 
 @router.post("/api/google-auth")
-async def google_login(data: GoogleToken):
+async def google_login(data: GoogleToken, storage: Storage = Depends(get_storage)):
 	user = None
 	try:
 		idinfo = id_token.verify_oauth2_token(data.token, requests.Request(), GOOGLE_CLIENT_ID)
@@ -81,7 +81,7 @@ async def google_login(data: GoogleToken):
 		)
 
 @router.post("/api/auto-log")
-async def auto_log():
+async def auto_log(storage: Storage = Depends(get_storage)):
 	"""
 	Print all profile value and return Login token
 	"""
