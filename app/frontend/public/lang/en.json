@@ -52,5 +52,19 @@
 	"video.post": "Post",
 	"video.noMoreComments": "No more comments.",
 
-	"loading": "Loading..."
+	"loading": "Loading...",
+
+	"filters.sort.relevance": "Relevance",
+	"filters.sort.score.desc": "Score TMDB ↓",
+	"filters.sort.score.asc": "Score TMDB ↑",
+	"filters.sort.year.desc": "Year ↓",
+	"filters.sort.year.asc": "Year ↑",
+	"filters.sort.title": "Title A→Z",
+	"filters.genre": "Genre",
+	"filters.minRating": "Min. Rating",
+	"filters.year.from": "Year (from)",
+	"filters.year.to": "Year (to)",
+	"filters.sort": "Sort",
+	"filters.reset": "Reset",
+	"filters.all": "All"
 }

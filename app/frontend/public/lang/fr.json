@@ -52,5 +52,19 @@
 	"video.noMoreComments": "Fin des commentaires.",
 	"video.post": "Poster",
 
-	"loading": "Chargement..."
+	"loading": "Chargement...",
+
+	"filters.sort.relevance": "Popularité",
+	"filters.sort.score.desc": "Note TMDB ↓",
+	"filters.sort.score.asc": "Note TMDB ↑",
+	"filters.sort.year.desc": "Année ↓",
+	"filters.sort.year.asc": "Année ↑",
+	"filters.sort.title": "Titre A→Z",
+	"filters.genre": "Genre",
+	"filters.minRating": "Note min",
+	"filters.year.from": "Année (de)",
+	"filters.year.to": "Année (à)",
+	"filters.sort": "Trier",
+	"filters.reset": "Réinitialiser",
+	"filters.all": "Tous"
 }
