@@ -11,18 +11,27 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
 
 	useEffect(() => {
 		const verifyToken = async () => {
-			const token = localStorage.getItem('access_token');
+			const token = localStorage.getItem("access_token");
+
+			// si pas de token -> pas d'appel API, redirection directe
+			if (!token) {
+				setLoading(false);
+				navigate("/auth/login");
+				return;
+			}
+
 			try {
 				const response = await fetch(`/api/verify-token/${token}`);
 				if (!response.ok) throw new Error("Invalid token");
 				await response.json();
 			} catch (error) {
-				localStorage.removeItem('access_token');
-				navigate('/auth/login');
+				localStorage.removeItem("access_token");
+				navigate("/auth/login");
 			} finally {
 				setLoading(false);
 			}
 		};
+
 		verifyToken();
 	}, [navigate]);
 
