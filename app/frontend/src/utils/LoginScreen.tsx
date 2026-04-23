@@ -258,29 +258,6 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 	// Google client id (env)
 	const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined;
 
-	// TODO: REMOVE AUTOLOG !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	// interface LoginResponse {
-	// 	access_token: string;
-	// 	token_type: string; // souvent "bearer"
-	// }
-
-	// const autoLog = async (e: React.MouseEvent<HTMLButtonElement>) => {
-	// 	e.preventDefault();
-	// 	try {
-	// 		const response = await fetch("/api/auto-log", {
-	// 			method: "POST",
-	// 			headers: { "Content-Type": "application/json" },
-	// 		});
-	// 		if (!response.ok)
-	// 			throw new Error("Error during register");
-	// 		const data: LoginResponse = await response.json();
-	// 		localStorage.setItem("access_token", data.access_token);
-	// 		navigate("/");
-	// 	} catch (err) {
-	// 		console.error(err);
-	// 	}
-	// };
-
 	return (
 		<div className={styles.LoginScreen}>
 			<h2 className={styles.LoginRegister}>
