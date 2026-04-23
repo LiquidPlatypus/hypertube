@@ -5,6 +5,7 @@ import { useSearch } from "../utils/searchContext.tsx";
 import { useFilters } from "../utils/filterContext.tsx";
 
 import { useTranslation } from "../hooks/useTranslation.tsx";
+import { getCurrentLang } from "../lang/i18n.tsx";
 
 import Thumbnail from "../components/ui/Thumbnail.tsx";
 import FiltersBar from "../components/ui/FiltersBar.tsx";
@@ -75,6 +76,7 @@ export default function HomePage() {
 				if (filters.yearFrom != null) params.set("year_from", String(filters.yearFrom));
 				if (filters.yearTo != null) params.set("year_to", String(filters.yearTo));
 				if (filters.sort) params.set("sort", filters.sort);
+				params.set("language", getCurrentLang() === "fr" ? "fr-Fr" : "en_US");
 
 				const url = `/api/thumbnails?${params.toString()}`;
 

@@ -80,6 +80,7 @@ def get_thumbnails(
 
         # tri (mêmes valeurs que ton front)
         sort: Optional[str] = Query("relevance"),
+        language: str = Query("en-US"),
 ):
     """
     Stratégie:
@@ -155,7 +156,7 @@ def get_thumbnails(
         params = {
             "api_key": api_key,
             "page": page,
-            "language": "en-US",          # optionnel: tu peux le passer depuis le front plus tard
+            "language": language,
             "include_adult": "false",
             "include_video": "false",
             "sort_by": sort_map.get(sort or "relevance", "popularity.desc"),

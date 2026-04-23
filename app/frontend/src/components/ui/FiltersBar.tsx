@@ -14,6 +14,7 @@ export default function FiltersBar() {
 	const { filters, setFilters, resetFilters } = useFilters();
 	const [genres, setGenres] = useState<Genre[]>([]);
 	const [loadingGenres, setLoadingGenres] = useState(false);
+	const [lang, setLang] = useState(getCurrentLang);
 
 	useEffect(() => {
 		let cancelled = false;
@@ -48,6 +49,12 @@ export default function FiltersBar() {
 		};
 	}, []);
 
+	useEffect(() => {
+		const handler = () => setLang(getCurrentLang());
+		document.addEventListener("languageChanged", handler);
+		return () => document.removeEventListener("languageChanged", handler);
+	}, []);
+
 	const sortOptions = useMemo<{ value: SortMode; label: string }[]>(
 		() => [
 			{ value: "relevance", label: t("filters.sort.relevance") },
@@ -57,7 +64,7 @@ export default function FiltersBar() {
 			{ value: "year_asc", label: t("filters.sort.year.asc") },
 			{ value: "title_asc", label: t("filters.sort.title") },
 		],
-		[]
+		[lang]
 	);
 
 	return (
@@ -74,7 +81,7 @@ export default function FiltersBar() {
 							}))
 						}
 					>
-						<option value="">{loadingGenres ? t("loading") : "Tous"}</option>
+						<option value="">{loadingGenres ? t("loading") : t("filters.all")}</option>
 						{genres.map((g) => (
 							<option key={g.id} value={g.id}>
 								{g.name}
