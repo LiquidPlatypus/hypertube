@@ -153,7 +153,7 @@ class Storage:
 			url=image_url
 		)
 		self.session.add(profilepic)
-		self.commit()
+		self.session.commit()
 
 	def get_profile_pic(self, user_id: int):
 		"""
@@ -161,6 +161,8 @@ class Storage:
 		Return URL of user image or None if he haven't
 		"""
 		instance: ProfilePic = self.session.query(ProfilePic).filter(ProfilePic.user_id == user_id).first()
+		if not instance:
+			return None
 		return instance.url
 
 	def add_comment(self, content: str, author: str):
