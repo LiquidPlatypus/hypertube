@@ -1,5 +1,4 @@
 import React, {useMemo, useState} from "react";
-import {useNavigate} from "react-router-dom";
 
 import { GoogleOAuthProvider, GoogleLogin, type GoogleCredentialResponse } from "@react-oauth/google";
 
@@ -36,7 +35,6 @@ type ApiAuthResponse = {
 const FT_AUTHORIZE_URL = "https://api.intra.42.fr/oauth/authorize";
 
 export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
-	const navigate = useNavigate();
 	const { t } = useTranslation();
 
 	const [isLogin, setIsLogin] = useState(true);
@@ -73,7 +71,6 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 	const finishAuth = (accessToken: string) => {
 		localStorage.setItem("access_token", accessToken);
 		onLoginSuccess?.();
-		navigate("/");
 	};
 
 	// Wrapper fetch JSON

@@ -50,6 +50,7 @@ export default function TVRemote({
 	const handleLogout = () => {
 		try {
 			localStorage.removeItem("access_token");
+			localStorage.setItem("just_logged_out", "true");
 			navigate('/auth/login');
 		} catch (error) {
 			console.error("Logout failed:", error);
