@@ -13,15 +13,16 @@ export default function LoginFooter() {
 
 			<div className={styles.Freepik}>
 				<p>
-					TV Designed by{" "}
-					<a
-						href="http://www.freepik.com/"
-						target="_blank"
-						rel="noopener noreferrer"
-						className="text-blue-500 hover:underline"
-					>
-						Freepik
-					</a>
+					{/*TV Designed by{" "}*/}
+					{/*<a*/}
+					{/*	href="http://www.freepik.com/"*/}
+					{/*	target="_blank"*/}
+					{/*	rel="noopener noreferrer"*/}
+					{/*	className="text-blue-500 hover:underline"*/}
+					{/*>*/}
+					{/*	Freepik*/}
+					{/*</a>*/}
+					hypertube
 				</p>
 			</div>
 
