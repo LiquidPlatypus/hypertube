@@ -1,3 +1,4 @@
+import * as React from "react";
 import { type ReactNode, useLayoutEffect, useRef, useState } from "react";
 
 import styles from "./TVFrame.module.css";
@@ -12,6 +13,7 @@ interface RetroTvFrameProps {
 	screenWidth: number;
 	screenHeight: number;
 	contentScale: number;
+	screenContainerRef?: React.RefObject<HTMLDivElement | null>;
 	children?: ReactNode;
 }
 
@@ -25,6 +27,7 @@ export default function RetroTvFrame({
 	screenWidth,
 	screenHeight,
 	contentScale = 1,
+	screenContainerRef,
 	children,
 }: RetroTvFrameProps) {
 	const screenRef = useRef<HTMLDivElement>(null);
@@ -62,13 +65,16 @@ export default function RetroTvFrame({
 
 			{/* Écran */}
 			<div
-				ref={screenRef}
+				ref={(node) => {
+					(screenRef as any).current = node;
+					if (screenContainerRef) screenContainerRef.current = node;
+				}}
 				className={styles.TVScreen}
 				style={{
-					top: `${(screenY / tvHeight) * 132}%`,
-					left: `${(screenX / tvWidth) * 91}%`,
-					width: `${(screenWidth / tvWidth) * 80}%`,
-					height: `${(screenHeight / tvHeight) * 80}%`,
+					top: `${(screenY / tvHeight) * 135}%`,
+					left: `${(screenX / tvWidth) * 42}%`,
+					width: `${(screenWidth / tvWidth) * 100}%`,
+					height: `${(screenHeight / tvHeight) * 100}%`,
 				}}
 			>
 				<video
