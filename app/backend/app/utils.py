@@ -1,7 +1,7 @@
 from fastapi import HTTPException, Depends
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
-from database import storage
+from database import get_storage, Storage
 from fastapi.security import OAuth2PasswordBearer
 import os
 
@@ -22,7 +22,7 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
 	encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 	return encoded_jwt
 
-def verif_access_token(token: str = Depends(oauth2_scheme)):
+def verif_access_token(token: str = Depends(oauth2_scheme), storage: Storage = Depends(get_storage)):
 	try:
 		payload = jwt.decode(token, SECRET_KEY, algorithms=ALGORITHM)
 		user = storage.get_user_by_id(int(payload["sub"]))

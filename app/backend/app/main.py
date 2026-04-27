@@ -1,5 +1,5 @@
 import os
-from fastapi import FastAPI, Depends, Request
+from fastapi import FastAPI, Depends, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from auth import router as auth_router
@@ -13,11 +13,16 @@ import shutil
 # Models Pydantic
 from model import RegisterRequest, LoginRequest, ModifyFormRequest, PasswordForm, EmailRequest, NewPasswordRequest
 # Models SQLAlchemy et Repository
-from models_db import User, Password
+from database import User, Password
 from repositories.user_repository import UserRepository
-from database import get_db, DB, engine 
+from models_db import get_db, DB, engine 
+from database import get_storage, Storage
+from jose import JWTError, jwt
 
 # INIT
+ALGORITHM = "HS256"
+SECRET_KEY = os.getenv("SECRET_KEY")
+
 app = FastAPI()
 
 app.add_middleware(
@@ -63,9 +68,29 @@ app.include_router(movies_router)
 app.include_router(comment_router)
 
 @app.get("/api/verify-token/{token}")
-async def verify_user_token(token: str):
-	res = verif_access_token(token)
-	return {"message": "Token is valid"}
+async def verify_user_token(token: str, storage: Storage = Depends(get_storage)):
+	# res = verif_access_token(token)
+	# token: str = Depends(oauth2_scheme)
+	# storage: Storage = Depends(get_storage)
+	try:
+		payload = jwt.decode(token, SECRET_KEY, algorithms=ALGORITHM)
+		user = storage.get_user_by_id(int(payload["sub"]))
+		if user == None:
+			raise HTTPException(
+				status_code=410,
+				detail="Account not exist"
+			)
+		return {"message": "Token is valid"}
+	except JWTError:
+		raise HTTPException(
+			status_code=401,
+			detail="Unauthorized"
+		)
+
+# @app.get("/api/verify-token/{token}")
+# async def verify_user_token(token: str):
+# 	res = verif_access_token(token)
+# 	return {"message": "Token is valid"}
 
 @app.get("/api/hello")
 async def get_hello():

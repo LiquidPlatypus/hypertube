@@ -8,14 +8,13 @@ import pprint
 import libtorrent
 import threading
 import time
-from database import get_db, init_db, SessionLocal
+from models_db import get_db, init_db, SessionLocal
 from pydantic import BaseModel
 from typing import Optional, List
-from models_db import get_movie_by_tmdb_id
+from database import get_movie_by_tmdb_id, Movie
 from typing import List
 import shutil
 from sqlalchemy.orm import Session
-from models_db import Movie
 from fastapi import BackgroundTasks
 from fastapi.responses import FileResponse
 from fastapi.responses import StreamingResponse
