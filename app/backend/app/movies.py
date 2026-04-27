@@ -11,7 +11,6 @@ import time
 from database import get_db, init_db, SessionLocal
 from pydantic import BaseModel
 from typing import Optional, List
-from models_db import get_movie_by_tmdb_id
 from typing import List
 import shutil
 from sqlalchemy.orm import Session
@@ -136,10 +135,9 @@ def get_movie_details(movie_id: int, session = Depends(get_db)):
        data.cast.append(new_cast_member)
     
     #TODO movie details: check si le film est en bdd pour recup le mp4, sinon, le dl
-    stored_movie = get_movie_by_tmdb_id(session, movie_id)
+    stored_movie = session.query(Movie).filter(Movie.tmdb_id == tmdb_id).first()
     if stored_movie:
         data.mp4_path = stored_movie.mp4_path
-
     return data
 
 #! TORRENT SEARCH endpoint
@@ -231,7 +229,7 @@ def start_sequential_download(magnet: str, movie_id: int):
 
 #! TORRENT DOWNLOAD STATUS endpoint
 @router.get("/api/torrent/status/{movie_id}")
-def get_download_status(movie_id: int):
+def get_download_status(movie_id: int, session = Depends(get_db)):
     download_data = active_downloads.get(movie_id)
     if not download_data:
         return {"status": "inactive"}
@@ -253,6 +251,13 @@ def get_download_status(movie_id: int):
     pieces = handle.status().pieces
     first_pieces_ready = all(pieces[i] for i in range(min(20, len(pieces))))  # vérifie si les 20 premiers morceaux sont prêts
     
+    #TODO download status: check si le téléchargement est terminé pour ajouter le film en bdd avec son chemin mp4
+    if state_str in ['seeding', 'finished']:
+        print(f"✅ Téléchargement terminé pour movie_id: {movie_id}")
+        session.add(Movie(tmdb_id=movie_id, title=f"Movie {movie_id}", release_date="2024-01-01", mp4_path=f"./downloads/{movie_id}/movie.mp4"))
+        session.commit()
+        del active_downloads[movie_id]  # nettoyage du téléchargement actif
+
     return {
         "status": state_str,
         "is_streamable": first_pieces_ready,
