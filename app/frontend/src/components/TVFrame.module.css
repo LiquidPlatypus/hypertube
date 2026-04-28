@@ -13,6 +13,8 @@
 	z-index: 20;
 	height: 110%;
 	width: 110%;
+	object-fit: contain;
+	object-position: center;
 }
 
 .TVScreen {
