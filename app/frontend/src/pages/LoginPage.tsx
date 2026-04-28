@@ -12,6 +12,7 @@ export default function LoginPage() {
 	const navigate = useNavigate();
 	const wrapperRef = useRef<HTMLDivElement | null>(null);
 	const tvScreenRef = useRef<HTMLDivElement | null>(null);
+	const tvWrapperRef = useRef<HTMLDivElement | null>(null);
 
 	const [mode, setMode] = useState<Mode>("login");
 	const [isZooming, setIsZooming] = useState(false);
@@ -21,6 +22,7 @@ export default function LoginPage() {
 	const [flashKey, setFlashKey] = useState(0);
 	const [showWhiteFlash, setShowWhiteFlash] = useState(false);
 	const [hideUi, setHideUi] = useState(false);
+	const [dollyZoom, setDollyZoom] = useState(1);
 
 	const TV_BASE = useMemo(
 		() => ({
@@ -40,33 +42,28 @@ export default function LoginPage() {
 		const handleResize = () => {
 			const { innerWidth: w, innerHeight: h } = window;
 
-			const safeH = Math.max(320, h - 60);
+			const clamp = (v: number, min: number, max: number) => Math.max(min, Math.min(max, v));
+			const smoothstep = (t: number) => t * t * (3 - 2 * t);
 
-			const scale = Math.min(w / TV_BASE.tvWidth, safeH / TV_BASE.tvHeight, 1);
-			const isMobile = w <= 768;
+			const W_START = 1400;
+			const W_END = 420;
+			const ZOOM_MIN = 1;
+			const ZOOM_MAX = 2.05;
 
-			if (isMobile) {
-				const tvWidth = TV_BASE.tvWidth * scale;
-				const tvHeight = TV_BASE.tvHeight * scale;
+			const tRaw = (W_START - w) / (W_START - W_END);
+			const t = smoothstep(clamp(tRaw, 0, 1));
 
-				setTvDims({
-					tvWidth,
-					tvHeight,
-					screenX: TV_BASE.screenX * scale * 0.95,
-					screenY: TV_BASE.screenY * scale * 1.05,
-					screenWidth: TV_BASE.screenWidth * scale * 1.08,
-					screenHeight: TV_BASE.screenHeight * scale * 1.12,
-				});
+			const nextZoom = ZOOM_MIN + (ZOOM_MAX - ZOOM_MIN) * t;
+
+			const H_END = 520;
+			if (h < H_END) {
+				const extra = clamp((H_END - h) / 240, 0, 0.25);
+				setDollyZoom(nextZoom + extra);
 			} else {
-				setTvDims({
-					tvWidth: TV_BASE.tvWidth * scale,
-					tvHeight: TV_BASE.tvHeight * scale,
-					screenX: TV_BASE.screenX * scale,
-					screenY: TV_BASE.screenY * scale,
-					screenWidth: TV_BASE.screenWidth * scale,
-					screenHeight: TV_BASE.screenHeight * scale,
-				});
+				setDollyZoom(nextZoom);
 			}
+
+			setTvDims(TV_BASE);
 		};
 
 		handleResize();
@@ -75,7 +72,7 @@ export default function LoginPage() {
 	}, [TV_BASE]);
 
 	useLayoutEffect(() => {
-		const wrapper = wrapperRef.current;
+		const wrapper = tvWrapperRef.current;
 		const screen = tvScreenRef.current;
 		if (!wrapper || !screen) return;
 
@@ -160,7 +157,13 @@ export default function LoginPage() {
 	return (
 		<>
 			<div key={wrapperKey} ref={wrapperRef} className={wrapperClassName}>
-				<div className={styles.TVWrapper}>
+				<div
+					ref={tvWrapperRef}
+					className={styles.TVWrapper}
+					style={{
+						transform: `scale(${(isZooming || hideUi) ? 1 : dollyZoom})`,
+					}}
+				>
 					<RetroTvFrame
 						videoSrc="/videos/screen2.mp4"
 						tvImageSrc="/assets/TV.png"
