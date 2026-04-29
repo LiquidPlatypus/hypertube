@@ -225,7 +225,7 @@ export default function LoginPage() {
 				>
 					<RetroTvFrame
 						videoSrc="/videos/screen2.mp4"
-						tvImageSrc="/assets/TVCompressed.png"
+						tvImageSrc="/assets/Login/TVCompressed.png"
 						tvWidth={tvDims.tvWidth}
 						tvHeight={tvDims.tvHeight}
 						screenX={tvDims.screenX}
