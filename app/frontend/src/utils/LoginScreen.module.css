@@ -59,3 +59,61 @@
 	outline-offset: 2px;
 }
 
+.OAuthButtons {
+	margin-top: 1rem;
+	width: 18rem;
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+}
+
+.GoogleWrapper {
+	width: 100%;
+	display: flex;
+	justify-content: center;
+}
+
+.GoogleWrapper > div {
+	width: 100%;
+}
+
+.GoogleWrapper :global(div[role="button"]) {
+	width: 100% !important;
+	border-radius: 9999px !important;
+	overflow: hidden;
+}
+
+.GoogleWrapper :global(iframe) {
+	width: 100% !important;
+}
+
+.FtButton {
+	width: 100%;
+}
+
+.ForgotPasswordRow {
+	margin-top: 0.5rem;
+	width: 18rem;
+	display: flex;
+	justify-content: flex-end;
+}
+
+.ForgotPasswordBtn {
+	border: 0;
+	background: transparent;
+	color: rgba(255, 255, 255, 0.8);
+	font-size: 0.9rem;
+	text-decoration: underline;
+	text-underline-offset: 3px;
+	cursor: pointer;
+	padding: 0;
+}
+
+.ForgotPasswordBtn:hover {
+	color: rgb(234, 179, 8);
+}
+
+.ForgotPasswordBtn:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}

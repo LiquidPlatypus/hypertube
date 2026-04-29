@@ -347,6 +347,7 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 							size="large"
 							shape="pill"
 							onClick={handleIntra42Login}
+							className={styles.FtButton}
 						/>
 					</div>
 				</>
