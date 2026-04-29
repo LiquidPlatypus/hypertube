@@ -315,7 +315,7 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 						/>
 
 						<Button
-							text={isLoading ? t("common.loading", { defaultValue: "..." }) : t("login.submit")}
+							text={isLoading ? t("loading", { defaultValue: "..." }) : t("login.submit")}
 							size="large"
 							shape="pill"
 							type="submit"
@@ -415,7 +415,7 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 					/>
 
 					<Button
-						text={isLoading ? t("common.loading", { defaultValue: "..." }) : t("register.submit")}
+						text={isLoading ? t("loading", { defaultValue: "..." }) : t("register.submit")}
 						size="large"
 						shape="pill"
 						type="submit"
