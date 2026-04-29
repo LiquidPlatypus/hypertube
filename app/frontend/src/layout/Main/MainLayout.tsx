@@ -1,8 +1,8 @@
 import * as React from "react";
 
-import MainHeader from "../components/headers/MainHeader.tsx";
-import MainFooter from "../components/footers/MainFooter.tsx";
-import TVRemote from "../components/TVRemote.tsx";
+import MainHeader from "../../components/headers/Main/MainHeader.tsx";
+import MainFooter from "../../components/footers/Main/MainFooter.tsx";
+import TVRemote from "../../components/TVRemote.tsx";
 
 import styles from "./MainLayout.module.css";
 

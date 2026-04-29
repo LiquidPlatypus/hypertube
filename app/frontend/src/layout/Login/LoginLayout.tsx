@@ -1,7 +1,7 @@
 import * as React from "react";
 
-import LoginHeader from "../components/headers/LoginHeader.tsx"
-import LoginFooter from "../components/footers/LoginFooter.tsx"
+import LoginHeader from "../../components/headers/Login/LoginHeader.tsx"
+import LoginFooter from "../../components/footers/Login/LoginFooter.tsx"
 
 import styles from "./LoginLayout.module.css";
 
