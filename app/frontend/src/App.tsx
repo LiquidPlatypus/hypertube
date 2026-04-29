@@ -1,8 +1,8 @@
 import { Outlet, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 
-import MainLayout from "./layout/MainLayout.tsx";
-import LoginLayout from "./layout/LoginLayout.tsx";
+import MainLayout from "./layout/Main/MainLayout.tsx";
+import LoginLayout from "./layout/Login/LoginLayout.tsx";
 import {SearchProvider} from "./utils/searchContext.tsx";
 
 import { initLanguage, loadLanguage } from "./lang/i18n.tsx";
