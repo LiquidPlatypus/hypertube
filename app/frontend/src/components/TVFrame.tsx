@@ -34,21 +34,39 @@ export default function RetroTvFrame({
 	const [scale, setScale] = useState(0);
 
 	useLayoutEffect(() => {
-		const updateScale = () => {
-			if (!screenRef.current)
-				return;
-			const rect = screenRef.current.getBoundingClientRect();
+		const el = screenRef.current;
+		if (!el) return;
 
-			const baseWidth = 800;
-			const baseHeight = 600;
+		const baseWidth = 800;
+		const baseHeight = 600;
+		const minScale = 0.4;
+		const maxScale = 1.25;
 
-			const newScale = Math.min(rect.width / baseWidth, rect.height / baseHeight);
-			setScale(newScale);
+		const compute = () => {
+			const rect = el.getBoundingClientRect();
+			const raw = Math.min(rect.width / baseWidth, rect.height / baseHeight);
+			const next = Math.max(minScale, Math.min(maxScale, raw));
+			setScale(next);
 		};
 
-		updateScale();
-		window.addEventListener("resize", updateScale);
-		return () => window.removeEventListener("resize", updateScale);
+		// 1) calcul immédiat
+		compute();
+
+		// 2) recalcul après layout stable (utile en devtools / transitions)
+		requestAnimationFrame(() => requestAnimationFrame(compute));
+
+		// 3) ResizeObserver : recalcul dès que .TVScreen change de taille
+		const ro = new ResizeObserver(() => compute());
+		ro.observe(el);
+
+		// 4) optionnel: visualViewport (Firefox RDM / zoom)
+		const vv = window.visualViewport;
+		vv?.addEventListener("resize", compute);
+
+		return () => {
+			ro.disconnect();
+			vv?.removeEventListener("resize", compute);
+		};
 	}, []);
 
 	return (
