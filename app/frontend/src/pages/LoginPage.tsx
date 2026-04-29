@@ -1,6 +1,9 @@
 import { useNavigate } from "react-router-dom";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
+import LoginFrameHeader from "../components/headers/Main/LoginFrameHeader.tsx";
+import LoginFrameFooter from "../components/footers/Login/LoginFrameFooter.tsx";
+
 import RetroTvFrame from "../components/TVFrame";
 import LoginScreen from "../utils/LoginScreen";
 
@@ -36,9 +39,23 @@ export default function LoginPage() {
 		[]
 	);
 
+	const MOBILE_BREAKPOINT = 1000;
+	const [isMobileLayout, setIsMobileLayout] = useState(false);
+
+	useEffect(() => {
+		const mq = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT}px)`);
+		const onChange = () => setIsMobileLayout(mq.matches);
+
+		onChange();
+		mq.addEventListener?.("change", onChange);
+		return () => mq.removeEventListener?.("change", onChange);
+	}, []);
+
 	const [tvDims, setTvDims] = useState(TV_BASE);
 
 	useEffect(() => {
+		if (isMobileLayout) return;
+
 		const handleResize = () => {
 			const { innerWidth: w, innerHeight: h } = window;
 
@@ -69,9 +86,11 @@ export default function LoginPage() {
 		handleResize();
 		window.addEventListener("resize", handleResize);
 		return () => window.removeEventListener("resize", handleResize);
-	}, [TV_BASE]);
+	}, [TV_BASE, isMobileLayout]);
 
 	useLayoutEffect(() => {
+		if (isMobileLayout) return;
+
 		const wrapper = tvWrapperRef.current;
 		const screen = tvScreenRef.current;
 		if (!wrapper || !screen) return;
@@ -86,7 +105,7 @@ export default function LoginPage() {
 		const originYPercent = ((screenCenterY - wrapperRect.top) / wrapperRect.height) * 100;
 
 		wrapper.style.transformOrigin = `${originXPercent}% ${originYPercent}%`;
-	}, [tvDims, wrapperKey]);
+	}, [tvDims, wrapperKey,isMobileLayout]);
 
 	const triggerWhiteFlash = useCallback((durationMs = 520) => {
 		setFlashKey((k) => k + 1);
@@ -154,6 +173,46 @@ export default function LoginPage() {
 		.filter(Boolean)
 		.join(" ");
 
+	if (isMobileLayout) {
+		return (
+			<>
+				<div
+					className={styles.MobileLoginLayout}
+					style={{
+						"--header-height": "150px",
+						"--footer-height": "100px",
+					} as React.CSSProperties}
+				>
+					<header className={styles.MobileHeader}>
+						<LoginFrameHeader />
+					</header>
+
+					<main className={styles.MobileScrollArea}>
+						<div className={styles.MobileContent}>
+							<video
+								className={styles.MobileBackgroundVideo}
+								autoPlay
+								loop
+								muted
+								playsInline
+								preload="auto"
+							>
+								<source src="/videos/screen2.mp4" type="video/mp4" />
+							</video>
+							<LoginScreen onLoginSuccess={handleLoginSuccess} />
+						</div>
+					</main>
+
+					<footer className={styles.MobileFooter}>
+						<LoginFrameFooter />
+					</footer>
+				</div>
+
+				{showWhiteFlash && <div key={flashKey} className={styles.WhiteFlash} />}
+			</>
+		);
+	}
+
 	return (
 		<>
 			<div key={wrapperKey} ref={wrapperRef} className={wrapperClassName}>
@@ -166,7 +225,7 @@ export default function LoginPage() {
 				>
 					<RetroTvFrame
 						videoSrc="/videos/screen2.mp4"
-						tvImageSrc="/assets/TV.png"
+						tvImageSrc="/assets/TVCompressed.png"
 						tvWidth={tvDims.tvWidth}
 						tvHeight={tvDims.tvHeight}
 						screenX={tvDims.screenX}

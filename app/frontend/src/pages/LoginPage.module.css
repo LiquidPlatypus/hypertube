@@ -103,24 +103,6 @@
 
 /* ----- Responsive ----- */
 
-@media (max-width: 1000px) {
-	.TVWrapper {
-		width: 96vw;
-		margin-top: 0.5rem;
-		margin-bottom: 0.5rem;
-
-		max-height: calc(100vh - 1rem);
-	}
-
-	.zoomIn {
-		transform: scale(3.2);
-	}
-
-	.logout {
-		transform: scale(3.2);
-	}
-}
-
 @media (prefers-reduced-motion: reduce) {
 	.zoomIn,
 	.zoomOut {
@@ -131,4 +113,98 @@
 		animation: none;
 		opacity: 0;
 	}
+}
+
+/* MOBILE */
+/* Mobile layout (<=1000px) : header/footer fixes + contenu scrollable */
+.MobileLoginLayout {
+	position: relative;
+	display: flex;
+	height: 100vh;
+	flex-direction: column;
+	overflow: hidden;
+
+	/* même fond que LoginLayout */
+	background-image: url("/assets/backgrounds/fond.png");
+	background-position: center;
+	background-repeat: repeat;
+}
+
+/* Optionnel : vignettage/scanlines comme MainLayout */
+.MobileLoginLayout::before {
+	content: "";
+	position: fixed;
+	top: -0.6rem;
+	bottom: -0.9rem;
+	left: -2rem;
+	right: -2rem;
+
+	pointer-events: none;
+	z-index: 5;
+
+	box-shadow: inset 0 0 40px 60px rgba(0, 0, 0, 0.7);
+	border-radius: 50% / 10%;
+	background: repeating-linear-gradient(
+			to bottom,
+			rgba(255, 255, 255, 0.02) 0px,
+			rgba(255, 255, 255, 0.02) 2px,
+			transparent 2px,
+			transparent 4px
+	);
+}
+
+.MobileHeader,
+.MobileFooter {
+	position: fixed;
+	left: 0;
+	width: 100%;
+	z-index: 10;
+
+	/* comme MainLayout : ne pas “bloquer” les clics sur le contenu */
+	pointer-events: none;
+}
+
+.MobileHeader {
+	top: 0;
+	height: var(--header-height);
+}
+
+.MobileFooter {
+	bottom: 0;
+	height: var(--footer-height);
+}
+
+.MobileScrollArea {
+	z-index: 1;
+	flex: 1;
+	overflow-y: auto;
+	scroll-behavior: smooth;
+	position: relative;
+
+	padding-top: var(--header-height);
+	padding-bottom: var(--footer-height);
+
+	display: flex;
+	align-items: center;       /* centre verticalement le form si tu veux */
+	justify-content: center;
+}
+
+.MobileContent {
+	width: 100%;
+	max-width: 520px;
+	padding: 16px;
+}
+
+.MobileBackgroundVideo {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+
+	z-index: -1;
+	pointer-events: none;
+	opacity: 1;
+	filter: brightness(0.85) saturate(1.1);
 }
