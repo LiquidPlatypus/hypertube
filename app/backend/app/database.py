@@ -108,7 +108,8 @@ class Storage:
 			target.email = email
 			target.firstname = firstname
 			target.lastname = lastname
-			target.commit()
+
+		self.session.commit()
 
 	def get_user_password(self, user_id: int):
 		"""
@@ -146,14 +147,18 @@ class Storage:
 
 	def add_profile_pic(self, user_id: int, image_url: str):
 		"""
-		DESK:
-		Set in db new image profile and replace old by new
-		"""
-		profilepic = ProfilePic(
-			user_id=user_id,
-			url=image_url
-		)
-		self.session.add(profilepic)
+        DESK:
+        Set in db new image profile and replace old by new
+        """
+		img: ProfilePic = self.session.query(ProfilePic).filter(ProfilePic.user_id == user_id).first()
+		if not img:
+			profilepic = ProfilePic(
+				user_id=user_id,
+				url=image_url
+			)
+			self.session.add(profilepic)
+		else:
+			img.url = image_url
 		self.session.commit()
 
 	def get_profile_pic(self, user_id: int):
