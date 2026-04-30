@@ -95,16 +95,29 @@ export default function FiltersBar() {
 					<input
 						type="number"
 						min={0}
-						max={10}
-						step={0.5}
-						placeholder="ex: 7.5"
+						max={100}
+						step={1}
+						inputMode="numeric"
+						placeholder="ex: 75"
 						value={filters.minRating ?? ""}
-						onChange={(e) =>
-							setFilters((prev) => ({
-								...prev,
-								minRating: e.target.value === "" ? null : Number(e.target.value),
-							}))
-						}
+						onChange={(e) => {
+							const raw = e.currentTarget.value;
+
+							const normalized = raw.replace(",", ".");
+
+							if (normalized.trim() === "") {
+								setFilters((prev) => ({ ...prev, minRating: null }));
+								return;
+							}
+
+							const n = Number(normalized);
+
+							if (Number.isNaN(n)) return;
+
+							const clamped = Math.max(0, Math.min(100, n));
+
+							setFilters((prev) => ({ ...prev, minRating: clamped }));
+						}}
 					/>
 				</label>
 

@@ -72,7 +72,10 @@ export default function HomePage() {
 				if (query) params.set("query", query);
 
 				if (filters.genreId != null) params.set("genre", String(filters.genreId));
-				if (filters.minRating != null) params.set("min_rating", String(filters.minRating));
+				if (filters.minRating != null) {
+					const minRatingTmdb = filters.minRating / 10; // 65 -> 6.5
+					params.set("min_rating", String(minRatingTmdb));
+				}
 				if (filters.yearFrom != null) params.set("year_from", String(filters.yearFrom));
 				if (filters.yearTo != null) params.set("year_to", String(filters.yearTo));
 				if (filters.sort) params.set("sort", filters.sort);
@@ -100,7 +103,7 @@ export default function HomePage() {
 					setHasMore(true);
 				}
 			} catch (err) {
-				setError("Erreur lors de la recherche de films. Le backend est-il lancé ?");
+				setError("Erreur lors de la recherche de films.");
 				console.error("Error fetching thumbnails:", err);
 			} finally {
 				setLoading(false);
