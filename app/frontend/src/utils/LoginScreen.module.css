@@ -91,29 +91,28 @@
 	width: 100%;
 }
 
-.ForgotPasswordRow {
-	margin-top: 0.5rem;
-	width: 18rem;
-	display: flex;
-	justify-content: flex-end;
-}
+.ForgotPasswordLink {
+	align-self: center;
+	margin-top: -0.25rem;
+	margin-bottom: 0.25rem;
 
-.ForgotPasswordBtn {
 	border: 0;
 	background: transparent;
-	color: rgba(255, 255, 255, 0.8);
+	padding: 0;
+
 	font-size: 0.9rem;
+	color: rgba(255, 255, 255, 0.75);
 	text-decoration: underline;
 	text-underline-offset: 3px;
+
 	cursor: pointer;
-	padding: 0;
 }
 
-.ForgotPasswordBtn:hover {
-	color: rgb(234, 179, 8);
+.ForgotPasswordLink:hover {
+	color: rgb(234,179,8);
 }
 
-.ForgotPasswordBtn:disabled {
+.ForgotPasswordLink:disabled {
 	opacity: 0.5;
 	cursor: not-allowed;
 }

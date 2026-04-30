@@ -1,4 +1,5 @@
 import React, {useMemo, useState} from "react";
+import { useNavigate } from "react-router-dom";
 
 import { GoogleOAuthProvider, GoogleLogin, type GoogleCredentialResponse } from "@react-oauth/google";
 
@@ -36,6 +37,7 @@ const FT_AUTHORIZE_URL = "https://api.intra.42.fr/oauth/authorize";
 
 export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 	const { t } = useTranslation();
+	const navigate = useNavigate();
 
 	const [isLogin, setIsLogin] = useState(true);
 	const [message, setMessage] = useState<string>("");
@@ -63,8 +65,19 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 
 	// Small helpers
 	const setErrorMessage = (err: unknown, fallback: string) => {
-		if (err instanceof Error) setMessage(err.message);
-		else setMessage(fallback);
+		if (!(err instanceof Error)) {
+			setMessage(fallback);
+			return;
+		}
+
+		const msg = (err.message ?? "").trim();
+
+		if (!msg || msg === "Error" || msg === "Error:" || msg === "Failed to fetch") {
+			setMessage(fallback);
+			return;
+		}
+
+		setMessage(msg);
 	};
 
 	// post-auth uniforme
@@ -117,7 +130,7 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 		setIsLoading(true);
 
 		if (registerData.password !== registerData.confirmPassword) {
-			setMessage(t("register.error.passswordMismatch"));
+			setMessage(t("register.error.passwordMismatch"));
 			setIsLoading(false);
 			return;
 		}
@@ -262,7 +275,12 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 			</h2>
 
 			{message && (
-				<p className={`message ${message.includes(t("register.success")) ? "message-success" : "message-error"}`}>
+				<p
+					className={[
+						styles.Message,
+						message.includes(t("register.success")) ? styles.MessageSuccess : styles.MessageError,
+					].join(" ")}
+				>
 					{message}
 				</p>
 			)}
@@ -314,6 +332,17 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 							autoComplete="current-password"
 						/>
 
+						<button
+							type="button"
+							className={styles.ForgotPasswordLink}
+							onClick={() => {
+
+							}}
+							disabled={isLoading}
+						>
+							{t("login.forgotPassword")}
+						</button>
+
 						<Button
 							text={isLoading ? t("loading", { defaultValue: "..." }) : t("login.submit")}
 							size="large"
@@ -337,7 +366,7 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 								</GoogleOAuthProvider>
 							</div>
 						) : (
-							<p className="message message-error">
+							<p className={[styles.Message, styles.MessageError].join(" ")}>
 								{t("login.error.googleConfigMissing")}
 							</p>
 						)}

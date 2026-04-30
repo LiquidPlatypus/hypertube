@@ -16,6 +16,7 @@
 	"login.error.ftConfigMissing": "Config 42 manquante (VITE_FT_CLIENT_ID / VITE_FT_REDIRECT_URI",
 	"login.error.popupBlocked": "Popup bloquée par le navigateur (désactive le bloqueur)",
 	"login.error.oauthState": "État OAuth invalide, réessaie.",
+	"login.forgotPassword": "Mot de passe oublié?",
 
 	"register.title": "Inscription",
 	"register.button": "Inscription",

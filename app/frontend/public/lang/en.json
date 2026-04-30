@@ -16,6 +16,7 @@
 	"login.error.googleConfigMissing": "Google config missing (VITE_GOOGLE_CLIENT_ID).",
 	"login.error.popupBlocked": "Popup blocked by the browser (deactivate blocker)",
 	"login.error.oauthState": "OAuth state invalid, try again.",
+	"login.forgotPassword": "Forgotten password?",
 
 	"register.title": "Register",
 	"register.button": "Register",
