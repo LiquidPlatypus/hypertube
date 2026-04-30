@@ -1,5 +1,4 @@
 import React, {useMemo, useState} from "react";
-import { useNavigate } from "react-router-dom";
 
 import { GoogleOAuthProvider, GoogleLogin, type GoogleCredentialResponse } from "@react-oauth/google";
 
@@ -37,7 +36,6 @@ const FT_AUTHORIZE_URL = "https://api.intra.42.fr/oauth/authorize";
 
 export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 	const { t } = useTranslation();
-	const navigate = useNavigate();
 
 	const [isLogin, setIsLogin] = useState(true);
 	const [message, setMessage] = useState<string>("");
