@@ -1,12 +1,16 @@
 import { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import Input from "./Input.tsx";
 import { useSearch } from "../../utils/searchContext.tsx";
 
 import styles from "./SearchBar.module.css";
-import {useLocation, useNavigate} from "react-router-dom";
 
-export default function SearchBar() {
+type SearchBarProps = {
+	onSubmit?: () => void;
+};
+
+export default function SearchBar({ onSubmit }: SearchBarProps) {
 	const { searchTerm, setSearchTerm } = useSearch();
 	const [draft, setDraft] = useState(searchTerm);
 
@@ -31,6 +35,7 @@ export default function SearchBar() {
 			onSubmit={(e) => {
 				e.preventDefault();
 				submitSearch();
+				onSubmit?.();
 			}}
 		>
 			<Input
@@ -47,5 +52,4 @@ export default function SearchBar() {
 			/>
 		</form>
 	);
-
 }

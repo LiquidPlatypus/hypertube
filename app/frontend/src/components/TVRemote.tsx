@@ -1,11 +1,11 @@
-import {useNavigate} from "react-router-dom";
-import {useEffect, useState} from "react";
+import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
 import Button from "./ui/Button.tsx";
 import SearchBar from "./ui/SearchBar.tsx";
 import { useSearch } from "../utils/searchContext.tsx";
-import {useTranslation} from "../hooks/useTranslation.tsx";
+import { useTranslation } from "../hooks/useTranslation.tsx";
 
 import styles from "./TVRemote.module.css";
 
@@ -16,53 +16,54 @@ interface TVRemoteProps {
 }
 
 export default function TVRemote({
-	isOpen,
-	onToggleRemote,
-	onToggleFx,
-}: TVRemoteProps) {
+	                                 isOpen,
+	                                 onToggleRemote,
+	                                 onToggleFx,
+                                 }: TVRemoteProps) {
 	const navigate = useNavigate();
 	const [showSearch, setShowSearch] = useState(false);
 	const { currentLang, changeLang } = useTranslation();
 	const { setSearchTerm } = useSearch();
 
 	const goHome = () => {
+		setSearchTerm("");
+		closeSearchModal();
 		navigate("/");
-	}
+	};
 
-	const showSearchBar = () => {
+	const toggleSearchBar = () => {
 		setShowSearch((prev) => !prev);
 	};
 
-	const closeSearch = () => {
+	const closeSearchModal = () => {
 		setShowSearch(false);
-		setSearchTerm("");
-	}
+	};
 
 	const goToProfile = () => {
 		navigate("/profile");
-	}
+	};
 
 	const handleChangeLang = async () => {
 		const newLang = currentLang === "en" ? "fr" : "en";
 		await changeLang(newLang);
-	}
+	};
 
 	const handleLogout = () => {
 		try {
 			localStorage.removeItem("access_token");
 			localStorage.setItem("just_logged_out", "true");
-			navigate('/auth/login');
+			navigate("/auth/login");
 		} catch (error) {
 			console.error("Logout failed:", error);
 		}
-	}
+	};
 
 	useEffect(() => {
-		if (!showSearch) return ;
+		if (!showSearch) return;
 
 		const onKeyDown = (e: KeyboardEvent) => {
-			if (e.key === "Escape") closeSearch();
-		}
+			if (e.key === "Escape") closeSearchModal();
+		};
 
 		window.addEventListener("keydown", onKeyDown);
 		return () => window.removeEventListener("keydown", onKeyDown);
@@ -89,6 +90,7 @@ export default function TVRemote({
 				variant="remote"
 				onClick={goHome}
 			/>
+
 			<Button
 				text=""
 				size="small"
@@ -96,8 +98,9 @@ export default function TVRemote({
 				icon="/assets/Icons/SearchW.svg"
 				className={styles.SearchBtn}
 				variant="remote"
-				onClick={showSearchBar}
+				onClick={toggleSearchBar}
 			/>
+
 			<Button
 				text=""
 				size="small"
@@ -107,6 +110,7 @@ export default function TVRemote({
 				variant="remote"
 				onClick={goToProfile}
 			/>
+
 			<Button
 				text="EN/FR"
 				size="small"
@@ -115,6 +119,7 @@ export default function TVRemote({
 				variant="remote"
 				onClick={handleChangeLang}
 			/>
+
 			<Button
 				text="FX"
 				size="small"
@@ -124,6 +129,7 @@ export default function TVRemote({
 				onClick={onToggleFx}
 				aria-pressed="false"
 			/>
+
 			<Button
 				text=""
 				size="small"
@@ -136,17 +142,14 @@ export default function TVRemote({
 
 			{showSearch &&
 				createPortal(
-					<div
-						className={styles.SearchContainer}
-						onClick={closeSearch}
-					>
+					<div className={styles.SearchContainer} onClick={closeSearchModal}>
 						<div onClick={(e) => e.stopPropagation()}>
-							<SearchBar />
+							{/* IMPORTANT: nécessite que SearchBar accepte la prop onSubmit */}
+							<SearchBar onSubmit={closeSearchModal} />
 						</div>
 					</div>,
 					document.body
-				)
-			}
+				)}
 		</div>
 	);
 }
