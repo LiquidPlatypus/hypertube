@@ -25,7 +25,7 @@ export default function Thumbnail({
 		<div className={styles.Thumbnail} onClick={onClick} >
 			<div className={styles.CoverWrapper}>
 				<img
-					src={thumbnailSrc}
+					src={thumbnailSrc || "/assets/image-placeholder-vertical.jpg"}
 					alt={thumbnailAlt}
 					loading="lazy"
 					className={styles.Image}
