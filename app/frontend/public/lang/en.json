@@ -62,7 +62,7 @@
 	"filters.sort.year.asc": "Year ↑",
 	"filters.sort.title": "Title A→Z",
 	"filters.genre": "Genre",
-	"filters.minRating": "Min. Rating",
+	"filters.minRating": "Min. Rating (%)",
 	"filters.year.from": "Year (from)",
 	"filters.year.to": "Year (to)",
 	"filters.sort": "Sort",

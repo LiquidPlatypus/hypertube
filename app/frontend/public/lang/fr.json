@@ -62,7 +62,7 @@
 	"filters.sort.year.asc": "Année ↑",
 	"filters.sort.title": "Titre A→Z",
 	"filters.genre": "Genre",
-	"filters.minRating": "Note min",
+	"filters.minRating": "Note min (%)",
 	"filters.year.from": "Année (de)",
 	"filters.year.to": "Année (à)",
 	"filters.sort": "Trier",
