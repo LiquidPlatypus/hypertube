@@ -38,6 +38,7 @@ cleandb: #Removes database data only
 	@read -p "Confirm (y/n) : " confirm && [ "$$confirm" = "y" ] || (echo "$(YEL)Aborted.$(STOP)" && exit 1)
 	@echo "$(CYA)=== Cleaning database data...$(STOP)"
 	@sudo rm -rf mariadb/data
+	@sudo rm -rf  app/backend/app/downloads/*
 
 fclean: #Removes everything
 	@echo "$(RED)!!!=== Do you really want to remove all data ?\n$(YEL) /!\ This will delete all persisted data (keys, users, scores...) /!\ $(STOP)"
