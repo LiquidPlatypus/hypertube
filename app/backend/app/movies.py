@@ -4,14 +4,12 @@ import requests
 from fastapi import Request
 from auth import tmdb
 import os
-import pprint
 import libtorrent
 import threading
 import time
 from database import get_db, init_db, SessionLocal
 from pydantic import BaseModel
 from typing import Optional, List
-from typing import List
 import shutil
 from sqlalchemy.orm import Session
 from models_db import Movie
@@ -28,6 +26,7 @@ torrent_search_api_url = os.getenv("TORRENT_SEARCH_API_URL")
 #: dictionnaire pour stocker les handles de téléchargement en cours
 #: ex: {movie_id: torrent_handle}
 active_downloads = {}
+_downloads_lock = threading.Lock()
 
 #: data transfer object
 class MovieThumbnail(BaseModel):
@@ -75,7 +74,7 @@ def get_lt_session():
 @router.get("/api/thumbnails", response_model=List[MovieThumbnail])
 def get_thumbnails(query: Optional[str] = Query(None), page: int = Query(1, ge=1)):
     
-    thumbnails_data = list[MovieThumbnail]()    
+    thumbnails_data: List[MovieThumbnail] = []
 
     if query and len(query) >= 1:
         #: recherche de films correspondant a la query
@@ -135,7 +134,7 @@ def get_movie_details(movie_id: int, session = Depends(get_db)):
        data.cast.append(new_cast_member)
     
     #TODO movie details: check si le film est en bdd pour recup le mp4, sinon, le dl
-    stored_movie = session.query(Movie).filter(Movie.tmdb_id == tmdb_id).first()
+    stored_movie = session.query(Movie).filter(Movie.tmdb_id == movie_id).first()
     if stored_movie:
         data.mp4_path = stored_movie.mp4_path
     return data
@@ -177,7 +176,7 @@ def search_torrent(request: TorrentRequest):
                 print(" ⚪ Aucun résultat")
             else:
                 print(f" ❌ Erreur HTTP: {response.status_code}")
-        except:
+        except Exception:
             continue
 
     return { "status": "not found" }
@@ -188,8 +187,7 @@ def search_torrent(request: TorrentRequest):
 async def download_movie(request: Request, background_tasks: BackgroundTasks):
     body = await request.json()
     movie_id = body.get("id")
-    # magnet = body.get("magnet")
-    magnet = "magnet:?xt=urn:btih:83b2c0012bd4b764af8752d5f2d4ed270766932c&dn=test_torrent.mp4&xl=106862658&tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337%2Fannounce&tr=udp%3A%2F%2Fopen.stealth.si%3A80%2Fannounce&tr=udp%3A%2F%2Fevan.im%3A6969%2Fannounce&tr=https%3A%2F%2Ftracker.pmman.tech%3A443%2Fannounce&tr=udp%3A%2F%2Ftracker.torrent.eu.org%3A451%2Fannounce&tr=udp%3A%2F%2Ftracker.plx.im%3A6969%2Fannounce"
+    magnet = body.get("magnet")
 
     if not movie_id or not magnet:
         raise HTTPException(status_code=400, detail="ID ou Magnet manquant")
@@ -224,7 +222,8 @@ def start_sequential_download(magnet: str, movie_id: int):
     handle = libtorrent.add_magnet_uri(ses, magnet, params)
     
     print(f"DEBUG: Magnet ajouté au handle. En attente de peers...")
-    active_downloads[movie_id] = {"session": ses, "handle": handle}
+    with _downloads_lock:
+        active_downloads[movie_id] = {"session": ses, "handle": handle}
     return handle
 
 #! TORRENT DOWNLOAD STATUS endpoint
@@ -248,7 +247,7 @@ def get_download_status(movie_id: int, session = Depends(get_db)):
     print(f"Vitesse: {s.download_rate / 1000:.1f} kB/s")
     print(f"Peers connectés: {s.num_peers}")
 
-    pieces = handle.status().pieces
+    pieces = s.pieces
     first_pieces_ready = all(pieces[i] for i in range(min(20, len(pieces))))  # vérifie si les 20 premiers morceaux sont prêts
     
     #TODO download status: check si le téléchargement est terminé pour ajouter le film en bdd avec son chemin mp4
@@ -256,7 +255,8 @@ def get_download_status(movie_id: int, session = Depends(get_db)):
         print(f"✅ Téléchargement terminé pour movie_id: {movie_id}")
         session.add(Movie(tmdb_id=movie_id, title=f"Movie {movie_id}", release_date="2024-01-01", mp4_path=f"./downloads/{movie_id}/movie.mp4"))
         session.commit()
-        del active_downloads[movie_id]  # nettoyage du téléchargement actif
+        with _downloads_lock:
+            del active_downloads[movie_id]
 
     return {
         "status": state_str,
@@ -282,13 +282,6 @@ async def stream_movie(movie_id: int, request: Request):
 
     if not video_file:
         raise HTTPException(status_code=404, detail="Fichier introuvable")
-
-    total_size = None
-    download_data = active_downloads.get(movie_id)
-    if download_data:
-        info = download_data["handle"].torrent_file()
-        if info:
-            total_size = info.total_size()
 
     return await _ffmpeg_stream(video_file)
 
@@ -324,18 +317,16 @@ async def _ffmpeg_stream(video_file: str):
         bufsize=0
     )
 
-    await asyncio.sleep(2)
-    if process.poll() is not None:
-        stderr_output = process.stderr.read().decode()
-        print(f"FFMPEG ERROR: {stderr_output}")
-        raise HTTPException(status_code=500, detail="Erreur lors du traitement vidéo")
-
-    # Thread séparé pour logger stderr ffmpeg → indispensable pour débugger
+    # Thread séparé pour logger stderr ffmpeg → doit démarrer avant le sleep pour ne pas bloquer le pipe
     def log_stderr():
         for line in process.stderr:
             print(f"[FFMPEG STDERR] {line.decode().strip()}")
 
     threading.Thread(target=log_stderr, daemon=True).start()
+
+    await asyncio.sleep(2)
+    if process.poll() is not None:
+        raise HTTPException(status_code=500, detail="Erreur lors du traitement vidéo")
 
     async def iterfile():
         loop = asyncio.get_event_loop()
