@@ -1,0 +1,118 @@
+.LoginScreen {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	border-radius: 0.5rem;
+	padding: 1.5rem;
+	color: rgb(255,255,255);
+}
+
+.LoginRegister {
+	margin-bottom: 1rem;
+	font-size: 1.5rem;
+	line-height: 2rem;
+	font-weight: 700;
+}
+
+.LoginRegisterBtn {
+	margin-bottom: 1rem;
+	display: flex;
+	gap: 0.75rem;
+}
+
+.Message {
+	margin-bottom: 1rem;
+	text-align: center;
+}
+
+.MessageSuccess {
+	color: #4ade80;
+}
+
+.MessageError {
+	color: #f87171;
+}
+
+.LoginForm {
+	display: flex;
+	width: 18rem;
+	flex-direction: column;
+	gap: 0.75rem;
+}
+
+.RegisterForm {
+	display: flex;
+	width: 18rem;
+	flex-direction: column;
+	gap: 0.75rem;
+}
+
+.Inputs {
+	border-radius: 0.25rem;
+	border-width: 2px;
+	border-color: rgb(234,179,8);
+	background-color: rgb(0,0,0);
+	padding: 0.5rem;
+	color: rgb(255,255,255);
+	outline: 2px solid transparent;
+	outline-offset: 2px;
+}
+
+.OAuthButtons {
+	margin-top: 1rem;
+	width: 18rem;
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+}
+
+.GoogleWrapper {
+	width: 100%;
+	display: flex;
+	justify-content: center;
+}
+
+.GoogleWrapper > div {
+	width: 100%;
+}
+
+.GoogleWrapper :global(div[role="button"]) {
+	width: 100% !important;
+	border-radius: 9999px !important;
+	overflow: hidden;
+}
+
+.GoogleWrapper :global(iframe) {
+	width: 100% !important;
+}
+
+.FtButton {
+	width: 100%;
+}
+
+.ForgotPasswordLink {
+	align-self: center;
+	margin-top: -0.25rem;
+	margin-bottom: 0.25rem;
+
+	border: 0;
+	background: transparent;
+	padding: 0;
+
+	font-size: 0.9rem;
+	color: rgba(255, 255, 255, 0.75);
+	text-decoration: underline;
+	text-underline-offset: 3px;
+
+	cursor: pointer;
+}
+
+.ForgotPasswordLink:hover {
+	color: rgb(234,179,8);
+}
+
+.ForgotPasswordLink:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}

@@ -1,309 +1,191 @@
-import React, { useState, useEffect } from "react";
+import * as React from "react";
 import { useNavigate } from "react-router-dom";
+import { useEffect, useState, useCallback } from "react";
+import { useSearch } from "../utils/searchContext.tsx";
+import { useFilters } from "../utils/filterContext.tsx";
 
-export interface User {
-	"user": {
-		"id": number,
-		"username": string,
-		"email": string,
-		"firstname": string,
-		"lastname": string,
-	}
-}
+import { useTranslation } from "../hooks/useTranslation.tsx";
+import { getCurrentLang } from "../lang/i18n.tsx";
 
-function ft_atoc(data: any) {
-	const final_string: string = '[' + data.author + ']:: ' + data.content + '//' + data.date;
-	return final_string;
+import Thumbnail from "../components/ui/Thumbnail.tsx";
+import FiltersBar from "../components/ui/FiltersBar.tsx";
+
+import styles from "./HomePage.module.css";
+
+interface Movie {
+	id: number;
+	title: string;
+	poster_path: string;
+	release_date: string;
+	score: number;
 }
 
 export default function HomePage() {
-	const [user_info, setUserInfo] = useState("");
-	const [username, setUsername] = useState("");
-	const [firstname, setFirstname] = useState("");
-	const [lastname, setLastname] = useState("");
-	const [email, setEmail] = useState("");
-	const [file, setFile] = useState<File | null>(null);
-	const [profilePic, setProfilePic] = useState<string | null>(null);
 	const navigate = useNavigate();
-	const [comment, setComment] = useState("");
-	const [comments, setComments] = useState<string[]>([]);
 
-	const testGetUserInfo = async (e: React.MouseEvent<HTMLButtonElement>) => {
-		e.preventDefault();
-		try {
-			const token = localStorage.getItem("access_token");
-			const response = await fetch("/api/me", {
-				method: "GET",
-				headers: {
-					Authorization: `Bearer ${token}`,
-				},
-			});
-			if (!response.ok) {
-				throw new Error("Not authorized");
-			}
-			const data: User = await response.json();
-			setUserInfo(`${data.user.email}//${data.user.firstname}//${data.user.lastname}//${data.user.username}`);
-		} catch (error) {
-			setUserInfo("Error")
-		}
-	};
+	const { searchTerm } = useSearch();
+	const { filters } = useFilters();
 
-	const testModifyProfile = async (e: React.MouseEvent<HTMLFormElement>) => {
-		e.preventDefault();
-		try {
-			const token = localStorage.getItem("access_token");
-			const response = await fetch("/api/modify-profile", {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-					Authorization: `Bearer ${token}`,
-				},
-				body: JSON.stringify({ username, email, firstname, lastname }),
-			});
-			if (!response.ok) {
-				throw new Error("Not authorized");
-			}
-			const data: {returnValue: Boolean} = await response.json();
-			console.log(data.returnValue);
-		} catch (error) {
-			console.error("Error in modify form");
-		}
-	};
+	const resettingRef = React.useRef(false);
+	const [results, setResults] = useState<Movie[]>([]);
+	const [hasMore, setHasMore] = useState(true);
+	const [page, setPage] = useState(1);
+	const [loading, setLoading] = useState(false);
+	const [showLoader, setShowLoader] = useState(false);
+	const [error, setError] = useState<string | null>(null);
+	const observer = React.useRef<IntersectionObserver | null>(null);
 
-	const testMessage = async (e: React.MouseEvent<HTMLButtonElement>) => {
-		e.preventDefault();
-		try {
-			const response = await fetch("/api/hello", {
-				method: "GET",
-				headers: {
-					"Content-Type": "application/json",
-				},
-			});
-			if (!response.ok) {
-				throw new Error("Server error");
-			}
-			const data: {message: string} = await response.json();
-			console.log(data.message);
-		} catch (error) {
-			console.error("Error server");
-		}
-	};
-
-	const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		if (e.target.files)
-			setFile(e.target.files[0]);
-	};
-
-	const handleProfilePic = async (e: React.FormEvent<HTMLFormElement>) => {
-		e.preventDefault();
-		if (!file) return;
-		const formData = new FormData();
-		formData.append("file", file);
-		const token = localStorage.getItem("access_token");
-
-		try {
-			const response = await fetch("/api/upload-picture", {
-				method: "POST",
-				headers: {
-					Authorization: `Bearer ${token}`,
-				},
-				body: formData,
-			});
-			if (!response.ok)
-				throw new Error("Server error");
-			const data: {returnValue: boolean} = await response.json();
-			if (data.returnValue === true)
-				setUserInfo("Profile Picture Uploaded !")
-		} catch (error) {
-			console.error(error);
-		}
-	};
-
-	const getProfilePicture = async (e: React.MouseEvent<HTMLButtonElement>) => {
-		e.preventDefault();
-		const token = localStorage.getItem("access_token");
-
-		try {
-			const response = await fetch("/api/me/profile-pic", {
-				headers: { Authorization: `Bearer ${token}` },
-			});
-			if (!response.ok)
-				throw new Error("Server Error");
-			if (response.headers.get("Content-Type")?.includes("application/json")) {
-				const data = await response.json();
-				console.log(data);
-				setProfilePic(data);
-			} else {
-				const blob = await response.blob();
-				if (blob.type === "application/json") {
-					setUserInfo("Have not profile pic");
-					return;
-				}
-				const imageURL = URL.createObjectURL(blob);
-				setProfilePic(imageURL);
-			}
-		} catch (error) {
-			console.error(error);
-		}
-	};
-
-	const logout = async (e: React.MouseEvent<HTMLButtonElement>) => {
-		e.preventDefault();
-		try {
-			localStorage.removeItem("access_token");
-			navigate('/auth/login');
-		} catch (error) {
-			console.error("Error server");
-		}
-	};
-
-	
-	const postComment = async (e: React.FormEvent<HTMLFormElement>) => {
-		e.preventDefault();
-		const token = localStorage.getItem("access_token");
-		try {
-			const content = comment;
-			const response = await fetch("/api/comments", {
-				method: "POST",
-				headers: {
-					Authorization: `Bearer ${token}`,
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({ content }),
-			});
-			if (!response.ok)
-				throw new Error("Server Error");
-			const data = await response.json();
-			console.log(data.comment);
-			setComments(prevState => {
-				if (prevState.includes(data.comment.content)) {
-					const clone = [...prevState];
-					clone.splice(prevState.indexOf(data.comment.content), 1)
-					console.log(comments);
-					return clone;
-				} else {
-					return [...prevState, data.comment.content];
-				}
-			});
-		} catch (error) {
-			console.error(error);
-			setComment("Error server");
-		}
-	}
-
-	const getComments = async () => {
-		const token = localStorage.getItem("access_token");
-		try {
-			const response = await fetch("/api/comments", {
-				method: "GET",
-				headers: {
-					Authorization: `Bearer ${token}`,
-				},
-			});
-			if (!response.ok)
-				throw new Error("Server Error");
-			const data = await response.json();
-			for (const it in data.comments) {
-				setComments(prevState => {
-					const printableComment = ft_atoc(data.comments[it]);
-					// if (prevState.includes(data.comments[it].id)) { // verif si il existe deja dans la list
-					// 	const clone = [...prevState];
-					// 	clone.splice(prevState.indexOf(data.comments[it].content), 1)
-					// 	return clone;
-					// } else {
-					// 	return [...prevState, data.comments[it].content];
-					// }
-					return [...prevState, printableComment];
-				});
-			}
-		} catch (error) {
-			console.error(error);
-			setComment("Error server");
-		}
-	}
+	const { t } = useTranslation();
 
 	useEffect(() => {
-		getComments();
+		let cancelled = false;
+		let loaderTimer: number | undefined;
+
+		if (loading) {
+			setShowLoader(false);
+			loaderTimer = window.setTimeout(() => {
+				if (!cancelled) setShowLoader(true);
+			}, 250);
+		} else {
+			setShowLoader(false);
+		}
+
+		return () => {
+			cancelled = true;
+			if (loaderTimer) window.clearTimeout(loaderTimer);
+		};
+	}, [loading]);
+
+	const isFetchingRef = React.useRef(false);
+
+	const loadMovies = useCallback(
+		async (query: string, pageNum: number, isNewSearch: boolean) => {
+			if (isFetchingRef.current) return;
+			isFetchingRef.current = true;
+			setLoading(true);
+			setError("");
+
+			try {
+				const params = new URLSearchParams();
+				params.set("page", String(pageNum));
+
+				if (query) params.set("query", query);
+
+				if (filters.genreId != null) params.set("genre", String(filters.genreId));
+				if (filters.minRating != null) {
+					const minRatingTmdb = filters.minRating / 10; // 65 -> 6.5
+					params.set("min_rating", String(minRatingTmdb));
+				}
+				if (filters.yearFrom != null) params.set("year_from", String(filters.yearFrom));
+				if (filters.yearTo != null) params.set("year_to", String(filters.yearTo));
+				if (filters.sort) params.set("sort", filters.sort);
+				params.set("language", getCurrentLang() === "fr" ? "fr-Fr" : "en_US");
+
+				const url = `/api/thumbnails?${params.toString()}`;
+
+				const response = await fetch(url, {
+					method: "GET",
+					headers: { "Content-Type": "application/json" },
+				});
+
+				if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+				const data: Movie[] = await response.json();
+				if (pageNum === 1) resettingRef.current = false;
+
+				if (data.length === 0) {
+					setHasMore(false);
+				} else {
+					setResults((prev) => {
+						const merged = isNewSearch ? data : [...prev, ...data];
+						return Array.from(new Map(merged.map((m) => [m.id, m])).values());
+					});
+					setHasMore(true);
+				}
+			} catch (err) {
+				setError("Erreur lors de la recherche de films.");
+				console.error("Error fetching thumbnails:", err);
+			} finally {
+				setLoading(false);
+				isFetchingRef.current = false;
+			}
+		},
+		[filters]
+	);
+
+	const observerReference = useCallback(
+		(node: HTMLLIElement | null) => {
+			if (!node) return;
+
+			observer.current?.disconnect();
+
+			observer.current = new IntersectionObserver(
+				(entries) => {
+					const first = entries[0];
+					if (first.isIntersecting && hasMore && !isFetchingRef.current && !resettingRef.current) {
+						setPage((p) => p + 1);
+					}
+				},
+				{ rootMargin: "200px 0px", threshold: 0 }
+			);
+
+			observer.current.observe(node);
+		},
+		[hasMore]
+	);
+
+	const handleThumbnailClick = (movieId: number) => {
+		navigate(`/movie/${movieId}`);
+	};
+
+	useEffect(() => {
+		resettingRef.current = true;
+		setResults([]);
+		setPage(1);
+		setHasMore(true);
+	}, [searchTerm, filters]);
+
+	useEffect(() => {
+		loadMovies(searchTerm, page, page === 1);
+	}, [page, searchTerm, loadMovies]);
+
+	useEffect(() => {
+		return () => observer.current?.disconnect();
 	}, []);
 
 	return (
-		<div>
-			<button onClick={testMessage}>Hello</button>
+		<div className={styles.content}>
+			<div style={{ width: "100%" }}>
+				<FiltersBar />
 
-			{profilePic && <img src={profilePic} alt="Profile" />}
-			<button onClick={getProfilePicture}>Get IMG</button>
+				{loading && showLoader && <div>{t("loading")}</div>}
 
-			<h3>{user_info}</h3>
-			{/* <button onClick={testGetUserInfo}>Click me</button> */}
+				{error && (
+					<div>
+						{t("error")}
+						{error}
+					</div>
+				)}
 
-				<div>
-					<form onSubmit={handleProfilePic}>
-						<label htmlFor="profile-pic">Select image :</label>
-						<input type="file" accept="image/*" onChange={handleFileChange} required />
-						<button type="submit">Upload</button>
-					</form>
-				</div>
-				<form onSubmit={testModifyProfile}>
-					<label htmlFor="username">Enter username :</label>
-					<input
-						id="username"
-						type="text"
-						value={username}
-						onChange={(e) => setUsername(e.target.value)}
-						placeholder="Username"
-						required
-					/>
-					<label htmlFor="email">Enter email :</label>
-					<input
-						id="email"
-						type="text"
-						value={email}
-						onChange={(e) => setEmail(e.target.value)}
-						placeholder="Email"
-						required
-					/>
-					<label htmlFor="firstname">Enter firstname :</label>
-					<input
-						id="firstname"
-						type="text"
-						value={firstname}
-						onChange={(e) => setFirstname(e.target.value)}
-						placeholder="firstname"
-						required
-					/>
-					<label htmlFor="lastname">Enter lastname :</label>
-					<input
-						id="lastname"
-						type="text"
-						value={lastname}
-						onChange={(e) => setLastname(e.target.value)}
-						placeholder="lastname"
-						required
-					/>
-					<button type="submit">Send</button>
-				</form>
-				<button onClick={testGetUserInfo}>Click me</button>
-				<button onClick={logout}>Logout</button>
-				<div>
-					<h1>COMMENT PART:</h1>
-					<form onSubmit={postComment}>
-						<label htmlFor="comment">Enter comment :</label>
-						<input
-							id="comment"
-							type="text"
-							value={comment}
-							onChange={(e) => setComment(e.target.value)}
-							placeholder="your comment"
-							required
-						/>
-						<button type="submit">submit</button>
-					</form>
-					{/* <button onClick={getComments}>get comments</button> */}
-					{/* <p>{comments}</p> */}
-					{comments.map((comment, index) => (
-						<p key={index}>{comment}</p>
-					))}
-				</div>
+				<ul className={styles.thumbnails}>
+					{results.map((movie: Movie, index: number) => {
+						const isLast = index === results.length - 1;
+
+						return (
+							<li key={movie.id} ref={isLast ? observerReference : null}>
+								<Thumbnail
+									thumbnailSrc={movie.poster_path}
+									thumbnailAlt={movie.title}
+									title={movie.title}
+									year={movie.release_date}
+									rating={movie.score}
+									onClick={() => handleThumbnailClick(movie.id)}
+								/>
+							</li>
+						);
+					})}
+				</ul>
+			</div>
 		</div>
 	);
 }

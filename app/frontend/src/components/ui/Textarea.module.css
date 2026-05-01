@@ -1,0 +1,70 @@
+.wrapper {
+	position: relative;
+	width: 100%;
+	max-width: 100%;
+	min-width: 0;
+	box-sizing: border-box;
+}
+
+.textarea {
+	border: 2px solid #ccc;
+	padding: 0.5rem 1rem;
+	outline: none;
+	transition: border-color 0.2s, box-shadow 0.2s;
+	color: white;
+	background-color: #111;
+
+	width: 100%;
+	max-width: 100%;
+	min-width: 0;
+	box-sizing: border-box;
+	display: block;
+
+	resize: none;
+	overflow: hidden;
+	line-height: 1.4;
+}
+
+.textarea:focus {
+	border-color: #0af;
+	box-shadow: 0 0 5px #0af;
+}
+
+/* tailles */
+.small {
+	font-size: 0.8rem;
+	padding: 0.3rem 0.6rem;
+}
+
+.medium {
+	font-size: 1rem;
+	padding: 0.5rem 1rem;
+}
+
+.large {
+	font-size: 1.2rem;
+	padding: 0.7rem 1.2rem;
+}
+
+/* formes */
+.rounded {
+	border-radius: 0.5rem;
+}
+
+.square {
+	border-radius: 0;
+}
+
+.pill {
+	border-radius: 9999px;
+}
+
+/* variants */
+.default {
+
+}
+
+.comment {
+	width: 100%;
+}
+

@@ -1,0 +1,149 @@
+/* =============================== */
+/* CONTAINER CRT                   */
+/* =============================== */
+.Container {
+	font-family: "CommodoreRounded", serif;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	width: 100%;
+	height: 85%;
+	margin-top: 2rem;
+}
+
+/* Zone style OSD cathodique */
+.CRTBox {
+	display: flex;
+	align-items: flex-start;
+	gap: 3rem;
+
+	padding: 2rem 3rem;
+	text-align: left;
+	position: relative;
+}
+
+.LeftColumn {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 1rem;
+}
+
+.ProfilePic img {
+	width: 180px;
+	height: 180px;
+	object-fit: cover;
+}
+
+.PictureControls {
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+	align-items: center;
+}
+
+.SelectedFile {
+	margin: 0;
+	color: #3deaea;
+	text-shadow: 0 0 25px #3deaea;
+
+	max-width: 200px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+
+	font-size: 1rem;
+	opacity: 0.9;
+}
+
+.RightColumn {
+	display: flex;
+	flex-direction: column;
+}
+
+/* Encadré titre OSD */
+.TitleBar {
+	font-size: 2.2rem;
+	color: #3deaea;
+	text-shadow: 0 0 25px #3deaea;
+	margin-bottom: 2rem;
+}
+
+/* =============================== */
+/* TEXTES */
+/* =============================== */
+
+.InfosTab {
+	display: flex;
+	flex-direction: column;
+	gap: 1.2rem;
+	font-size: 1.9rem;
+}
+
+.row {
+	display: grid;
+	grid-template-columns: 20rem 1fr;
+	column-gap: 2rem;
+	align-items: center;
+}
+
+.key {
+	color: #3deaea;
+	text-shadow: 0 0 25px #3deaea;
+	overflow-wrap: anywhere;
+}
+
+.value {
+	color: #3deaea;
+	text-shadow: 0 0 25px #3deaea;
+}
+
+.EditInput {
+	font-size: 1.9rem;
+}
+
+.buttonGroup {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+}
+
+@media (max-width: 900px) {
+	.Container {
+		height: auto;
+		justify-content: flex-start;
+		align-items: stretch;
+		padding-bottom: 140px;
+	}
+
+	.CRTBox {
+		flex-direction: column;
+		align-items: center;
+		padding-bottom: 2rem;
+	}
+
+	.RightColumn {
+		width: 100%;
+	}
+
+	.InfosTab {
+		font-size: 1rem;
+		gap: 2rem;
+	}
+
+	.row {
+		grid-template-columns: 1fr;
+		row-gap: 0.2rem;
+		align-items: start;
+	}
+
+	.key,
+	.value p {
+		margin: 0;
+	}
+
+	.EditInput {
+		font-size: 1rem;
+		padding: 0.2rem 0;
+	}
+}

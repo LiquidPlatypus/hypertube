@@ -1,0 +1,63 @@
+.bar {
+	width: 100%;
+	padding: 0 100px;
+	margin: 0.5rem auto 1.5rem;
+	box-sizing: border-box;
+}
+
+.row {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.8rem;
+	align-items: end;
+	background: rgba(17, 17, 17, 0.75);
+	border: 2px solid rgba(255, 255, 255, 0.12);
+	padding: 0.8rem;
+	box-shadow: -5px 4px 0px rgba(0, 0, 0, 0.4);
+
+	box-sizing: border-box;
+	max-width: 100%;
+	overflow: auto;
+}
+
+.field {
+	display: flex;
+	flex-direction: column;
+	gap: 0.35rem;
+	min-width: 160px;
+}
+
+.label {
+	font-size: 0.85rem;
+	color: #e6e6e6;
+}
+
+select,
+input {
+	height: 36px;
+	padding: 0 10px;
+	background: rgba(0, 0, 0, 0.35);
+	border: 1px solid rgba(255, 255, 255, 0.18);
+	color: #fff;
+	outline: none;
+}
+
+.reset {
+	height: 36px;
+	padding: 0 12px;
+	background: rgba(255, 255, 255, 0.12);
+	border: 1px solid rgba(255, 255, 255, 0.18);
+	color: #fff;
+	cursor: pointer;
+}
+
+.reset:hover {
+	background: rgba(255, 255, 255, 0.18);
+}
+
+@media (max-width: 1800px) {
+	.bar {
+		padding: 1rem;
+		margin: 0;
+	}
+}

@@ -1,0 +1,119 @@
+.MainLayout {
+	position: relative;
+	display: flex;
+	height: 100vh;
+	flex-direction: column;
+	overflow: hidden;
+	background-color: #464646;
+}
+
+.MainLayout::before {
+	content: "";
+	position: fixed;
+	top: -0.6rem;
+	bottom: -0.9rem;
+	left: -2rem;
+	right: -2rem;
+
+	pointer-events: none;
+	z-index: 5;
+
+	box-shadow: inset 0 0 40px 60px rgba(0, 0, 0, 0.7);
+	border-radius: 50% / 10%;
+	/* scanlines CRT */
+	background: repeating-linear-gradient(
+			to bottom,
+			rgba(255, 255, 255, 0.02) 0px,
+			rgba(255, 255, 255, 0.02) 2px,
+			transparent 2px,
+			transparent 4px
+	);
+}
+
+.BackgroundVideo {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	z-index: 0;
+	opacity: 0.2;
+	filter: brightness(0.9) saturate(1.1);
+}
+
+.ScrollArea {
+	flex: 1;
+	overflow-y: auto;
+	scroll-behavior: smooth;
+	z-index: 0;
+	padding-top: var(--header-height);
+	padding-bottom: var(--footer-height);
+}
+
+.ScrollArea::after {
+	pointer-events: none;
+	content: "";
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	width: 100%;
+	height: 100%;
+	background-image: url("/assets/whitenoise.gif");
+	filter: opacity(0.12);
+
+	z-index: 9;
+}
+
+.MainHeader,
+.MainFooter {
+	position: fixed;
+	left: 0;
+	width: 100%;
+	z-index: 10;
+	pointer-events: none;
+}
+
+.MainHeader {
+	top: 0;
+	height: var(--header-height);
+}
+
+.MainFooter {
+	bottom: 0;
+	height: var(--footer-height);
+}
+
+.noFx::before {
+	/*display: none; pour les bords noirs*/
+	background: none;
+}
+
+.noFx .ScrollArea:after {
+	background: none;
+}
+
+.TVRemoteContainer {
+	position: fixed;
+	bottom: -270px;
+	right: 20px;
+	z-index: 50;
+	transition: transform 0.3s ease, opacity 0.3s ease;
+	transform: translateY(230px);
+
+	filter: drop-shadow(0px 1px 4px black);
+}
+
+/* DESKTOP MODE */
+.TVRemoteContainer:hover {
+	transform: translateY(140px);
+	opacity: 1;
+}
+
+/* MOBILE MODE */
+.TVRemoteContainer.open {
+	transform: translateY(140px);
+	opacity: 1;
+}

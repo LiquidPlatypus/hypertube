@@ -1,56 +1,56 @@
-import type { RouteObject } from "react-router-dom";
 import { createBrowserRouter } from "react-router-dom";
 import App from "./App";
-import ProtectedRoute from "./component/ProtectedRoute";
-import EntryPage from "./pages/EntryPage";
-import HomePage from "./pages/HomePage";
-import IdentifyForReset from "./component/IdentifyForReset";
-import ForgotPassword from "./pages/ForgotPassword";
-import Thumbnails from "./pages/Thumbnails";
-import MovieDetails from "./pages/MovieDetails";
+import ProtectedRoute from "./utils/ProtectedRoute.tsx";
+import HomePage from "./pages/HomePage.tsx";
+import LoginPage from "./pages/LoginPage.tsx";
+import ProfilInfo from "./pages/ProfilePage.tsx";
+import VideoPage from "./pages/VideoPage.tsx";
+import PublicProfile from "./pages/PublicProfile.tsx";
 
-const routes: RouteObject[] = [
+export const router = createBrowserRouter([
 	{
 		path: "/",
-		element: <App />,
+		element: <App />, // layout général
 		children: [
-			 {
-                path: "thumbnails", 
-                element: <Thumbnails />,
-            },
+			// Routes protégées
 			{
-				path: "movie/:id",
-				element: <MovieDetails />,
-			},
-
-			{
-				// all protected element by login system must be here
-				path: "/",
 				element: <ProtectedRoute />,
 				children: [
-					{ path: "/", element: <HomePage /> },
-					{ path: "/forgot-password", element: <ForgotPassword /> }
-				],
-			},
-			{
-				path: "auth",
-				children: [
 					{
-						path: "login",
-						element:  (
-							<EntryPage />
+						path: "/",
+						element: (
+							<HomePage />
+						),
+					},
+					{
+						path: "/profile",
+						element: (
+							<ProfilInfo />
+						),
+					},
+					{
+						path: "/movie/:id",
+						element: (
+							<VideoPage />
+						),
+					},
+					{
+						path: "/users/:id",
+						element: (
+							<PublicProfile />
 						),
 					},
 				],
 			},
+			// Auth routes
 			{
-				path: `reset/:token`,
-				element: (
-					<IdentifyForReset />
-				),
-			}
+				path: "auth/login",
+				element: <LoginPage />,
+			},
+			{
+				path: "auth/register",
+				element: <LoginPage />,
+			},
 		],
 	},
-];
-
-export const router = createBrowserRouter(routes);
+]);

@@ -1,327 +1,248 @@
-import { useState } from "react";
-import * as React from "react";
 import { useNavigate } from "react-router-dom";
-import { GoogleOAuthProvider, GoogleLogin, type GoogleCredentialResponse } from "@react-oauth/google";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
-export default function EntryPage() {
+import LoginFrameHeader from "../components/headers/Login/LoginFrameHeader.tsx";
+import LoginFrameFooter from "../components/footers/Login/LoginFrameFooter.tsx";
+
+import RetroTvFrame from "../components/TVFrame";
+import LoginScreen from "../utils/LoginScreen";
+
+import styles from "./LoginPage.module.css";
+
+type Mode = "login" | "logout";
+
+export default function LoginPage() {
 	const navigate = useNavigate();
-	const [isLogin, setIsLogin] = useState(true); // true = Login, false = Register
+	const wrapperRef = useRef<HTMLDivElement | null>(null);
+	const tvScreenRef = useRef<HTMLDivElement | null>(null);
+	const tvWrapperRef = useRef<HTMLDivElement | null>(null);
 
-	// Etats pour le formulaire de login
-	const [loginUsername, setLoginUsername] = useState("");
-	const [loginPassword, setLoginPassword] = useState("");
+	const [mode, setMode] = useState<Mode>("login");
+	const [isZooming, setIsZooming] = useState(false);
 
-	// Etats pour le formulaire de register
-	const [registerFirstname, setRegisterFirstname] = useState("");
-	const [registerLastname, setRegisterLastname] = useState("");
-	const [registerUsername, setRegisterUsername] = useState("");
-	const [registerEmail, setRegisterEmail] = useState("");
-	const [registerPassword, setRegisterPassword] = useState("");
-	const [registerPasswordConfirmation, setRegisterPasswordConfirmation] = useState("");
+	const [wrapperKey, setWrapperKey] = useState(0);
 
-	// Etats pour les messages error/success
-	const [message, setMessage] = useState("");
+	const [flashKey, setFlashKey] = useState(0);
+	const [showWhiteFlash, setShowWhiteFlash] = useState(false);
+	const [hideUi, setHideUi] = useState(false);
+	const [dollyZoom, setDollyZoom] = useState(1);
 
-	interface LoginResponse {
-		access_token: string;
-		token_type: string; // souvent "bearer"
-	}
+	const TV_BASE = useMemo(
+		() => ({
+			tvWidth: 1920,
+			tvHeight: 1080,
+			screenX: 560,
+			screenY: 215,
+			screenWidth: 1100,
+			screenHeight: 500,
+		}),
+		[]
+	);
 
-	const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
-		e.preventDefault();
-		setMessage(""); // reset le message
+	const MOBILE_BREAKPOINT = 1000;
+	const [isMobileLayout, setIsMobileLayout] = useState(false);
 
-		try {
-			const response = await fetch("/api/login", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({
-					username: loginUsername,
-					password: loginPassword,
-				}),
-			});
+	useEffect(() => {
+		const mq = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT}px)`);
+		const onChange = () => setIsMobileLayout(mq.matches);
 
-			if (!response.ok) {
-				throw new Error("Invalid Password or username")
-			}
+		onChange();
+		mq.addEventListener?.("change", onChange);
+		return () => mq.removeEventListener?.("change", onChange);
+	}, []);
 
-			const data: LoginResponse = await response.json();
-			localStorage.setItem("access_token", data.access_token);
-			navigate("/");
+	const [tvDims, setTvDims] = useState(TV_BASE);
 
-		} catch (error) {
-			if (typeof error === "string") setMessage(error);
-			else if (error instanceof Error) {
-				setMessage(error.message);
-			}
-		}
-	};
+	useEffect(() => {
+		if (isMobileLayout) return;
 
-	const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
-		e.preventDefault();
-		setMessage(""); // Reset message
+		const handleResize = () => {
+			const { innerWidth: w, innerHeight: h } = window;
 
-		// Verif  que les mdp correspondent
-		if (registerPassword !== registerPasswordConfirmation) {
-			setMessage("Password don't match");
-			return;
-		}
+			const clamp = (v: number, min: number, max: number) => Math.max(min, Math.min(max, v));
+			const smoothstep = (t: number) => t * t * (3 - 2 * t);
 
-		try {
-			const response = await fetch("/api/register", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({
-					username: registerUsername,
-					password: registerPassword,
-					email: registerEmail,
-					firstName: registerFirstname,
-					lastName: registerLastname,
-				}),
+			const W_START = 1400;
+			const W_END = 420;
+			const ZOOM_MIN = 1;
+			const ZOOM_MAX = 2.05;
 
-			});
+			const tRaw = (W_START - w) / (W_START - W_END);
+			const t = smoothstep(clamp(tRaw, 0, 1));
 
-			if (!response.ok) {
-				throw new Error("Error during register");
-			}
+			const nextZoom = ZOOM_MIN + (ZOOM_MAX - ZOOM_MIN) * t;
 
-			const data: { returnValue: boolean; message?: string } = await response.json();
-
-			if (data.returnValue) {
-				setMessage("Account successfully registered! You can now log in.");
-				// TODO: redict auto vers login
-				setTimeout(() => {
-					setIsLogin(true);
-					setMessage("");
-				}, 2000);
+			const H_END = 520;
+			if (h < H_END) {
+				const extra = clamp((H_END - h) / 240, 0, 0.25);
+				setDollyZoom(nextZoom + extra);
 			} else {
-				setMessage(data.message || "Cannot create account");
+				setDollyZoom(nextZoom);
 			}
-		} catch (error) {
-			console.error("Error during register", error);
-			if (error instanceof Error) {
-				setMessage(error.message);
-			} else {
-				setMessage("error during register. Please try again.");
-			}
-		}
-	};
 
-	const autoLog = async (e: React.MouseEvent<HTMLButtonElement>) => {
-		e.preventDefault();
-		try {
-			const response = await fetch("/api/auto-log", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-			});
-			if (!response.ok)
-				throw new Error("Error during register");
-			const data: LoginResponse = await response.json();
-			localStorage.setItem("access_token", data.access_token);
-			navigate("/");
-		} catch (err) {
-			console.error(err);
-		}
-	};
+			setTvDims(TV_BASE);
+		};
 
-	const emailSend = async (e: React.FormEvent<HTMLFormElement>) => {
-		e.preventDefault();
-		try {
-			const response = await fetch(`/api/send-email`, {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({
-					email: registerEmail,
-				}),
-			});
-			if (!response.ok)
-				throw new Error("Server error");
-			const data: {returnValue: boolean} = await response.json();
-			if (data.returnValue === false)
-				setMessage("email not exist");
-			else
-				setMessage("email send");
-		} catch (err) {
-			console.error(err);
-		}
-	};
+		handleResize();
+		window.addEventListener("resize", handleResize);
+		return () => window.removeEventListener("resize", handleResize);
+	}, [TV_BASE, isMobileLayout]);
 
-	const handleGoogleLogin = async (credentialResponse: GoogleCredentialResponse) => {
-		try {
-			const token = credentialResponse.credential;
-			const response = await fetch(`/api/google-auth`, {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({
-					token,
-				}),
+	useLayoutEffect(() => {
+		if (isMobileLayout) return;
+
+		const wrapper = tvWrapperRef.current;
+		const screen = tvScreenRef.current;
+		if (!wrapper || !screen) return;
+
+		const wrapperRect = wrapper.getBoundingClientRect();
+		const screenRect = screen.getBoundingClientRect();
+
+		const screenCenterX = screenRect.left + screenRect.width / 2;
+		const screenCenterY = screenRect.top + screenRect.height / 2;
+
+		const originXPercent = ((screenCenterX - wrapperRect.left) / wrapperRect.width) * 100;
+		const originYPercent = ((screenCenterY - wrapperRect.top) / wrapperRect.height) * 100;
+
+		wrapper.style.transformOrigin = `${originXPercent}% ${originYPercent}%`;
+	}, [tvDims, wrapperKey,isMobileLayout]);
+
+	const triggerWhiteFlash = useCallback((durationMs = 520) => {
+		setFlashKey((k) => k + 1);
+		setShowWhiteFlash(true);
+
+		window.setTimeout(() => {
+			setShowWhiteFlash(false);
+		}, durationMs);
+	}, []);
+
+	const startZoom = useCallback((nextMode: Mode) => {
+		setMode(nextMode);
+		setIsZooming(false);
+
+		requestAnimationFrame(() => {
+			requestAnimationFrame(() => {
+				setIsZooming(true);
 			});
-			if (!response.ok) {
-				const err = await response.json();
-				if (response.status === 418)
-					setMessage(err.detail);
-				throw new Error(err);
-			}
-			const data: LoginResponse = await response.json();
-			localStorage.setItem("access_token", data.access_token);
-			navigate("/");
-		} catch (error) {
-			console.error(error);
-		}
+		});
+	}, []);
+
+	const handleLoginSuccess = useCallback(() => {
+		const FLASH_START = 160;
+		const FLASH_DURATION = 2400;
+		const NAV_AT = FLASH_START + 850;
+
+		setShowWhiteFlash(false);
+
+		setWrapperKey((k) => k + 1);
+
+		setHideUi(true);
+		startZoom("login");
+
+		window.setTimeout(() => triggerWhiteFlash(FLASH_DURATION), FLASH_START);
+
+		window.setTimeout(() => navigate("/"), NAV_AT);
+	}, [navigate, startZoom, triggerWhiteFlash]);
+
+	useLayoutEffect(() => {
+		if (localStorage.getItem("just_logged_out") !== "true") return;
+		localStorage.removeItem("just_logged_out");
+
+		setHideUi(true);
+
+		setShowWhiteFlash(false);
+		setWrapperKey((k) => k + 1);
+
+		startZoom("logout");
+
+		window.setTimeout(() => triggerWhiteFlash(2000), 0);
+
+		window.setTimeout(() => {
+			setMode("login");
+			setIsZooming(false);
+			setHideUi(false);
+			setWrapperKey((k) => k + 1);
+		}, 2600);
+	}, [startZoom, triggerWhiteFlash]);
+
+	const wrapperClassName = [
+		styles.pageWrapper,
+		mode === "login" ? styles.login : styles.logout,
+		isZooming ? (mode === "login" ? styles.zoomIn : styles.zoomOut) : "",
+	]
+		.filter(Boolean)
+		.join(" ");
+
+	if (isMobileLayout) {
+		return (
+			<>
+				<div
+					className={styles.MobileLoginLayout}
+					style={{
+						"--header-height": "150px",
+						"--footer-height": "100px",
+					} as React.CSSProperties}
+				>
+					<header className={styles.MobileHeader}>
+						<LoginFrameHeader />
+					</header>
+
+					<main className={styles.MobileScrollArea}>
+						<div className={styles.MobileContent}>
+							<video
+								className={styles.MobileBackgroundVideo}
+								autoPlay
+								loop
+								muted
+								playsInline
+								preload="auto"
+							>
+								<source src="/videos/screen2.mp4" type="video/mp4" />
+							</video>
+							<LoginScreen onLoginSuccess={handleLoginSuccess} />
+						</div>
+					</main>
+
+					<footer className={styles.MobileFooter}>
+						<LoginFrameFooter />
+					</footer>
+				</div>
+
+				{showWhiteFlash && <div key={flashKey} className={styles.WhiteFlash} />}
+			</>
+		);
 	}
 
 	return (
-		<div>
-
-				
-					<button onClick={() => navigate(`/thumbnails`)}>Thumbnails</button>
-				
-				
-				<GoogleOAuthProvider clientId="504765868462-ssreveurjgq1i8tuoinem6fcp0g8kv90.apps.googleusercontent.com">
-					<GoogleLogin
-						onSuccess={handleGoogleLogin}
-						onError={() => console.error("Google Auth Failed")}
-					/>
-				</GoogleOAuthProvider>
-				<form onSubmit={emailSend}>
-					<label htmlFor="email">Email: </label>
-					<input
-						type="text"
-						name="email"
-						id="email"
-						value={registerEmail}
-						onChange={(e) => setRegisterEmail(e.target.value)}
-						required
-					/>
-					<button type="submit">Send reset password email</button>
-				</form>
-				<button onClick={autoLog}>auto-log</button>
-				<div>
-                    <button onClick={() => {
-							setIsLogin(true);
-							setMessage("");
-						}}>Login</button>
-                    <button onClick={() => {
-							setIsLogin(false);
-							setMessage("");
-						}}>Register</button>
+		<>
+			<div key={wrapperKey} ref={wrapperRef} className={wrapperClassName}>
+				<div
+					ref={tvWrapperRef}
+					className={styles.TVWrapper}
+					style={{
+						transform: `scale(${(isZooming || hideUi) ? 1 : dollyZoom})`,
+					}}
+				>
+					<RetroTvFrame
+						videoSrc="/videos/screen2.mp4"
+						tvImageSrc="/assets/Login/TVCompressed.png"
+						tvWidth={tvDims.tvWidth}
+						tvHeight={tvDims.tvHeight}
+						screenX={tvDims.screenX}
+						screenY={tvDims.screenY}
+						screenWidth={tvDims.screenWidth}
+						screenHeight={tvDims.screenHeight}
+						contentScale={0.8}
+						screenContainerRef={tvScreenRef}
+					>
+						<div className={`${styles.LoginUi} ${hideUi ? styles.LoginUiHidden : ""}`}>
+							<LoginScreen onLoginSuccess={handleLoginSuccess} />
+						</div>
+					</RetroTvFrame>
 				</div>
-
-				{message && (
-					<p>
-						{message}
-					</p>
-				)}
-
-				{isLogin ? (
-					// Formulaire de connexion
-					<form onSubmit={handleLogin}>
-						<div>
-							<div>
-								<label htmlFor="username">Username: </label>
-								<input
-									type="text"
-									name="username"
-									id="username"
-									value={loginUsername}
-									onChange={(e) => setLoginUsername(e.target.value)}
-									required
-								/>
-							</div>
-							<div>
-								<label htmlFor="password">Password: </label>
-								<input
-									type="password"
-									name="password"
-									id="password"
-									value={loginPassword}
-									onChange={(e) => setLoginPassword(e.target.value)}
-									required
-								/>
-							</div>
-                            <button type="submit">Login</button>
-						</div>
-					</form>
-				) : (
-					// Formulaire d'inscription
-					<form onSubmit={handleRegister}>
-						<div>
-							<div>
-								<label htmlFor="firstname">First name: </label>
-								<input
-									type="text"
-									name="firstname"
-									id="firstname"
-									value={registerFirstname}
-									onChange={(e) => setRegisterFirstname(e.target.value)}
-									required
-								/>
-							</div>
-							<div>
-								<label htmlFor="lastname">Last name: </label>
-								<input
-									type="text"
-									name="lastname"
-									id="lastname"
-									value={registerLastname}
-									onChange={(e) => setRegisterLastname(e.target.value)}
-									required
-								/>
-							</div>
-							<div>
-								<label htmlFor="register-username">Username: </label>
-								<input
-									type="text"
-									name="username"
-									id="register-username"
-									value={registerUsername}
-									onChange={(e) => setRegisterUsername(e.target.value)}
-									required
-								/>
-							</div>
-							<div>
-								<label htmlFor="email">Email: </label>
-								<input
-									type="email"
-									name="email"
-									id="email"
-									value={registerEmail}
-									onChange={(e) => setRegisterEmail(e.target.value)}
-									required
-								/>
-							</div>
-							<div>
-								<label htmlFor="register-password">Password: </label>
-								<input
-									type="password"
-									name="password"
-									id="register-password"
-									value={registerPassword}
-									onChange={(e) => setRegisterPassword(e.target.value)}
-									required
-								/>
-							</div>
-							<div>
-								<label htmlFor="password_confirmation">
-									Confirm Password:{" "}
-								</label>
-								<input
-									type="password"
-									name="password_confirmation"
-									id="password_confirmation"
-									value={registerPasswordConfirmation}
-									onChange={(e) => setRegisterPasswordConfirmation(e.target.value)}
-									required
-								/>
-							</div>
-                            <button type="submit">Register</button>
-						</div>
-					</form>
-				)}
 			</div>
+
+			{showWhiteFlash && <div key={flashKey} className={styles.WhiteFlash} />}
+		</>
 	);
-};
+}
