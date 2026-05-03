@@ -7,27 +7,44 @@
 	background-color: #464646;
 }
 
-.MainLayout::before {
-	content: "";
-	position: fixed;
-	top: -0.6rem;
-	bottom: -0.9rem;
-	left: -2rem;
-	right: -2rem;
+/*.MainLayout::before {*/
+/*	content: "";*/
+/*	position: fixed;*/
+/*	top: -0.6rem;*/
+/*	bottom: -0.9rem;*/
+/*	left: -2rem;*/
+/*	right: -2rem;*/
 
+/*	pointer-events: none;*/
+/*	z-index: 5;*/
+
+/*	box-shadow: inset 0 0 40px 60px rgba(0, 0, 0, 0.7);*/
+/*	border-radius: 50% / 10%;*/
+/*	!* scanlines CRT *!*/
+/*	background: repeating-linear-gradient(*/
+/*			to bottom,*/
+/*			rgba(255, 255, 255, 0.02) 0px,*/
+/*			rgba(255, 255, 255, 0.02) 2px,*/
+/*			transparent 2px,*/
+/*			transparent 4px*/
+/*	);*/
+/*}*/
+
+.BackgroundWrapper {
+	position: fixed;
+	inset: 0;
 	pointer-events: none;
 	z-index: 5;
+	}
 
-	box-shadow: inset 0 0 40px 60px rgba(0, 0, 0, 0.7);
-	border-radius: 50% / 10%;
-	/* scanlines CRT */
-	background: repeating-linear-gradient(
-			to bottom,
-			rgba(255, 255, 255, 0.02) 0px,
-			rgba(255, 255, 255, 0.02) 2px,
-			transparent 2px,
-			transparent 4px
-	);
+.Background {
+	position: absolute;
+	inset: 0;
+	background-image: url('/assets/screen.png');
+	background-size: 100% 100%;
+	background-position: center;
+	image-rendering: auto;
+	background-repeat: no-repeat;
 }
 
 .BackgroundVideo {
@@ -48,8 +65,7 @@
 	scroll-behavior: smooth;
 	z-index: 0;
 	padding-top: var(--header-height);
-	padding-bottom: var(--footer-height);
-}
+	padding-bottom: calc(var(--footer-height) + 100px);}
 
 .ScrollArea::after {
 	pointer-events: none;
