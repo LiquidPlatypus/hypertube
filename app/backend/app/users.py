@@ -58,6 +58,10 @@ async def get_current_profile_pic(current_user=Depends(verif_access_token), stor
 async def read_user_me(current_user=Depends(verif_access_token)):
 	return {"user": current_user}
 
+@router.get("/api/{username}")
+async def get_other_profile(username: str, storage: Storage = Depends(get_storage)):
+	return storage.get_user_by_id(username)
+
 @router.post("/api/reset-password")
 async def reset_password(data: PasswordForm, current_user=Depends(verif_access_token), storage: Storage = Depends(get_storage)):
 	"""

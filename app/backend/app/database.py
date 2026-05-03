@@ -89,11 +89,13 @@ class Storage:
 
 		return convert_user_format(user)
 
-	def get_user_by_id(self, user_id: int):
+	def get_user_by_id(self, user_id: int | str):
 		"""
 		DESK:
 		Get an user id and return corresponding objet
 		"""
+		if hasattr(user_id, str):
+			return convert_user_format(self.session.query(User).filter(User.username == user_id).first())
 		return convert_user_format(self.session.query(User).filter(User.id == user_id).first())
 
 	def modify_user(self, username: str, email: str, firstname: str, lastname: str, user_id: int):
@@ -199,20 +201,12 @@ class Storage:
 
 	def get_comments(self, chunk):
 		comments_list = self.session.query(Comment).all()
-		comments = []
-		for it in comments_list:
-			comment = {"id": it.id, "content": it.content, "author": it.author, "date": it.date}
-			comments.append(comment)
-		chunk_comments = []
-		len = sum([1 for c in comments]) - 1
-		max = chunk + 9
-		while (chunk <= max):
-			try:
-				chunk_comments.append(comments[len - chunk])
-			except:
-				break
-			chunk += 1
-		return chunk_comments
+		comments = [
+			{"id": it.id, "content": it.content, "author": it.author, "date": it.date} 
+			for it in comments_list
+		]
+		comments_reversed = comments[::-1]
+		return comments_reversed[chunk : chunk + 10]
 
 	# def add_movie(self, title: str, release_date: str, mp4_path: str):
 	# 	"""
