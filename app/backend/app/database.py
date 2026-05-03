@@ -148,11 +148,15 @@ class Storage:
 		DESK:
 		Set in db new image profile and replace old by new
 		"""
-		profilepic = ProfilePic(
-			user_id=user_id,
-			url=image_url
-		)
-		self.session.add(profilepic)
+		img: ProfilePic = self.session.query(ProfilePic).filter(ProfilePic.user_id == user_id).first()
+		if not img:
+			profilepic = ProfilePic(
+				user_id=user_id,
+				url=image_url
+			)
+			self.session.add(profilepic)
+		else:
+			img.url = image_url
 		self.session.commit()
 
 	def get_profile_pic(self, user_id: int):
