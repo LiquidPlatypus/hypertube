@@ -79,7 +79,7 @@ export default function HomePage() {
 				if (filters.yearFrom != null) params.set("year_from", String(filters.yearFrom));
 				if (filters.yearTo != null) params.set("year_to", String(filters.yearTo));
 				if (filters.sort) params.set("sort", filters.sort);
-				params.set("language", getCurrentLang() === "fr" ? "fr-Fr" : "en_US");
+				params.set("language", getCurrentLang() === "fr" ? "fr-Fr" : "en-US");
 
 				const url = `/api/thumbnails?${params.toString()}`;
 
