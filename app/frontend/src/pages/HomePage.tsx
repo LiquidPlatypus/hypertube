@@ -2,7 +2,7 @@ import * as React from "react";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState, useCallback } from "react";
 import { useSearch } from "../utils/searchContext.tsx";
-import { useFilters } from "../utils/filterContext.tsx";
+import {type FiltersState, useFilters} from "../utils/filterContext.tsx";
 
 import { useTranslation } from "../hooks/useTranslation.tsx";
 import { getCurrentLang } from "../lang/i18n.tsx";
@@ -59,7 +59,7 @@ export default function HomePage() {
 	const isFetchingRef = React.useRef(false);
 
 	const loadMovies = useCallback(
-		async (query: string, pageNum: number, isNewSearch: boolean) => {
+		async (query: string, pageNum: number, isNewSearch: boolean, filters: FiltersState) => {
 			if (isFetchingRef.current) return;
 			isFetchingRef.current = true;
 			setLoading(true);
@@ -67,6 +67,17 @@ export default function HomePage() {
 
 			try {
 				const params = new URLSearchParams();
+
+				function normalizeRating(rating: number): number {
+					if (rating <= 10) return rating;
+					return rating / 10;
+				}
+
+				if (filters.minRating !== null) {
+					const rating = normalizeRating(filters.minRating);
+					params.set("min_rating", String(rating));
+				}
+
 				params.set("page", String(pageNum));
 
 				if (query) params.set("query", query);
@@ -79,7 +90,7 @@ export default function HomePage() {
 				if (filters.yearFrom != null) params.set("year_from", String(filters.yearFrom));
 				if (filters.yearTo != null) params.set("year_to", String(filters.yearTo));
 				if (filters.sort) params.set("sort", filters.sort);
-				params.set("language", getCurrentLang() === "fr" ? "fr-Fr" : "en-US");
+				params.set("language", getCurrentLang() === "fr" ? "fr-FR" : "en-US");
 
 				const url = `/api/thumbnails?${params.toString()}`;
 
@@ -110,7 +121,7 @@ export default function HomePage() {
 				isFetchingRef.current = false;
 			}
 		},
-		[filters]
+		[]
 	);
 
 	const observerReference = useCallback(
@@ -140,13 +151,21 @@ export default function HomePage() {
 
 	useEffect(() => {
 		resettingRef.current = true;
+		isFetchingRef.current = false;
 		setResults([]);
-		setPage(1);
 		setHasMore(true);
-	}, [searchTerm, filters]);
+		setPage(1);
+
+		loadMovies(searchTerm, 1, true, filters).finally(() => {
+			resettingRef.current = false;
+		});
+
+		observer.current?.disconnect();
+	}, [searchTerm, filters, loadMovies]);
 
 	useEffect(() => {
-		loadMovies(searchTerm, page, page === 1);
+		if (page === 1) return;
+		loadMovies(searchTerm, page, page === 1, filters);
 	}, [page, searchTerm, loadMovies]);
 
 	useEffect(() => {
