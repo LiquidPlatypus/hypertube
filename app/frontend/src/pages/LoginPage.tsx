@@ -43,7 +43,7 @@ export default function LoginPage() {
 	const [isMobileLayout, setIsMobileLayout] = useState(false);
 
 	useEffect(() => {
-		const mq = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT}px)`);
+		const mq = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT}px) or (max-height: ${MOBILE_BREAKPOINT}px)`);
 		const onChange = () => setIsMobileLayout(mq.matches);
 
 		onChange();
