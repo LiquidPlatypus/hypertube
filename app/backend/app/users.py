@@ -1,23 +1,11 @@
-from fastapi import APIRouter, Depends, File, UploadFile
-from model import ModifyFormRequest, PasswordForm, NewPasswordRequest, EmailRequest
+from fastapi import APIRouter, Depends, File, UploadFile, Query
+from model import ModifyFormRequest, PasswordForm, NewPasswordRequest
 from database import Storage, get_storage
-from utils import create_access_token, verif_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
-from fastapi.responses import FileResponse
-from datetime import timedelta
-from fastapi_mail import FastMail, MessageSchema, ConnectionConfig
+from utils import verif_access_token
+from fastapi.responses import FileResponse, JSONResponse
 import os
 
 router = APIRouter()
-conf = ConnectionConfig(
-	MAIL_USERNAME="test@example.com",
-	MAIL_PASSWORD="password",
-	MAIL_PORT=1025,
-	MAIL_SERVER="localhost",
-	MAIL_FROM="test@example.com",
-	MAIL_STARTTLS = True,
-	MAIL_SSL_TLS = False,
-	USE_CREDENTIALS=False,
-)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 UPLOAD_DIR = os.path.join(BASE_DIR, "../profile-pic")
@@ -58,9 +46,9 @@ async def get_current_profile_pic(current_user=Depends(verif_access_token), stor
 async def read_user_me(current_user=Depends(verif_access_token)):
 	return {"user": current_user}
 
-@router.get("/api/{username}")
-async def get_other_profile(username: str, storage: Storage = Depends(get_storage)):
-	return storage.get_user_by_username(username)
+@router.get("/api/profile", response_class=JSONResponse)
+async def get_other_profile(username: str = Query(max_length=50), storage: Storage = Depends(get_storage)):
+	return storage.get_user_by_id(username)
 
 @router.post("/api/reset-password")
 async def reset_password(data: PasswordForm, current_user=Depends(verif_access_token), storage: Storage = Depends(get_storage)):
@@ -83,25 +71,3 @@ async def forgot_password(current_user=Depends(verif_access_token)):
 	username = current_user["username"]
 	print(f"{username} load forgot password form\n")
 	return {"returnValue": True}
-
-@router.post("/api/send-email")
-async def send_email(data: EmailRequest, storage: Storage = Depends(get_storage)):
-	access_token = None
-	user_list = storage.get_all_users()
-	for u in user_list:
-		if u["email"] == data.email:
-			access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-			access_token = create_access_token(data={"sub": str(u["id"])}, expires_delta=access_token_expires)
-	if access_token == None:
-		return {"returnValue": False}
-	contenthtml = f"""<p>PAYLOAD: \n\n\nlocalhost:5173/reset/{access_token}\n\n\n:END PAYLOAD</p>"""
-	message = MessageSchema(
-		subject="Reset Password Mail",
-		recipients=[data.email],
-		body=contenthtml,
-		subtype="html"
-	)
-
-	print(message)
-	return {"returnValue": True}
-

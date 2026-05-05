@@ -89,11 +89,10 @@ class Storage:
 
 		return convert_user_format(user)
 
-	def get_user_by_username(self, username: str):
-		return convert_user_format(self.session.query(User).filter(User.username == username).first())
-
-	def get_user_by_id(self, user_id: int):
-		return convert_user_format(self.session.query(User).filter(User.id == user_id).first())
+	def get_user_by_id(self, element: int | str):
+		if isinstance(element, str):
+			return convert_user_format(self.session.query(User).filter(User.username == element).first())
+		return convert_user_format(self.session.query(User).filter(User.id == element).first())
 
 	def modify_user(self, username: str, email: str, firstname: str, lastname: str, user_id: int):
 		"""

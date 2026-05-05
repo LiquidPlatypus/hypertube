@@ -228,6 +228,46 @@ export default function HomePage() {
 			setLoading(false);
 		}
 	}
+	const getOtherUserProfile = async (e: React.MouseEvent<HTMLButtonElement>) => {
+		e.preventDefault();
+		const token = localStorage.getItem("access_token");
+		const username = "debug"
+		try {
+			const response = await fetch(`/api/profile?username=${username}`, {
+				method: "GET",
+				headers: {
+					Authorization: `Bearer ${token}`,
+				},
+			});
+			if (!response.ok)
+				throw new Error(`Server Error :${response.status}`);
+			const res = await response.json();
+			console.log(res);
+		} catch (error) {
+			console.error(error);
+		}
+	}
+
+	const testMail = async (e: React.MouseEvent<HTMLButtonElement>) => {
+		e.preventDefault();
+		// const user_email = "user@gmail.com";
+		const user_email = "email@debug.com";
+		try {
+			const response = await fetch(`/api/reset-email`, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({ email: user_email }),
+			});
+			if (!response.ok)
+				throw new Error(`Server Error :${response.status}`);
+			const res = await response.json();
+			console.log(res);
+		} catch (error) {
+			console.error(error);
+		}
+	}
 
 	const observerTrigger = async () => {
 		if (loading) return
@@ -253,6 +293,8 @@ export default function HomePage() {
 	return (
 		<div>
 			<button onClick={testMessage}>Hello</button>
+			<button onClick={getOtherUserProfile}>OtherUser</button>
+			<button onClick={testMail}>testEmail</button>
 
 			{profilePic && <img src={profilePic} alt="Profile" />}
 			<button onClick={getProfilePicture}>Get IMG</button>

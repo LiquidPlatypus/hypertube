@@ -8,6 +8,7 @@ from users import router as users_router
 # from .stream import router as stream_router
 from movies import router as movies_router
 from comment import router as comment_router
+from mails import router as mails_router
 import shutil
 
 # Models Pydantic
@@ -65,6 +66,7 @@ app.include_router(users_router)
 # app.include_router(stream_router)
 app.include_router(movies_router)
 app.include_router(comment_router)
+app.include_router(mails_router)
 
 @app.get("/api/verify-token/{token}")
 async def verify_user_token(token: str, storage: Storage = Depends(get_storage)):
