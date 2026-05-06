@@ -55,9 +55,12 @@ class SuccessException(Exception):
 class CommentForm(BaseModel):
 	content: str
 
+class ChunkCommentForm(BaseModel):
+	chunk: int
+
 class CustomCommentForm(BaseModel):
 	id: int
 	new_content: str
 
-class ChunkCommentForm(BaseModel):
-	chunk: int
+class ChunkInfoForm(BaseModel):
+	pos: int

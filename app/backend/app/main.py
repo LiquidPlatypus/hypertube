@@ -5,18 +5,18 @@ from fastapi.responses import JSONResponse
 from auth import router as auth_router
 from utils import verif_access_token
 from users import router as users_router
-#from stream import router as stream_router
+# from .stream import router as stream_router
 from movies import router as movies_router
 from comment import router as comment_router
+from mails import router as mails_router
 import shutil
 
 # Models Pydantic
 from model import RegisterRequest, LoginRequest, ModifyFormRequest, PasswordForm, EmailRequest, NewPasswordRequest
 # Models SQLAlchemy et Repository
-from database import User, Password
+from database import User, Password, Storage, get_storage
 from repositories.user_repository import UserRepository
-from models_db import get_db, DB, engine 
-from database import get_storage, Storage
+from models_db import get_db, DB, engine
 from jose import JWTError, jwt
 
 # INIT
@@ -26,17 +26,17 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 app = FastAPI()
 
 app.add_middleware(
-	CORSMiddleware,
-	allow_origins=["http://localhost:5173"],
-	allow_credentials=True,
-	allow_methods=["*"],
-	allow_headers=["*"],)
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-
-# Init
+# Init DB
 @app.on_event("startup")
 def on_startup():
-	DB.metadata.create_all(bind=engine)
+    DB.metadata.create_all(bind=engine)
 
 # Middleware
 @app.middleware("http")
@@ -63,9 +63,10 @@ async def verif_header(request: Request, call_next):
 
 app.include_router(auth_router)
 app.include_router(users_router)
-#app.include_router(stream_router)
+# app.include_router(stream_router)
 app.include_router(movies_router)
 app.include_router(comment_router)
+app.include_router(mails_router)
 
 @app.get("/api/verify-token/{token}")
 async def verify_user_token(token: str, storage: Storage = Depends(get_storage)):
@@ -87,12 +88,6 @@ async def verify_user_token(token: str, storage: Storage = Depends(get_storage))
 			detail="Unauthorized"
 		)
 
-# @app.get("/api/verify-token/{token}")
-# async def verify_user_token(token: str):
-# 	res = verif_access_token(token)
-# 	return {"message": "Token is valid"}
-
 @app.get("/api/hello")
 async def get_hello():
 	return {"message": "Hello from FastAPI 👋"}
-

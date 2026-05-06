@@ -40,7 +40,6 @@ class Comment(DB):
 	__tablename__ = "comment"
 	id = Column(Integer, primary_key=True, index=True)
 	author = Column(String(255))
-	# author_id = Column(Integer)
 	date = Column(String(255))
 	content = Column(String(255))
 
@@ -90,12 +89,10 @@ class Storage:
 
 		return convert_user_format(user)
 
-	def get_user_by_id(self, user_id: int):
-		"""
-		DESK:
-		Get an user id and return corresponding objet
-		"""
-		return convert_user_format(self.session.query(User).filter(User.id == user_id).first())
+	def get_user_by_id(self, element: int | str):
+		if isinstance(element, str):
+			return convert_user_format(self.session.query(User).filter(User.username == element).first())
+		return convert_user_format(self.session.query(User).filter(User.id == element).first())
 
 	def modify_user(self, username: str, email: str, firstname: str, lastname: str, user_id: int):
 		"""
@@ -108,8 +105,7 @@ class Storage:
 			target.email = email
 			target.firstname = firstname
 			target.lastname = lastname
-
-		self.session.commit()
+			target.commit()
 
 	def get_user_password(self, user_id: int):
 		"""
@@ -147,9 +143,9 @@ class Storage:
 
 	def add_profile_pic(self, user_id: int, image_url: str):
 		"""
-        DESK:
-        Set in db new image profile and replace old by new
-        """
+		DESK:
+		Set in db new image profile and replace old by new
+		"""
 		img: ProfilePic = self.session.query(ProfilePic).filter(ProfilePic.user_id == user_id).first()
 		if not img:
 			profilepic = ProfilePic(
@@ -201,20 +197,12 @@ class Storage:
 
 	def get_comments(self, chunk):
 		comments_list = self.session.query(Comment).all()
-		comments = []
-		for it in comments_list:
-			comment = {"id": it.id, "content": it.content, "author": it.author, "date": it.date}
-			comments.append(comment)
-		chunk_comments = []
-		len = sum([1 for c in comments]) - 1
-		max = chunk + 9
-		while (chunk <= max):
-			try:
-				chunk_comments.append(comments[len - chunk])
-			except:
-				break
-			chunk += 1
-		return chunk_comments
+		comments = [
+			{"id": it.id, "content": it.content, "author": it.author, "date": it.date} 
+			for it in comments_list
+		]
+		comments_reversed = comments[::-1]
+		return comments_reversed[chunk : chunk + 10]
 
 	# def add_movie(self, title: str, release_date: str, mp4_path: str):
 	# 	"""
