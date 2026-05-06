@@ -233,7 +233,7 @@ export default function HomePage() {
 		const token = localStorage.getItem("access_token");
 		const username = "debug"
 		try {
-			const response = await fetch(`/api/profile?username=${username}`, {
+			const response = await fetch(`/api/users?username=${username}`, {
 				method: "GET",
 				headers: {
 					Authorization: `Bearer ${token}`,

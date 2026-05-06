@@ -11,13 +11,17 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 UPLOAD_DIR = os.path.join(BASE_DIR, "../profile-pic")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-@router.post("/api/modify-profile")
+@router.patch("/api/users")
 async def modify_user(data: ModifyFormRequest, current_user=Depends(verif_access_token), storage: Storage = Depends(get_storage)):
 	"""
 	Return Value :
 	True if information was correct and changed or else False
 	"""
-	user = storage.modify_user(data.username, data.email, data.firstname, data.lastname, current_user["id"])
+	file_path = os.path.join(UPLOAD_DIR, data.file.filename)
+
+	with open(file_path, "wb") as buffer:
+		buffer.write(data.file.file.read())
+	storage.modify_user(data.username, data.email, data.firstname, data.lastname, file_path, current_user["id"])
 	return {"returnValue": True}
 
 @router.post("/api/upload-picture")
@@ -46,8 +50,8 @@ async def get_current_profile_pic(current_user=Depends(verif_access_token), stor
 async def read_user_me(current_user=Depends(verif_access_token)):
 	return {"user": current_user}
 
-@router.get("/api/profile", response_class=JSONResponse)
-async def get_other_profile(username: str = Query(max_length=50), storage: Storage = Depends(get_storage)):
+@router.get("/api/users", response_class=JSONResponse)
+async def get_other_profile(username: str | int = Query(...), storage: Storage = Depends(get_storage)):
 	return storage.get_user_by_id(username)
 
 @router.post("/api/reset-password")
@@ -71,3 +75,9 @@ async def forgot_password(current_user=Depends(verif_access_token)):
 	username = current_user["username"]
 	print(f"{username} load forgot password form\n")
 	return {"returnValue": True}
+
+@router.get("/api/users")
+async def get_users(current_user=Depends(verif_access_token), storage: Storage = Depends(get_storage)):
+	return storage.get_all_users()
+
+

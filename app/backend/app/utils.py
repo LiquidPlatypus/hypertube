@@ -30,7 +30,7 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
 def verif_access_token(token: str = Depends(oauth2_scheme), storage: Storage = Depends(get_storage)):
 	try:
 		payload = jwt.decode(token, SECRET_KEY, algorithms=ALGORITHM)
-		user = storage.get_user_by_id(int(payload["sub"]))
+		user = storage.get_user_by_id(int(payload["sub"]), True)
 		if user == None:
 			raise HTTPException(
 				status_code=410,
