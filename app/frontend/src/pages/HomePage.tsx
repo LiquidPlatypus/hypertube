@@ -73,19 +73,14 @@ export default function HomePage() {
 					return rating / 10;
 				}
 
-				if (filters.minRating !== null) {
-					const rating = normalizeRating(filters.minRating);
-					params.set("min_rating", String(rating));
-				}
-
 				params.set("page", String(pageNum));
 
 				if (query) params.set("query", query);
 
 				if (filters.genreId != null) params.set("genre", String(filters.genreId));
-				if (filters.minRating != null) {
-					const minRatingTmdb = filters.minRating / 10; // 65 -> 6.5
-					params.set("min_rating", String(minRatingTmdb));
+				if (filters.minRating !== null) {
+					const rating = normalizeRating(filters.minRating);
+					params.set("min_rating", String(rating));
 				}
 				if (filters.yearFrom != null) params.set("year_from", String(filters.yearFrom));
 				if (filters.yearTo != null) params.set("year_to", String(filters.yearTo));
