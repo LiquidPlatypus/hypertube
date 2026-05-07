@@ -56,6 +56,9 @@ class MovieDetails(BaseModel):
     score: float
     cast: List[CastMember]
     mp4_path: Optional[str] = None
+class GenreItem(BaseModel):
+    id: int
+    name: str
 class TorrentRequest(BaseModel):
     title: str
     year: int
@@ -78,31 +81,153 @@ def get_lt_session():
 #: sinon, recupere les films populaires du moment
 #: response_model: List[MovieThumbnail] pour ne retourner que les infos voulues, et forcer la validation des données
 @router.get("/api/thumbnails", response_model=List[MovieThumbnail])
-def get_thumbnails(query: Optional[str] = Query(None), page: int = Query(1, ge=1)):
-    
-    thumbnails_data = list[MovieThumbnail]()    
+def get_thumbnails(
+        query: Optional[str] = Query(None),
+        page: int = Query(1, ge=1),
 
+        # filtres
+        min_rating: Optional[float] = Query(None, ge=0, le=10),
+        year_from: Optional[int] = Query(None, ge=1800, le=2100),
+        year_to: Optional[int] = Query(None, ge=1800, le=2100),
+        genre: Optional[int] = Query(None, ge=1),
+
+        # tri (mêmes valeurs que ton front)
+        sort: Optional[str] = Query("relevance"),
+        language: str = Query("en-US"),
+):
+    """
+    Stratégie:
+    - Si query est fourni: TMDB search (texte) + filtres/tri Python.
+    - Sinon: TMDB discover (filtrage + tri côté TMDB) => pagination correcte pour genres rares.
+    """
+    api_key = os.getenv("TMDB_API_KEY")
+    if not api_key:
+        raise HTTPException(status_code=500, detail="TMDB_API_KEY manquant dans les variables d'environnement")
+
+    # Helpers
+    def get_year(m: dict) -> Optional[int]:
+        rd = m.get("release_date") or ""
+        if len(rd) >= 4 and rd[:4].isdigit():
+            return int(rd[:4])
+        return None
+
+    def apply_filters_py(movies: list[dict]) -> list[dict]:
+        out = movies
+
+        if min_rating is not None:
+            out = [m for m in out if (m.get("vote_average") or 0) >= min_rating]
+
+        if year_from is not None:
+            out = [m for m in out if (get_year(m) or 0) >= year_from]
+
+        if year_to is not None:
+            out = [m for m in out if (get_year(m) or 9999) <= year_to]
+
+        if genre is not None:
+            out = [m for m in out if genre in (m.get("genre_ids") or [])]
+
+        return out
+
+    def apply_sort_py(movies: list[dict]) -> list[dict]:
+        # relevance => ne rien faire (ordre TMDB search)
+        if sort == "rating_desc":
+            return sorted(movies, key=lambda m: m.get("vote_average") or 0, reverse=True)
+        if sort == "rating_asc":
+            return sorted(movies, key=lambda m: m.get("vote_average") or 0)
+        if sort == "year_desc":
+            return sorted(movies, key=lambda m: get_year(m) or 0, reverse=True)
+        if sort == "year_asc":
+            return sorted(movies, key=lambda m: get_year(m) or 9999)
+        if sort == "title_asc":
+            return sorted(movies, key=lambda m: (m.get("title") or m.get("original_title") or "").lower())
+        return movies
+
+    # --- Cas 1: recherche texte ---
     if query and len(query) >= 1:
-        #: recherche de films correspondant a la query
         search = tmdb.Search()
-        thumbnails_search_results = search.movie(query=query, page=page)
-    else:
-        #: sans query, recupere les films populaires du moment
-        thumbnails_search_results = tmdb.Movies().popular(page=page)
+        resp = search.movie(query=query, page=page, language=language)
+        results = resp.get("results", [])
 
-    for movie in thumbnails_search_results["results"]:
+        # IMPORTANT: tu avais ces fonctions mais tu ne les appelais plus
+        results = apply_filters_py(results)
+        results = apply_sort_py(results)
+
+    # --- Cas 2: accueil / filtres sans recherche => Discover ---
+    else:
+        sort_map = {
+            "relevance": "popularity.desc",
+            "rating_desc": "vote_average.desc",
+            "rating_asc": "vote_average.asc",
+            "year_desc": "primary_release_date.desc",
+            "year_asc": "primary_release_date.asc",
+            "title_asc": "original_title.asc",
+        }
+
+        url = "https://api.themoviedb.org/3/discover/movie"
+        params = {
+            "api_key": api_key,
+            "page": page,
+            "language": language,
+            "include_adult": "false",
+            "include_video": "false",
+            "sort_by": sort_map.get(sort or "relevance", "popularity.desc"),
+        }
+
+        if genre is not None:
+            params["with_genres"] = str(genre)
+
+        if min_rating is not None:
+            params["vote_average.gte"] = str(min_rating)
+
+        if year_from is not None:
+            params["primary_release_date.gte"] = f"{year_from}-01-01"
+        if year_to is not None:
+            params["primary_release_date.lte"] = f"{year_to}-12-31"
+
+        try:
+            r = requests.get(url, params=params, timeout=10)
+            r.raise_for_status()
+            data = r.json()
+            results = data.get("results", [])
+        except requests.RequestException as e:
+            raise HTTPException(status_code=502, detail=f"Erreur TMDB /discover/movie: {str(e)}")
+
+    thumbnails_data: list[MovieThumbnail] = []
+    for movie in results:
         poster = movie.get("poster_path")
         full_poster_path = f"https://image.tmdb.org/t/p/w500{poster}" if poster else None
-        thumbnails_data.append({
-            "id": movie["id"],
-            "title": movie.get("title") or movie.get("original_title"),
-            "poster_path": full_poster_path,
-            "release_date": movie.get("release_date", "N/A"),
-            "score": round(movie.get("vote_average", 0), 1)
-        })
-    
+        thumbnails_data.append(
+            {
+                "id": movie["id"],
+                "title": movie.get("title") or movie.get("original_title"),
+                "poster_path": full_poster_path,
+                "release_date": movie.get("release_date", "N/A"),
+                "score": round(movie.get("vote_average", 0), 1),
+            }
+        )
+
     return thumbnails_data
 
+@router.get("/api/genres", response_model=List[GenreItem])
+def get_genres(language: str = Query("fr-FR")):
+    api_key = os.getenv("TMDB_API_KEY")
+    if not api_key:
+        raise HTTPException(status_code=500, detail="TMDB_API_KEY manquand dans les variables d'environnement")
+
+    url = "https://api.themoviedb.org/3/genre/movie/list"
+    params = {
+        "api_key": api_key,
+        "language": language,
+    }
+
+    try:
+        r = requests.get(url, params=params, timeout=10)
+        r.raise_for_status()
+        data = r.json()
+        genres = data.get("genres", [])
+        return [{"id": g["id"], "name": g["name"]} for g in genres]
+    except requests.RequestException as e:
+        raise HTTPException(status_code=502, detail=f"Erreur TMDB /genre/movie/list: {str(e)}")
 
 #! MOVIE DETAILS endpoint
 #: recupere les details d'un film depuis TMDB API, en utilisant son id
