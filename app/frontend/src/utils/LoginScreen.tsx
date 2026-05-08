@@ -285,7 +285,6 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 				</p>
 			)}
 
-			{/* UI V1: 2 boutons clairs */}
 			<div className={styles.LoginRegisterBtn}>
 				<Button
 					text={t("login.button")}
