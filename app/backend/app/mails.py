@@ -33,7 +33,33 @@ async def send_email(
 			access_token = create_access_token(data={"sub": str(u["id"])}, expires_delta=access_token_expires)
 	if access_token == None:
 		return {"returnValue": False}
-	contenthtml = f"""<p>localhost:5173/reset/{access_token}</p> <button>Hello</button>"""
+	# contenthtml = f"""<p>localhost/reset/{access_token}</p> <button>Hello</button>"""
+	contenthtml = f"""
+		<div style="background-color: #ffffff; padding: 50px 0; text-align: center;">
+			<table width="100%" border="0" cellspacing="0" cellpadding="0">
+				<tr>
+					<td align="center">
+						<a href="https://localhost/reset/{access_token}" 
+						style="display: inline-block;
+								padding: 25px 50px;           /* Augmenté (Haut/Bas Gauche/Droite) */
+								background-color: #f4ecd8;
+								color: #5d4037;
+								text-decoration: none;
+								font-family: 'Times New Roman', Times, serif;
+								font-size: 24px;              /* Texte plus grand */
+								text-transform: uppercase;
+								letter-spacing: 2px;          /* Espacement des lettres */
+								font-weight: bold;
+								border: 4px double #5d4037;   /* Bordure plus épaisse */
+								border-radius: 2px;
+								box-shadow: 8px 8px 0px #bcaaa4;">
+						Reset Password
+						</a>
+					</td>
+				</tr>
+			</table>
+		</div>
+	"""
 	message = MessageSchema(
 		subject="Reset Password Mail",
 		recipients=[data.email],

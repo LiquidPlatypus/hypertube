@@ -1,4 +1,5 @@
 from pydantic import BaseModel, EmailStr
+from fastapi import UploadFile, File
 
 class RegisterRequest(BaseModel):
 	"""
@@ -28,6 +29,7 @@ class ModifyFormRequest(BaseModel):
 	firstname: str
 	lastname: str
 	email: EmailStr
+	file: UploadFile = File(...)
 
 class PasswordForm(BaseModel):
 	"""

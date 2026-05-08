@@ -89,12 +89,20 @@ class Storage:
 
 		return convert_user_format(user)
 
-	def get_user_by_id(self, element: int | str):
+	def get_user_by_id(self, element: int | str, iscurrent: bool = False):
+		if iscurrent == True:
+			return convert_user_format(self.session.query(User).filter(User.id == element).first())
 		if isinstance(element, str):
-			return convert_user_format(self.session.query(User).filter(User.username == element).first())
-		return convert_user_format(self.session.query(User).filter(User.id == element).first())
+			user = convert_user_format(self.session.query(User).filter(User.username == element).first())
+			pic = self.session.query(ProfilePic).filter(ProfilePic.user_id == element).first()
+		else:
+			user =  convert_user_format(self.session.query(User).filter(User.id == element).first())
+			pic: ProfilePic = self.session.query(ProfilePic).filter(ProfilePic.user_id == user['id']).first()
+		if not pic:
+			return {'user_id': user['id'], 'username': user['username'], 'pic_url': None}
+		return {'user_id': user['id'], 'username': user['username'], 'pic_url': pic.url}
 
-	def modify_user(self, username: str, email: str, firstname: str, lastname: str, user_id: int):
+	def modify_user(self, username: str, email: str, firstname: str, lastname: str, image_url: str, user_id: int):
 		"""
 		DESK:
 		Remove user corresponding of gived id, and recreate with new info + old id
@@ -105,7 +113,17 @@ class Storage:
 			target.email = email
 			target.firstname = firstname
 			target.lastname = lastname
-			target.commit()
+			pic: ProfilePic = self.session.query(ProfilePic).filter(ProfilePic.user_id == user_id).first()
+			if pic:
+				pic.url = image_url
+				self.session.commit()
+			else:
+				profilepic = ProfilePic(
+					user_id=user_id,
+					url=image_url
+				)
+				self.session.add(profilepic)
+				self.session.commit()
 
 	def get_user_password(self, user_id: int):
 		"""
@@ -203,6 +221,12 @@ class Storage:
 		]
 		comments_reversed = comments[::-1]
 		return comments_reversed[chunk : chunk + 10]
+
+	def delete_comments(self, comment_id):
+		comment = self.session.query(Comment).filter(Comment.id == comment_id).first()
+		if comment:
+			self.session.delete(comment)
+			self.session.commit()
 
 	# def add_movie(self, title: str, release_date: str, mp4_path: str):
 	# 	"""

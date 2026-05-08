@@ -38,6 +38,11 @@ async def modif_comment_byid(data: CustomCommentForm, current_user=Depends(verif
 	return {"comment": comment}
 
 @router.get("/api/comments", response_class=JSONResponse)
-async def get_comments(pos: int = Query(0, ge=0), storage: Storage = Depends(get_storage)):
+async def get_comments(pos: int = Query(0, ge=0), storage: Storage = Depends(get_storage), current_user=Depends(verif_access_token)):
 	comments = storage.get_comments(pos)
 	return {"comments": comments}
+
+@router.delete("/api/comments/{id}")
+async def delete_comments(id: int, storage: Storage = Depends(get_storage), current_user=Depends(verif_access_token)):
+	storage.delete_comments(id)
+	return {"ReturnValue": True}
