@@ -37,7 +37,7 @@ export const router = createBrowserRouter([
 						),
 					},
 					{
-						path: "/users/:id",
+						path: "/users/:username",
 						element: (
 							<PublicProfile />
 						),

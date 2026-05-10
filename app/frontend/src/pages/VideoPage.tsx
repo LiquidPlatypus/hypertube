@@ -248,11 +248,7 @@ export default function VideoPage() {
 					{comments.map((c) => (
 						<div key={c.id} className={styles.comment}>
 							<h3>
-								{c.author_id ? (
-									<Link to={`/users/${c.author_id}`}>{c.author}</Link>
-								) : (
-									c.author
-								)}
+								<Link to={`/users/${encodeURIComponent(c.author)}`}>{c.author}</Link>
 							</h3>
 							<small>{new Date(c.date).toLocaleString()}</small>
 							<p>{c.content}</p>
