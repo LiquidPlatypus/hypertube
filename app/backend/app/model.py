@@ -29,7 +29,7 @@ class ModifyFormRequest(BaseModel):
 	firstname: str
 	lastname: str
 	email: EmailStr
-	file: UploadFile = File(...)
+	file: UploadFile | None = File(default=None)
 
 class PasswordForm(BaseModel):
 	"""
