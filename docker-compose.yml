@@ -6,6 +6,7 @@ services:
     build:
       context: .
       dockerfile: ./nginx/Dockerfile
+      network: host
     container_name: nginx
     ports:
       - 80:80
@@ -19,7 +20,9 @@ services:
     restart: on-failure
 
   react_dev:
-    build: ./app/frontend
+    build:
+      context: ./app/frontend
+      network: host
     container_name: react_dev
     env_file: .env
     volumes:
@@ -35,24 +38,22 @@ services:
 
   # Hypertube backend
   hypertube_backend:
-    build: ./app/backend
+    build:
+      context: ./app/backend
+      network: host
     container_name: hypertube_backend
     ports:
       - 8000:8000
+      - 6881:6881/tcp
+      - 6881:6881/udp
     env_file: .env
     volumes:
       - ./app/backend/app:/app
+      - ./movie_data:/data/movies
+      - subtitle_data:/data/subtitles
+      - ./logs:/data/logs
     depends_on:
       - mariadb
-    networks:
-      - hypertube-network
-    restart: on-failure
-
-  torrent_search_api:
-    build: ./torrent_search_api
-    container_name: torrent_search_api
-    ports:
-      - 3001:3001
     networks:
       - hypertube-network
     restart: on-failure
@@ -70,3 +71,8 @@ services:
 networks:
   hypertube-network:
     driver: bridge
+    driver_opts:
+      com.docker.network.driver.mtu: "1450"
+
+volumes:
+  subtitle_data:

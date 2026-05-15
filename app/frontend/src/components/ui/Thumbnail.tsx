@@ -1,3 +1,4 @@
+import { useState } from "react";
 import styles from "./Thumbnail.module.css";
 
 interface ThumbnailProps {
@@ -17,18 +18,25 @@ export default function Thumbnail({
 	rating,
 	onClick,
 }: ThumbnailProps) {
+	const [imgState, setImgState] = useState<"loading" | "loaded" | "error">("loading");
 
-	// Ajusté sur 100 et tronqué à la virgule.
 	const truncRating = rating !== undefined ? Math.trunc(rating * 10) : undefined;
 
 	return (
-		<div className={styles.Thumbnail} onClick={onClick} >
+		<div className={styles.Thumbnail} onClick={onClick}>
 			<div className={styles.CoverWrapper}>
+				{imgState !== "loaded" && (
+					<div className={styles.Placeholder}>
+						{imgState === "loading" && <span className={styles.Spinner} />}
+					</div>
+				)}
 				<img
-					src={thumbnailSrc || "/assets/image-placeholder-vertical.jpg"}
+					src={thumbnailSrc}
 					alt={thumbnailAlt}
 					loading="lazy"
-					className={styles.Image}
+					className={`${styles.Image} ${imgState === "loaded" ? styles.ImageVisible : styles.ImageHidden}`}
+					onLoad={() => setImgState("loaded")}
+					onError={() => setImgState("error")}
 				/>
 			</div>
 
@@ -36,7 +44,7 @@ export default function Thumbnail({
 				<h3 className={styles.Title}>{title}</h3>
 				<div className={styles.Meta}>
 					{year && <span className={styles.Year}>📅 {year}</span>}
-					{rating !== undefined && (
+					{truncRating !== undefined && (
 						<span className={styles.Rating}>⭐ {truncRating}%</span>
 					)}
 				</div>

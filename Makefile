@@ -7,7 +7,7 @@ all:
 	@echo "$(CYA)=== Building & starting containers...$(STOP)"
 	@sudo docker-compose up -d
 
-logs: #Tails logs of all containers
+logall: #Tails logs of all containers
 	@echo "$(CYA)=== Tailing logs...$(STOP)"
 	@sudo docker-compose logs -f hypertube_backend react_dev 
 
@@ -38,13 +38,14 @@ cleandb: #Removes database data only
 	@read -p "Confirm (y/n) : " confirm && [ "$$confirm" = "y" ] || (echo "$(YEL)Aborted.$(STOP)" && exit 1)
 	@echo "$(CYA)=== Cleaning database data...$(STOP)"
 	@sudo rm -rf mariadb/data
-	@sudo rm -rf  app/backend/app/downloads/*
+	@sudo rm -rf  movie_data
 
 fclean: #Removes everything
 	@echo "$(RED)!!!=== Do you really want to remove all data ?\n$(YEL) /!\ This will delete all persisted data (keys, users, scores...) /!\ $(STOP)"
 	@read -p "Confirm (y/n) : " confirm && [ "$$confirm" = "y" ] || (echo "$(YEL)Aborted.$(STOP)" && exit 1)
 	@echo "$(CYA)=== Cleaning data...$(STOP)"
 	@make clean
+	@make iclean
 	@sudo docker system prune -a --volumes
 	@echo "$(CYA)=== Removing files...$(STOP)"
 	@sudo rm -rf mariadb/data
