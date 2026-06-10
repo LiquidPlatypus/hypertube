@@ -39,7 +39,8 @@ class ProfilePic(DB):
 class Comment(DB):
 	__tablename__ = "comment"
 	id = Column(Integer, primary_key=True, index=True)
-	author = Column(String(255))
+	# author = Column(String(255))
+	author_id = Column(Integer, ForeignKey("users.id"))
 	date = Column(String(255))
 	content = Column(String(255))
 
@@ -52,10 +53,11 @@ def convert_user_format(user: User):
 	res = {"id": user.id, "username": user.username, "email": user.email, "firstname": user.firstname, "lastname": user.lastname}
 	return res
 
-def convert_comment_format(comment: Comment):
+def convert_comment_format(comment: Comment, session: Session):
 	if not comment:
 		return None
-	res = {"id": comment.id, "author": comment.author, "date": comment.date, "content": comment.content}
+	author_username = session.query(User).filter(User.id == comment.author_id).first().username
+	res = {"id": comment.id, "author": author_username, "date": comment.date, "content": comment.content}
 	return res
 
 class Storage:
@@ -83,7 +85,6 @@ class Storage:
 		try:
 			self.session.add(user)
 			self.session.commit()
-			print(user.id)
 		except IntegrityError as Ie:
 			print(f"test :: {Ie}")
 
@@ -185,7 +186,7 @@ class Storage:
 			return None
 		return instance.url
 
-	def add_comment(self, content: str, author: str):
+	def add_comment(self, content: str, author_id: int):
 		"""
 		DESK:
 		Set in DB the comment and metadata of this
@@ -195,15 +196,15 @@ class Storage:
 		date = datetime.datetime.now()
 		comment = Comment(
 			content=content,
-			author=author,
+			author_id=author_id,
 			date=date
 		)
 		self.session.add(comment)
 		self.session.commit()
-		return convert_comment_format(comment)
+		return convert_comment_format(comment, self.session)
 		
 	def get_comment(self, id):
-		return convert_comment_format(self.session.query(Comment).filter(Comment.id == id).first())
+		return convert_comment_format(self.session.query(Comment).filter(Comment.id == id).first(), self.session)
 
 	def custom_comment(self, id: int, new_content: str):
 		comment: Comment = self.session.query(Comment).filter(Comment.id == id).first()
@@ -211,12 +212,12 @@ class Storage:
 			return None
 		comment.content = new_content
 		self.session.commit()
-		return convert_comment_format(comment)
+		return convert_comment_format(comment, self.session)
 
 	def get_comments(self, chunk):
 		comments_list = self.session.query(Comment).all()
 		comments = [
-			{"id": it.id, "content": it.content, "author": it.author, "date": it.date} 
+			{"id": it.id, "content": it.content, "author": self.session.query(User).filter(User.id == it.author_id).first().username, "date": it.date} 
 			for it in comments_list
 		]
 		comments_reversed = comments[::-1]

@@ -22,11 +22,11 @@ async def get_comment_byid(id: int, current_user=Depends(verif_access_token), st
 
 @router.post("/api/comments")
 async def post_comment(data: CommentForm, current_user=Depends(verif_access_token), storage: Storage = Depends(get_storage)):
-	comment = storage.add_comment(data.content, current_user["username"])
+	comment = storage.add_comment(data.content, current_user["id"])
 	print(comment)
 	return {"comment": comment}
 	
-@router.patch("/api/comments/{id}")
+@router.patch("/api/comments")
 async def modif_comment_byid(data: CustomCommentForm, current_user=Depends(verif_access_token), storage: Storage = Depends(get_storage)):
 	comment = storage.custom_comment(data.id, data.new_content)
 	if not data.id or comment == None:

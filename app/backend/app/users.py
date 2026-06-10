@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Depends, File, UploadFile, Query
+from fastapi import APIRouter, Depends, File, UploadFile, Query, Form
 from model import ModifyFormRequest, PasswordForm, NewPasswordRequest
 from database import Storage, get_storage
 from utils import verif_access_token
 from fastapi.responses import FileResponse, JSONResponse
+from pydantic import EmailStr
 import os
 
 router = APIRouter()
@@ -12,16 +13,25 @@ UPLOAD_DIR = os.path.join(BASE_DIR, "../profile-pic")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 @router.patch("/api/users")
-async def modify_user(data: ModifyFormRequest, current_user=Depends(verif_access_token), storage: Storage = Depends(get_storage)):
+async def modify_user(
+	username: str = Form(),
+    firstname: str = Form(),
+    lastname: str = Form(),
+    email: EmailStr = Form(),
+	file: UploadFile | None = File(default=None),
+	# data: ModifyFormRequest,
+	current_user=Depends(verif_access_token),
+	storage: Storage = Depends(get_storage)
+):
 	"""
 	Return Value :
 	True if information was correct and changed or else False
 	"""
-	file_path = os.path.join(UPLOAD_DIR, data.file.filename)
+	file_path = os.path.join(UPLOAD_DIR, file.filename)
 
 	with open(file_path, "wb") as buffer:
-		buffer.write(data.file.file.read())
-	storage.modify_user(data.username, data.email, data.firstname, data.lastname, file_path, current_user["id"])
+		buffer.write(file.file.read())
+	storage.modify_user(username, email, firstname, lastname, file_path, current_user["id"])
 	return {"returnValue": True}
 
 @router.post("/api/upload-picture")
