@@ -83,6 +83,8 @@ app.add_middleware(
 async def on_startup():
     DB.metadata.create_all(bind=engine)
     from services.cleanup_scheduler import start_scheduler
+    from movies import reap_orphan_transcodes
+    reap_orphan_transcodes()
     start_scheduler()
     asyncio.create_task(_seed_movies())
 

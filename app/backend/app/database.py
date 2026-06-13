@@ -1,4 +1,5 @@
 import datetime
+from datetime import timezone
 import enum
 import json
 from typing import Optional, List
@@ -106,7 +107,7 @@ def update_movie_status(session: Session, movie_id: int, status: MovieStatus) ->
 def update_movie_path(session: Session, movie_id: int, path: Optional[str]) -> None:
     values = {"mp4_path": path}
     if path:
-        values["download_date"] = datetime.datetime.utcnow()
+        values["download_date"] = datetime.datetime.now(timezone.utc)
     session.execute(sql_update(Movie).where(Movie.id == movie_id).values(**values))
     session.commit()
 
@@ -128,14 +129,37 @@ def update_movie_tmdb(session: Session, movie_id: int, data: dict) -> None:
     session.commit()
 
 
+_last_watched_call: dict[int, float] = {}
+_WATCH_DEDUP_SECONDS = 60.0
+
+
 def mark_movie_watched(session: Session, movie_id: int) -> None:
-    session.execute(
-        sql_update(Movie).where(Movie.id == movie_id).values(
-            watch_count  = Movie.watch_count + 1,
-            last_watched = datetime.datetime.utcnow(),
+    # In-memory dedup: ignore repeated calls within 60s. Browser <video> can
+    # fire many requests for one viewing (preflight, Range probes, retries) —
+    # only one of those should bump watch_count.
+    import time as _time
+    now = _time.monotonic()
+    last = _last_watched_call.get(movie_id, 0.0)
+    if now - last < _WATCH_DEDUP_SECONDS:
+        return
+    _last_watched_call[movie_id] = now
+
+    # MariaDB MyISAM/Aria can raise (1020, "Record has changed since last read")
+    # under concurrent updates. Watch count is cosmetic — swallow and rollback.
+    try:
+        session.execute(
+            sql_update(Movie).where(Movie.id == movie_id).values(
+                watch_count  = Movie.watch_count + 1,
+                last_watched = datetime.datetime.now(timezone.utc),
+            )
         )
-    )
-    session.commit()
+        session.commit()
+    except Exception as e:
+        session.rollback()
+        import logging
+        logging.getLogger(__name__).warning(
+            "mark_movie_watched skipped for movie_id=%s (%s)", movie_id, e
+        )
 
 
 def get_movies_unwatched_since(session: Session, cutoff: datetime.datetime) -> List[Movie]:

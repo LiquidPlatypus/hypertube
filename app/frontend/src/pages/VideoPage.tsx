@@ -40,10 +40,13 @@ interface Comment {
 
 interface Progress {
 	progress: number;
-	speed_kbs: number;
-	peers: number;
+	speed_kbs?: number;
+	peers?: number;
 	status: string;
 	downloaded_mb?: number;
+	transcoded_mb?: number;
+	speed_x?: number | null;
+	transcoded_sec?: number;
 }
 
 export default function VideoPage() {
@@ -54,9 +57,11 @@ export default function VideoPage() {
 	const [comment, setComment] = useState("");
 	const [comments, setComments] = useState<Comment[]>([]);
 	const [downloadProgress, setDownloadProgress] = useState<Progress | null>(null);
+	const [streamReady, setStreamReady] = useState(false);
 	const [streamError, setStreamError] = useState(false);
 	const commentFormRef = React.useRef<HTMLFormElement | null>(null);
 	const eventSourceRef = useRef<EventSource | null>(null);
+	const videoRef = useRef<HTMLVideoElement | null>(null);
 
 	const { archiveId } = useParams<{ archiveId: string }>();
 	const { t } = useTranslation();
@@ -123,11 +128,20 @@ export default function VideoPage() {
 		es.onmessage = (ev) => {
 			try {
 				const data: Progress = JSON.parse(ev.data);
-				setDownloadProgress(data);
-				if (data.status === "idle" || data.progress >= 100) {
+				if (data.status === "idle") {
 					es.close();
 					eventSourceRef.current = null;
 					setDownloadProgress(null);
+					setStreamReady(true);
+				} else if (data.status === "error") {
+					// Pipeline gave up (e.g. torrent source unreachable). Show the
+					// error panel with a retry button instead of an empty player.
+					es.close();
+					eventSourceRef.current = null;
+					setDownloadProgress(null);
+					setStreamError(true);
+				} else {
+					setDownloadProgress(data);
 				}
 			} catch {
 				// ignore parse errors
@@ -136,7 +150,7 @@ export default function VideoPage() {
 		es.onerror = () => {
 			es.close();
 			eventSourceRef.current = null;
-			setDownloadProgress(null);
+			// Don't flip to ready on error — leave overlay up so user knows.
 		};
 	};
 
@@ -162,6 +176,16 @@ export default function VideoPage() {
 			cancelled = true;
 			window.clearTimeout(loaderTimer);
 			eventSourceRef.current?.close();
+			// Force browser to drop the stream connection so server-side FFmpeg
+			// + writer-lock cleanup can fire immediately.
+			const v = videoRef.current;
+			if (v) {
+				try {
+					v.pause();
+					v.removeAttribute("src");
+					v.load();
+				} catch { /* ignore */ }
+			}
 		};
 	}, [archiveId]);
 
@@ -169,6 +193,8 @@ export default function VideoPage() {
 	useEffect(() => {
 		if (movieDetails?.id) {
 			setStreamError(false);
+			setStreamReady(false);
+			setDownloadProgress({ status: "starting", progress: 0 });
 			startProgressSSE(movieDetails.id);
 		}
 		return () => {
@@ -194,15 +220,26 @@ export default function VideoPage() {
 
 				<div className={styles.contentPart}>
 				<div className={styles.videoPart}>
-					{downloadProgress && (
+					{streamError ? (
+						<div className={styles.downloadOverlay}>
+							<p className={styles.overlayTitle}>
+								{t("video.streamError") || "Stream failed — try again"}
+							</p>
+							<button onClick={() => { setStreamError(false); setStreamReady(false); setDownloadProgress({ status: "starting", progress: 0 }); if (movieDetails?.id) startProgressSSE(movieDetails.id); }}>
+								{t("video.retry") || "Retry"}
+							</button>
+						</div>
+					) : !streamReady ? (
 						<div className={styles.downloadOverlay}>
 							<span className={styles.overlaySpinner} />
 							<p className={styles.overlayTitle}>
-								{downloadProgress.status === "starting"
+								{downloadProgress?.status === "starting"
 									? (t("video.preparing") || "Preparing torrent…")
-									: (t("video.downloading") || "Downloading…")}
+									: downloadProgress?.status === "transcoding"
+										? (t("video.transcoding") || "Transcoding…")
+										: (t("video.downloading") || "Downloading…")}
 							</p>
-							{downloadProgress.status !== "starting" && (
+							{downloadProgress && downloadProgress.status !== "starting" && (
 								<>
 									<div className={styles.overlayBar}>
 										<div
@@ -212,26 +249,24 @@ export default function VideoPage() {
 									</div>
 									<p className={styles.overlayMeta}>
 										{downloadProgress.progress.toFixed(1)}%
-										&nbsp;·&nbsp;{downloadProgress.speed_kbs} KB/s
-										&nbsp;·&nbsp;{downloadProgress.peers} peer{downloadProgress.peers !== 1 ? "s" : ""}
+										{downloadProgress.status === "transcoding"
+											? (downloadProgress.speed_x != null
+												? <>&nbsp;·&nbsp;{downloadProgress.speed_x}x</>
+												: downloadProgress.transcoded_mb != null
+													? <>&nbsp;·&nbsp;{downloadProgress.transcoded_mb} MB</>
+													: null)
+											: <>
+												&nbsp;·&nbsp;{downloadProgress.speed_kbs ?? 0} KB/s
+												&nbsp;·&nbsp;{downloadProgress.peers ?? 0} peer{(downloadProgress.peers ?? 0) !== 1 ? "s" : ""}
+											</>}
 									</p>
 								</>
 							)}
 						</div>
-					)}
-					{/* Always in DOM so the browser sends the stream request (starts download) */}
-					{streamError ? (
-						<div className={styles.downloadOverlay}>
-							<p className={styles.overlayTitle}>
-								{t("video.streamError") || "Stream failed — try again"}
-							</p>
-							<button onClick={() => setStreamError(false)}>
-								{t("video.retry") || "Retry"}
-							</button>
-						</div>
 					) : (
 						<video
-							className={`${styles.video} ${downloadProgress ? styles.videoHidden : ""}`}
+							ref={videoRef}
+							className={styles.video}
 							src={streamSrc}
 							controls
 							crossOrigin="anonymous"

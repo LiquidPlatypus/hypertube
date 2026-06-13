@@ -1,11 +1,53 @@
+import logging
 import os
 import re
 import httpx
 from dataclasses import dataclass
 from typing import Optional, List
 
+logger = logging.getLogger(__name__)
+
 OPENSUBS_BASE = "https://api.opensubtitles.com/api/v1"
 SUBTITLE_DIR = os.getenv("SUBTITLE_DIR", "/data/subtitles")
+
+# Restrict any user-supplied path component to a safe charset.
+_SAFE_NAME_RE = re.compile(r"^[A-Za-z0-9._-]+$")
+
+
+def _safe_subtitle_path(archive_id: str, lang: str) -> Optional[str]:
+    """Join SUBTITLE_DIR/archive_id/lang.vtt with strict validation.
+
+    Returns ``None`` if either component is malformed or if the resolved path
+    escapes ``SUBTITLE_DIR`` (defense in depth against path traversal).
+    """
+    if not archive_id or not lang:
+        return None
+    if not _SAFE_NAME_RE.match(archive_id) or not _SAFE_NAME_RE.match(lang):
+        return None
+
+    base_real = os.path.realpath(SUBTITLE_DIR)
+    candidate = os.path.realpath(os.path.join(base_real, archive_id, f"{lang}.vtt"))
+    try:
+        if os.path.commonpath([base_real, candidate]) != base_real:
+            return None
+    except ValueError:
+        # commonpath raises on different drives (Windows) or mixed absolute/relative
+        return None
+    return candidate
+
+
+def _safe_subtitle_dir(archive_id: str) -> Optional[str]:
+    """Join SUBTITLE_DIR/archive_id with the same guardrails as _safe_subtitle_path."""
+    if not archive_id or not _SAFE_NAME_RE.match(archive_id):
+        return None
+    base_real = os.path.realpath(SUBTITLE_DIR)
+    candidate = os.path.realpath(os.path.join(base_real, archive_id))
+    try:
+        if os.path.commonpath([base_real, candidate]) != base_real:
+            return None
+    except ValueError:
+        return None
+    return candidate
 
 
 @dataclass
@@ -27,7 +69,9 @@ async def fetch_subtitles(
     if not api_key:
         return []
 
-    out_dir = os.path.join(SUBTITLE_DIR, archive_id)
+    out_dir = _safe_subtitle_dir(archive_id)
+    if out_dir is None:
+        return []
     os.makedirs(out_dir, exist_ok=True)
 
     results = []
@@ -39,7 +83,11 @@ async def fetch_subtitles(
 
     async with httpx.AsyncClient(timeout=15, headers=headers) as client:
         for lang in languages:
-            vtt_path = os.path.join(out_dir, f"{lang}.vtt")
+            if not _SAFE_NAME_RE.match(lang or ""):
+                continue
+            vtt_path = _safe_subtitle_path(archive_id, lang)
+            if vtt_path is None:
+                continue
             if os.path.isfile(vtt_path):
                 results.append(SubtitleInfo(lang=lang, vtt_path=vtt_path))
                 continue
@@ -92,16 +140,18 @@ def _srt_to_vtt(srt: str) -> str:
 
 
 async def get_subtitle_path(archive_id: str, lang: str) -> Optional[str]:
-    path = os.path.join(SUBTITLE_DIR, archive_id, f"{lang}.vtt")
+    path = _safe_subtitle_path(archive_id, lang)
+    if path is None:
+        return None
     return path if os.path.isfile(path) else None
 
 
 async def list_available_subtitles(archive_id: str) -> List[str]:
-    directory = os.path.join(SUBTITLE_DIR, archive_id)
-    if not os.path.isdir(directory):
+    directory = _safe_subtitle_dir(archive_id)
+    if directory is None or not os.path.isdir(directory):
         return []
     return [
         f[:-4]
         for f in os.listdir(directory)
-        if f.endswith(".vtt")
+        if f.endswith(".vtt") and _SAFE_NAME_RE.match(f[:-4] or "")
     ]
