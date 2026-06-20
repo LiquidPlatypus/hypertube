@@ -32,6 +32,8 @@ from services.subtitle_service import fetch_subtitles, get_subtitle_path, list_a
 from services.tmdb_client import get_genres as tmdb_get_genres, search_tmdb
 from services.torrent_manager import TorrentManager, DOWNLOAD_DIR, VIDEO_EXTENSIONS
 
+load_dotenv(dotenv_path=env_path)
+
 router = APIRouter()
 torrent_manager = TorrentManager()
 

@@ -1,125 +1,92 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useTranslation } from "../hooks/useTranslation.tsx";
 
 import styles from "./ProfilePage.module.css";
 
-type PublicUser = {
-	id: number;
+type PublicUserResponse = {
+	user_id: number;
 	username: string;
-	firstname: string;
-	lastname: string;
+	pic_url: string | null;
 };
 
 export default function PublicProfile() {
-	const { id } = useParams<{ id: string }>();
+	const { username } = useParams<{ username: string }>();
 	const { t } = useTranslation();
 
-	const [user, setUser] = useState<PublicUser | null>(null);
-	const [profilePicUrl, setProfilePicUrl] = useState<string | null>(null);
+	const [user, setUser] = useState<PublicUserResponse | null>(null);
 	const [error, setError] = useState<string | null>(null);
 
+	const displayedUsername = useMemo(() => (username ?? "").trim(), [username]);
+
 	const getToken = () => localStorage.getItem("access_token");
-
-	const fetchPublicUser = async (userId: number) => {
-		const token = getToken();
-		if (!token) {
-			setError("Unauthorized");
-			setUser(null);
-			return;
-		}
-
-		const res = await fetch(`/api/users/${userId}`, {
-			headers: { Authorization: `Bearer ${token}` },
-		});
-
-		if (!res.ok) {
-			setError(await res.text().catch(() => "Failed to fetch user"));
-			setUser(null);
-			return;
-		}
-
-		const data = await res.json();
-		setUser(data.user ?? null);
-		setError(null);
-	};
-
-	const fetchPublicProfilePic = async (userId: number) => {
-		const token = getToken();
-		if (!token) return;
-
-		const res = await fetch(`/api/users/${userId}/profile-pic`, {
-			headers: { Authorization: `Bearer ${token}` },
-			cache: "no-store",
-		});
-
-		if (!res.ok) {
-			setProfilePicUrl(null);
-			return;
-		}
-
-		const ct = res.headers.get("content-type") || "";
-
-		// 1) FileResponse => image/*
-		if (ct.startsWith("image/")) {
-			const blob = await res.blob();
-			setProfilePicUrl((prev) => {
-				if (prev?.startsWith("blob:")) URL.revokeObjectURL(prev);
-				return URL.createObjectURL(blob);
-			});
-			return;
-		}
-
-		// 2) Sinon texte: URL google ou "null"
-		const txt = (await res.text()).trim();
-		if (!txt || txt === "null" || txt === "None") {
-			setProfilePicUrl(null);
-			return;
-		}
-		if (txt.startsWith("http")) {
-			const cleaned = txt.replace(/^"+|"+$/g, "");
-			setProfilePicUrl(cleaned);
-			return;
-		}
-
-		setProfilePicUrl(null);
-	};
 
 	useEffect(() => {
 		let cancelled = false;
 
-		const userId = Number(id);
-		if (!id || Number.isNaN(userId)) {
-			setError("Invalid user id");
+		if (!displayedUsername) {
+			setError("Invalid username");
 			setUser(null);
 			return;
 		}
 
 		(async () => {
-			await fetchPublicUser(userId);
-			await fetchPublicProfilePic(userId);
+			const token = getToken();
+			if (!token) {
+				setError("Unauthorized");
+				setUser(null);
+				return;
+			}
+
+			const res = await fetch(
+				`/api/users?username=${encodeURIComponent(displayedUsername)}`,
+				{ headers: { Authorization: `Bearer ${token}` } }
+			);
+
+			if (!res.ok) {
+				const txt = await res.text().catch(() => "");
+				if (!cancelled) {
+					setError(txt || `Failed to fetch user (${res.status})`);
+					setUser(null);
+				}
+				return;
+			}
+
+			const data: PublicUserResponse = await res.json();
+
+			if (!cancelled) {
+				setUser(data ?? null);
+				setError(null);
+			}
 		})().catch((e) => {
-			if (!cancelled) setError(String(e));
+			if (!cancelled) {
+				setError(String(e));
+				setUser(null);
+			}
 		});
 
 		return () => {
 			cancelled = true;
-			setProfilePicUrl((prev) => {
-				if (prev?.startsWith("blob:")) URL.revokeObjectURL(prev);
-				return prev;
-			});
 		};
-	}, [id]);
+	}, [displayedUsername]);
 
 	if (error) {
-		return <p className={styles.Loading}>{t("error")}{String(error)}</p>;
+		return (
+			<p className={styles.Loading}>
+				{t("error")}
+				{String(error)}
+			</p>
+		);
 	}
 
 	if (!user) {
 		return <p className={styles.Loading}>{t("loading")}</p>;
 	}
 
-	const displayedPic = profilePicUrl ?? "/assets/Profil.png";
+	const displayedPic =
+		user.pic_url && user.pic_url.startsWith("http")
+			? user.pic_url
+			: "/assets/Profil.png";
 
 	return (
 		<div className={styles.Container}>
@@ -131,25 +98,9 @@ export default function PublicProfile() {
 				</div>
 
 				<div className={styles.RightColumn}>
-					<div className={styles.TitleBar}>
-						{t("profile.userProfile")}
-					</div>
+					<div className={styles.TitleBar}>{t("profile.userProfile")}</div>
 
 					<div className={styles.InfosTab}>
-						<div className={styles.row}>
-							<p className={styles.key}>{t("register.placeholder.firstname")}</p>
-							<div className={styles.value}>
-								<p>{user.firstname}</p>
-							</div>
-						</div>
-
-						<div className={styles.row}>
-							<p className={styles.key}>{t("register.placeholder.lastname")}</p>
-							<div className={styles.value}>
-								<p>{user.lastname}</p>
-							</div>
-						</div>
-
 						<div className={styles.row}>
 							<p className={styles.key}>{t("profile.username")}</p>
 							<div className={styles.value}>

@@ -1,7 +1,7 @@
-import React, {useEffect, useRef, useState} from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "../hooks/useTranslation.tsx";
 
-import Button from "../components/ui/Button.tsx"
+import Button from "../components/ui/Button.tsx";
 import Input from "../components/ui/Input.tsx";
 import styles from "./ProfilePage.module.css";
 
@@ -10,7 +10,7 @@ type User = {
 	email: string;
 	firstname: string;
 	lastname: string;
-}
+};
 
 export default function ProfilInfo() {
 	const [user, setUser] = useState<User | null>(null);
@@ -22,10 +22,8 @@ export default function ProfilInfo() {
 		email: "",
 	});
 
-	// Photo actuelle
 	const [profilePicUrl, setProfilePicUrl] = useState<string | null>(null);
 
-	// Preview
 	const [selectedFile, setSelectedFile] = useState<File | null>(null);
 	const [localPreviewUrl, setLocalPreviewUrl] = useState<string | null>(null);
 
@@ -33,12 +31,14 @@ export default function ProfilInfo() {
 
 	const { t } = useTranslation();
 
+	const FALLBACK_PIC_URL = "/assets/elementor-placeholder-image.png";
+
 	const toForm = (u: any) => ({
 		username: u.username ?? "",
 		firstname: u.firstname ?? "",
 		lastname: u.lastname ?? "",
 		email: u.email ?? "",
-	})
+	});
 
 	const getToken = () => localStorage.getItem("access_token");
 
@@ -58,11 +58,8 @@ export default function ProfilInfo() {
 
 		const ct = res.headers.get("content-type") || "";
 
-		// 1. FileResponse
 		if (ct.startsWith("image/")) {
 			const blob = await res.blob();
-
-			// Révoque l'ancienne si blob aussi
 			setProfilePicUrl((prev) => {
 				if (prev?.startsWith("blob:")) URL.revokeObjectURL(prev);
 				return URL.createObjectURL(blob);
@@ -70,15 +67,14 @@ export default function ProfilInfo() {
 			return;
 		}
 
-		// 2. Url si google ou null
 		const txt = (await res.text()).trim();
 		if (!txt || txt === "null" || txt === "None") {
 			setProfilePicUrl(null);
 			return;
 		}
-		if (txt.startsWith("http")) {
-			// si http selon comment fastapi sérialise
-			const cleaned = txt.replace(/^"+|"+$/g, "");
+
+		const cleaned = txt.replace(/^"+|"+$/g, "");
+		if (cleaned.startsWith("http")) {
 			setProfilePicUrl(cleaned);
 			return;
 		}
@@ -106,7 +102,6 @@ export default function ProfilInfo() {
 		fetchUser();
 		fetchProfilePic();
 
-		// Clean url blob quand exit page
 		return () => {
 			setProfilePicUrl((prev) => {
 				if (prev?.startsWith("blob:")) URL.revokeObjectURL(prev);
@@ -148,74 +143,14 @@ export default function ProfilInfo() {
 	};
 
 	const handleProfileEdit = () => {
-		if (user) setFormData(toForm(toForm(user)));
+		if (user) setFormData(toForm(user));
 		setIsEditing(true);
+		setSelectedFile(null);
 	};
 
 	const handleCancel = () => {
 		setIsEditing(false);
 		setSelectedFile(null);
-	};
-
-	const uploadSelectedPictureIfAny = async () => {
-		const token = getToken();
-		if (!token || !selectedFile) return;
-
-		const fd = new FormData();
-		fd.append("file", selectedFile);
-
-		const res = await fetch("/api/upload-picture", {
-			method: "POST",
-			headers: { Authorization: `Bearer ${token}` },
-			body: fd,
-		});
-
-		if (!res.ok) {
-			throw new Error(await res.text().catch(() => "Upload failed"));
-		}
-
-		await fetchProfilePic();
-
-		setSelectedFile(null);
-	}
-
-	const handleSave = async () => {
-		const token = getToken();
-		if (!token) return;
-
-		try {
-			// 1) Upload la photo si l’utilisateur en a choisi une
-			await uploadSelectedPictureIfAny();
-
-			// 2) sauvegarde les champs texte
-			const res = await fetch("/api/modify-profile", {
-				method: "POST",
-				headers: {
-					Authorization: `Bearer ${token}`,
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify(formData),
-			});
-
-			if (!res.ok) throw new Error(t("profile.failedUpdate"));
-
-			// 3) Refresh user
-			const res2 = await fetch("/api/me", {
-				method: "GET",
-				headers: {
-					Authorization: `Bearer ${token}`,
-					"Content-Type": "application/json",
-				},
-			});
-
-			if (!res2.ok) throw new Error(t("profile.failedUpdate"));
-
-			const data2 = await res2.json();
-			setUser(data2.user);
-			setIsEditing(false);
-		} catch (error) {
-			console.error("profile.errorUpdate", error);
-		}
 	};
 
 	const handlePickFileClick = () => {
@@ -229,15 +164,81 @@ export default function ProfilInfo() {
 		setSelectedFile(f);
 	};
 
+	const buildFileToUpload = async (): Promise<File> => {
+		if (selectedFile) return selectedFile;
+
+		const candidateUrl = profilePicUrl ?? FALLBACK_PIC_URL;
+
+		const res = await fetch(candidateUrl, { cache: "no-store" });
+		if (!res.ok) {
+			if (candidateUrl !== FALLBACK_PIC_URL) {
+				const res2 = await fetch(FALLBACK_PIC_URL, { cache: "no-store" });
+				if (!res2.ok) {
+					throw new Error("Impossible de récupérer une image à envoyer (photo actuelle et fallback indisponibles).");
+				}
+				const blob2 = await res2.blob();
+				const ext2 = (blob2.type?.split("/")[1] || "png").toLowerCase();
+				return new File([blob2], `profile.${ext2}`, { type: blob2.type || "image/png" });
+			}
+			throw new Error("Impossible de récupérer l'image fallback à envoyer.");
+		}
+
+		const blob = await res.blob();
+		const ext = (blob.type?.split("/")[1] || "png").toLowerCase();
+		return new File([blob], `profile.${ext}`, { type: blob.type || "image/png" });
+	};
+
+	const handleSave = async () => {
+		const token = getToken();
+		if (!token) return;
+
+		try {
+			const fileToSend = await buildFileToUpload();
+
+			const fd = new FormData();
+			fd.append("username", formData.username);
+			fd.append("firstname", formData.firstname);
+			fd.append("lastname", formData.lastname);
+			fd.append("email", formData.email);
+			fd.append("file", fileToSend);
+
+			console.log(fd);
+			const res = await fetch("/api/users", {
+				method: "PATCH",
+				headers: {
+					Authorization: `Bearer ${token}`,
+				},
+				body: fd,
+			});
+
+			if (!res.ok) {
+				const txt = await res.text().catch(() => "");
+				throw new Error(txt || t("profile.failedUpdate"));
+			}
+
+			const res2 = await fetch("/api/me", {
+				method: "GET",
+				headers: { Authorization: `Bearer ${token}` },
+			});
+			if (!res2.ok) throw new Error(t("profile.failedUpdate"));
+			const data2 = await res2.json();
+			setUser(data2.user);
+
+			await fetchProfilePic();
+
+			setIsEditing(false);
+			setSelectedFile(null);
+		} catch (error) {
+			console.error("profile.errorUpdate", error);
+		}
+	};
+
 	if (!user) return <p className={styles.Loading}>{t("loading")}</p>;
 
 	const displayedPic =
-		// preview
 		localPreviewUrl ??
-		// photo du back
 		profilePicUrl ??
-		// fallback
-		"/assets/Profil.png";
+		FALLBACK_PIC_URL;
 
 	return (
 		<div className={styles.Container}>

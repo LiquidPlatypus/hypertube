@@ -64,12 +64,12 @@ class ProfilePic(DB):
 
 
 class Comment(DB):
-    __tablename__ = "comment"
-    id       = Column(Integer, primary_key=True, index=True)
-    movie_id = Column(Integer, ForeignKey("movies.id"), nullable=True)
-    author   = Column(String(255))
-    date     = Column(String(255))
-    content  = Column(String(255))
+	__tablename__ = "comment"
+	id = Column(Integer, primary_key=True, index=True)
+	# author = Column(String(255))
+	author_id = Column(Integer, ForeignKey("users.id"))
+	date = Column(String(255))
+	content = Column(String(255))
 
 
 # ---------------------------------------------------------------------------
@@ -197,15 +197,12 @@ def convert_user_format(user: User):
     }
 
 
-def convert_comment_format(comment: Comment):
-    if not comment:
-        return None
-    return {"id": comment.id, "author": comment.author, "date": comment.date, "content": comment.content}
-
-
-# ---------------------------------------------------------------------------
-# Storage class (legacy — kept for auth/users/comment routes)
-# ---------------------------------------------------------------------------
+def convert_comment_format(comment: Comment, session: Session):
+	if not comment:
+		return None
+	author_username = session.query(User).filter(User.id == comment.author_id).first().username
+	res = {"id": comment.id, "author": author_username, "date": comment.date, "content": comment.content}
+	return res
 
 class Storage:
 
@@ -228,41 +225,47 @@ class Storage:
             print(f"add_user error: {ie}")
         return convert_user_format(user)
 
-    def get_user_by_id(self, user_id: int):
-        return convert_user_format(self.session.query(User).filter(User.id == user_id).first())
-
-    def modify_user(self, username: str, email: str, firstname: str, lastname: str, user_id: int):
-        target = self.session.query(User).filter(User.id == user_id).first()
-        if target:
-            target.username  = username
-            target.email     = email
-            target.firstname = firstname
-            target.lastname  = lastname
-        self.session.commit()
-
     def get_user_password(self, user_id: int):
         user: User = self.session.query(User).filter(User.id == user_id).first()
         if not user:
             return None
         return user.password.hashed_password
 
-    def get_all_users(self):
-        return [convert_user_format(u) for u in self.session.query(User).all()]
+	def get_user_by_id(self, element: int | str, iscurrent: bool = False):
+		if iscurrent == True:
+			return convert_user_format(self.session.query(User).filter(User.id == element).first())
+		if isinstance(element, str):
+			user = convert_user_format(self.session.query(User).filter(User.username == element).first())
+			pic = self.session.query(ProfilePic).filter(ProfilePic.user_id == element).first()
+		else:
+			user =  convert_user_format(self.session.query(User).filter(User.id == element).first())
+			pic: ProfilePic = self.session.query(ProfilePic).filter(ProfilePic.user_id == user['id']).first()
+		if not pic:
+			return {'user_id': user['id'], 'username': user['username'], 'pic_url': None}
+		return {'user_id': user['id'], 'username': user['username'], 'pic_url': pic.url}
 
-    def modify_password(self, new_password: str, user_id: int):
-        target: Password = self.session.query(Password).filter(Password.user_id == user_id).first()
-        if not target:
-            return None
-        target.hashed_password = new_password
-        self.session.commit()
-
-    def add_profile_pic(self, user_id: int, image_url: str):
-        img: ProfilePic = self.session.query(ProfilePic).filter(ProfilePic.user_id == user_id).first()
-        if not img:
-            self.session.add(ProfilePic(user_id=user_id, url=image_url))
-        else:
-            img.url = image_url
-        self.session.commit()
+	def modify_user(self, username: str, email: str, firstname: str, lastname: str, image_url: str, user_id: int):
+		"""
+		DESK:
+		Remove user corresponding of gived id, and recreate with new info + old id
+		"""
+		target = self.session.query(User).filter(User.id == user_id).first()
+		if target:
+			target.username = username
+			target.email = email
+			target.firstname = firstname
+			target.lastname = lastname
+			pic: ProfilePic = self.session.query(ProfilePic).filter(ProfilePic.user_id == user_id).first()
+			if pic:
+				pic.url = image_url
+				self.session.commit()
+			else:
+				profilepic = ProfilePic(
+					user_id=user_id,
+					url=image_url
+				)
+				self.session.add(profilepic)
+				self.session.commit()
 
     def get_profile_pic(self, user_id: int):
         instance: ProfilePic = self.session.query(ProfilePic).filter(ProfilePic.user_id == user_id).first()
@@ -278,13 +281,21 @@ class Storage:
     def get_comment(self, id):
         return convert_comment_format(self.session.query(Comment).filter(Comment.id == id).first())
 
-    def custom_comment(self, id: int, new_content: str):
-        comment: Comment = self.session.query(Comment).filter(Comment.id == id).first()
-        if not comment:
-            return None
-        comment.content = new_content
-        self.session.commit()
-        return convert_comment_format(comment)
+	def add_profile_pic(self, user_id: int, image_url: str):
+		"""
+		DESK:
+		Set in db new image profile and replace old by new
+		"""
+		img: ProfilePic = self.session.query(ProfilePic).filter(ProfilePic.user_id == user_id).first()
+		if not img:
+			profilepic = ProfilePic(
+				user_id=user_id,
+				url=image_url
+			)
+			self.session.add(profilepic)
+		else:
+			img.url = image_url
+		self.session.commit()
 
     def get_comments(self, chunk):
         comments_list = self.session.query(Comment).all()
@@ -301,6 +312,78 @@ class Storage:
             chunk += 1
         return chunk_comments
 
+	def add_comment(self, content: str, author_id: int):
+		"""
+		DESK:
+		Set in DB the comment and metadata of this
+		date : mm/jj/aaaa : must be an array of int: 0[mm], 1[jj], 2[aaaa]
+		author : author username
+		"""
+		date = datetime.datetime.now()
+		comment = Comment(
+			content=content,
+			author_id=author_id,
+			date=date
+		)
+		self.session.add(comment)
+		self.session.commit()
+		return convert_comment_format(comment, self.session)
+		
+	def get_comment(self, id):
+		return convert_comment_format(self.session.query(Comment).filter(Comment.id == id).first(), self.session)
+
+	def custom_comment(self, id: int, new_content: str):
+		comment: Comment = self.session.query(Comment).filter(Comment.id == id).first()
+		if not comment:
+			return None
+		comment.content = new_content
+		self.session.commit()
+		return convert_comment_format(comment, self.session)
+
+	def get_comments(self, chunk):
+		comments_list = self.session.query(Comment).all()
+		comments = [
+			{"id": it.id, "content": it.content, "author": self.session.query(User).filter(User.id == it.author_id).first().username, "date": it.date} 
+			for it in comments_list
+		]
+		comments_reversed = comments[::-1]
+		return comments_reversed[chunk : chunk + 10]
+
+	def delete_comments(self, comment_id):
+		comment = self.session.query(Comment).filter(Comment.id == comment_id).first()
+		if comment:
+			self.session.delete(comment)
+			self.session.commit()
+
+	# def add_movie(self, title: str, release_date: str, mp4_path: str):
+	# 	"""
+	# 	DESK:
+	# 	Store movie in DB
+	# 	"""
+	# 	movie = {"title": title, "release_date": release_date, "mp4_path": mp4}
+	# 	self.movies.append(movie)
+	# 	return movie
+	
+	# def get_movie(self, title: str, release_date: str):
+	# 	"""
+	# 	DESK:
+	# 	Get mp4_path from a move in DB with title and release_date
+	# 	"""
+	# 	for m in self.movies:
+	# 		if m["title"] == title and m["release_date"] == release_date:
+	# 			return m.mp4_path
+	# 	return None
+
+	# def remove_movie(self, title: str, release_date: str):
+	# 	"""
+	# 	DESK:
+	# 	Remove movie in DB with title and release_date
+	# 	"""
+	# 	for m in self.movies:
+	# 		if m["title"] == title and m["release_date"] == release_date:
+	# 			self.movies.remove(m)
+	# 			return True
+	# 	return False
 
 def get_storage(db: Session = Depends(get_db)):
-    return Storage(db)
+	return Storage(db)
