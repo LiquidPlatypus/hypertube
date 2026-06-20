@@ -1,6 +1,10 @@
+import asyncio
+import logging
 import httpx
 from dataclasses import dataclass
 from typing import Optional, List
+
+logger = logging.getLogger(__name__)
 
 ARCHIVE_SEARCH_URL = "https://archive.org/advancedsearch.php"
 ARCHIVE_METADATA_URL = "https://archive.org/metadata/{identifier}"
@@ -68,17 +72,40 @@ async def search_archive(
     return results
 
 
-async def get_torrent_url(identifier: str) -> Optional[str]:
-    url = ARCHIVE_METADATA_URL.format(identifier=identifier)
-    async with httpx.AsyncClient(timeout=15) as client:
-        r = await client.get(url)
-        r.raise_for_status()
-        data = r.json()
+async def get_torrent_url(identifier: str, attempts: int = 3) -> Optional[str]:
+    """Resolve the .torrent download URL from Archive.org metadata.
 
-    for f in data.get("files", []):
-        if f.get("format") == "Archive BitTorrent":
-            name = f.get("name", "")
-            return f"{ARCHIVE_DOWNLOAD_BASE}/{identifier}/{name}"
+    The metadata endpoint intermittently times out or 5xx's. Retry transient
+    failures with exponential backoff; on persistent failure return None so the
+    caller can mark the movie failed instead of crashing the request.
+    """
+    url = ARCHIVE_METADATA_URL.format(identifier=identifier)
+    # Separate connect vs. read so a slow metadata response doesn't hang forever.
+    timeout = httpx.Timeout(connect=10.0, read=20.0, write=10.0, pool=10.0)
+    last_exc: Optional[Exception] = None
+    async with httpx.AsyncClient(timeout=timeout, follow_redirects=True) as client:
+        for attempt in range(attempts):
+            try:
+                r = await client.get(url)
+                r.raise_for_status()
+                data = r.json()
+                for f in data.get("files", []):
+                    if f.get("format") == "Archive BitTorrent":
+                        name = f.get("name", "")
+                        return f"{ARCHIVE_DOWNLOAD_BASE}/{identifier}/{name}"
+                return None  # metadata fetched, no torrent in it — don't retry
+            except httpx.HTTPStatusError as e:
+                last_exc = e
+                if e.response.status_code < 500:
+                    logger.warning(f"[Archive] metadata {e.response.status_code} for {identifier} — no retry")
+                    return None
+                logger.warning(f"[Archive] metadata {e.response.status_code} (attempt {attempt + 1}/{attempts}) for {identifier}")
+            except httpx.HTTPError as e:
+                last_exc = e
+                logger.warning(f"[Archive] metadata error (attempt {attempt + 1}/{attempts}) for {identifier}: {e!r}")
+            if attempt < attempts - 1:
+                await asyncio.sleep(0.5 * (2 ** attempt))
+    logger.error(f"[Archive] get_torrent_url gave up for {identifier}: {last_exc!r}")
     return None
 
 

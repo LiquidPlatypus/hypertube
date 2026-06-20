@@ -1386,109 +1386,141 @@ async def stream_progress(movie_id: int):
         retries = 0
         MAX_RETRIES = 3  # re-kick the pipeline on transient torrent failures
 
+        err_count = 0
+        MAX_ERR = 5  # total iteration errors before we give up on this stream
+
         while True:
-            if not kicked_off:
-                kicked_off = True
-                await _ensure_pipeline_started(movie_id)
-
-            db = SessionLocal()
             try:
-                movie = get_movie_by_id(db, movie_id)
-            finally:
-                db.close()
-            if movie is None:
-                yield {"data": json.dumps({"status": "idle", "progress": 100})}
-                break
+                if not kicked_off:
+                    kicked_off = True
+                    try:
+                        await _ensure_pipeline_started(movie_id)
+                    except Exception as e:
+                        # Never let a transient pipeline error (e.g. archive.org
+                        # ReadTimeout) crash the SSE TaskGroup — that surfaces as an
+                        # uncaught ASGI exception and leaves the overlay spinning.
+                        logger.error(f"[SSE] pipeline start crashed for movie_id={movie_id}: {e!r}")
+                        db = SessionLocal()
+                        try:
+                            update_movie_status(db, movie_id, MovieStatus.failed)
+                        finally:
+                            db.close()
 
-            # Classify direct vs. transcode from the real target file. The DB
-            # mp4_path is written only after the 30 MB buffer fills, so early SSE
-            # ticks would otherwise see "" → ext "" → is_direct False and wrongly
-            # spin up a transcode on a .mp4 that should stream directly. Fall back
-            # to the torrent's pinned target file when the DB path isn't set yet.
-            file_path = movie.mp4_path or ""
-            if not file_path:
-                dh_early = torrent_manager._handles.get(movie_id)
-                if dh_early is not None and dh_early.file_path:
-                    file_path = dh_early.file_path
-                else:
-                    file_path = torrent_manager.resolve_video_file(movie_id) or ""
-            ext = os.path.splitext(file_path.lower())[1]
-            is_direct = ext in VIDEO_DIRECT
-
-            # Movie marked ready in DB — decide if we can release the overlay.
-            if movie.status == MovieStatus.ready and file_path:
-                if is_direct:
+                db = SessionLocal()
+                try:
+                    movie = get_movie_by_id(db, movie_id)
+                finally:
+                    db.close()
+                if movie is None:
                     yield {"data": json.dumps({"status": "idle", "progress": 100})}
                     break
-                if _fmp4_state_idle(file_path):
-                    yield {"data": json.dumps({"status": "idle", "progress": 100})}
-                    break
-                # Need transcode — ensure worker is running, report progress.
-                _precompute_fmp4_cache(file_path)
-                yield {"data": json.dumps(_fmp4_progress_event(file_path))}
-                await asyncio.sleep(1)
-                continue
 
-            # Transient failure (e.g. archive.org 500 on the .torrent) — don't
-            # drop the user onto an empty player. Re-kick the pipeline a few
-            # times before surfacing a hard error.
-            if movie.status == MovieStatus.failed:
-                if retries < MAX_RETRIES:
-                    retries += 1
-                    logger.info(f"[SSE] movie_id={movie_id} failed — retry {retries}/{MAX_RETRIES}")
-                    await _ensure_pipeline_started(movie_id)
-                    yield {"data": json.dumps({"status": "starting", "progress": 0, "speed_kbs": 0, "peers": 0})}
-                    await asyncio.sleep(2)
-                    continue
-                yield {"data": json.dumps({"status": "error", "progress": 0})}
-                break
+                # Classify direct vs. transcode from the real target file. The DB
+                # mp4_path is written only after the 30 MB buffer fills, so early SSE
+                # ticks would otherwise see "" → ext "" → is_direct False and wrongly
+                # spin up a transcode on a .mp4 that should stream directly. Fall back
+                # to the torrent's pinned target file when the DB path isn't set yet.
+                file_path = movie.mp4_path or ""
+                if not file_path:
+                    dh_early = torrent_manager._handles.get(movie_id)
+                    if dh_early is not None and dh_early.file_path:
+                        file_path = dh_early.file_path
+                    else:
+                        file_path = torrent_manager.resolve_video_file(movie_id) or ""
+                ext = os.path.splitext(file_path.lower())[1]
+                is_direct = ext in VIDEO_DIRECT
 
-            # Movie not ready — driven by torrent state.
-            dh = torrent_manager._handles.get(movie_id)
-            if dh is None:
-                if movie.status in (MovieStatus.pending, MovieStatus.downloading) and start_wait < MAX_WAIT:
-                    start_wait += 1
-                    yield {"data": json.dumps({"status": "starting", "progress": 0, "speed_kbs": 0, "peers": 0})}
-                    await asyncio.sleep(1)
-                    continue
-                yield {"data": json.dumps({"status": "idle", "progress": 100})}
-                break
-
-            start_wait = 0
-            prog = torrent_manager.get_progress(movie_id)
-            if prog is None:
-                yield {"data": json.dumps({"status": "idle", "progress": 100})}
-                break
-
-            # A direct .mp4/.webm can only be range-streamed raw once it's fully on
-            # disk (its moov atom may sit at the end). While still downloading, even
-            # a "direct" file goes through the fmp4 remux so the overlay tracks the
-            # transcode and the browser gets a moov-front fragmented stream.
-            resolved = torrent_manager.resolve_video_file(movie_id) or file_path
-            serve_direct = is_direct and bool(resolved) and _is_file_complete(resolved)
-
-            if not serve_direct:
-                # Non-direct, or direct-but-incomplete: drive the growing fmp4.
-                if dh.buffer_event.is_set() and resolved:
-                    _start_growing_fmp4_writer(resolved, movie_id)
-                    if _fmp4_state_idle(resolved):
+                # Movie marked ready in DB — decide if we can release the overlay.
+                if movie.status == MovieStatus.ready and file_path:
+                    if is_direct:
                         yield {"data": json.dumps({"status": "idle", "progress": 100})}
                         break
-                    yield {"data": json.dumps(_fmp4_progress_event(resolved))}
+                    if _fmp4_state_idle(file_path):
+                        yield {"data": json.dumps({"status": "idle", "progress": 100})}
+                        break
+                    # Need transcode — ensure worker is running, report progress.
+                    _precompute_fmp4_cache(file_path)
+                    yield {"data": json.dumps(_fmp4_progress_event(file_path))}
                     await asyncio.sleep(1)
                     continue
-                # Buffer not ready yet — still show torrent download progress.
+
+                # Transient failure (e.g. archive.org 500 on the .torrent) — don't
+                # drop the user onto an empty player. Re-kick the pipeline a few
+                # times before surfacing a hard error.
+                if movie.status == MovieStatus.failed:
+                    if retries < MAX_RETRIES:
+                        retries += 1
+                        logger.info(f"[SSE] movie_id={movie_id} failed — retry {retries}/{MAX_RETRIES}")
+                        try:
+                            await _ensure_pipeline_started(movie_id)
+                        except Exception as e:
+                            logger.error(f"[SSE] pipeline re-kick crashed for movie_id={movie_id}: {e!r}")
+                        yield {"data": json.dumps({"status": "starting", "progress": 0, "speed_kbs": 0, "peers": 0})}
+                        await asyncio.sleep(2)
+                        continue
+                    yield {"data": json.dumps({"status": "error", "progress": 0})}
+                    break
+
+                # Movie not ready — driven by torrent state.
+                dh = torrent_manager._handles.get(movie_id)
+                if dh is None:
+                    if movie.status in (MovieStatus.pending, MovieStatus.downloading) and start_wait < MAX_WAIT:
+                        start_wait += 1
+                        yield {"data": json.dumps({"status": "starting", "progress": 0, "speed_kbs": 0, "peers": 0})}
+                        await asyncio.sleep(1)
+                        continue
+                    yield {"data": json.dumps({"status": "idle", "progress": 100})}
+                    break
+
+                start_wait = 0
+                prog = torrent_manager.get_progress(movie_id)
+                if prog is None:
+                    yield {"data": json.dumps({"status": "idle", "progress": 100})}
+                    break
+
+                # A direct .mp4/.webm can only be range-streamed raw once it's fully on
+                # disk (its moov atom may sit at the end). While still downloading, even
+                # a "direct" file goes through the fmp4 remux so the overlay tracks the
+                # transcode and the browser gets a moov-front fragmented stream.
+                resolved = torrent_manager.resolve_video_file(movie_id) or file_path
+                serve_direct = is_direct and bool(resolved) and _is_file_complete(resolved)
+
+                if not serve_direct:
+                    # Non-direct, or direct-but-incomplete: drive the growing fmp4.
+                    if dh.buffer_event.is_set() and resolved:
+                        _start_growing_fmp4_writer(resolved, movie_id)
+                        if _fmp4_state_idle(resolved):
+                            yield {"data": json.dumps({"status": "idle", "progress": 100})}
+                            break
+                        yield {"data": json.dumps(_fmp4_progress_event(resolved))}
+                        await asyncio.sleep(1)
+                        continue
+                    # Buffer not ready yet — still show torrent download progress.
+                    yield {"data": json.dumps(prog)}
+                    await asyncio.sleep(1)
+                    continue
+
+                # Direct AND complete: release — browser can range-seek the raw file.
+                if dh.buffer_event.is_set():
+                    yield {"data": json.dumps({"status": "idle", "progress": 100})}
+                    break
+
                 yield {"data": json.dumps(prog)}
                 await asyncio.sleep(1)
-                continue
-
-            # Direct AND complete: release — browser can range-seek the raw file.
-            if dh.buffer_event.is_set():
-                yield {"data": json.dumps({"status": "idle", "progress": 100})}
-                break
-
-            yield {"data": json.dumps(prog)}
-            await asyncio.sleep(1)
+            except Exception as e:
+                # Defense-in-depth: any unexpected error in one iteration must not
+                # crash the SSE TaskGroup (eliminatory: no uncaught server errors).
+                # Log, back off, and give up after MAX_ERR total — a single stream
+                # racking up that many errors means something is genuinely broken.
+                err_count += 1
+                logger.error(
+                    f"[SSE] generator iteration error movie_id={movie_id} "
+                    f"({err_count}/{MAX_ERR}): {e!r}"
+                )
+                if err_count >= MAX_ERR:
+                    yield {"data": json.dumps({"status": "error", "progress": 0})}
+                    break
+                await asyncio.sleep(1)
 
     return EventSourceResponse(_generator())
 
