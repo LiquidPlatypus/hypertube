@@ -10,6 +10,9 @@ import threading
 import time
 from typing import Optional, List
 
+from dotenv import load_dotenv
+from utils import env_path
+
 logger = logging.getLogger(__name__)
 
 from email.utils import formatdate

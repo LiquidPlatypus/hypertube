@@ -9,6 +9,8 @@ import { useTranslation } from "../hooks/useTranslation.tsx";
 import Thumbnail from "../components/ui/Thumbnail.tsx";
 import FiltersBar from "../components/ui/FiltersBar.tsx";
 
+import { getCurrentLang } from "../lang/i18n.tsx";
+
 import styles from "./HomePage.module.css";
 
 interface Movie {
