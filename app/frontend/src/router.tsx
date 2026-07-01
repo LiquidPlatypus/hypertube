@@ -6,8 +6,6 @@ import LoginPage from "./pages/LoginPage.tsx";
 import ProfilInfo from "./pages/ProfilePage.tsx";
 import VideoPage from "./pages/VideoPage.tsx";
 import PublicProfile from "./pages/PublicProfile.tsx";
-import FgPassword from "./pages/FgPasswordPage.tsx";
-import ResetPasswordPage from "./pages/ResetPasswordPage.tsx";
 
 export const router = createBrowserRouter([
 	{
@@ -31,13 +29,13 @@ export const router = createBrowserRouter([
 						),
 					},
 					{
-						path: "/movie/:id",
+						path: "/movie/:archiveId",
 						element: (
 							<VideoPage />
 						),
 					},
 					{
-						path: "/users/:username",
+						path: "/users/:id",
 						element: (
 							<PublicProfile />
 						),
@@ -48,26 +46,10 @@ export const router = createBrowserRouter([
 			{
 				path: "auth/login",
 				element: <LoginPage />,
-				children: [
-
-				]
 			},
 			{
 				path: "auth/register",
 				element: <LoginPage />,
-			},
-			// Password reset routes
-			{
-				path: "/auth/login/forgot-password",
-				element: (
-					<FgPassword />
-				),
-			},
-			{
-				path:"reset/:token",
-				element: (
-					<ResetPasswordPage />
-				)
 			},
 		],
 	},

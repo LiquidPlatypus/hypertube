@@ -55,16 +55,14 @@ from fastapi.responses import JSONResponse
 from auth import router as auth_router
 from utils import verif_access_token
 from users import router as users_router
-# from .stream import router as stream_router
 from movies import router as movies_router
 from comment import router as comment_router
-from mails import router as mails_router
-import shutil
 
 from model import RegisterRequest, LoginRequest, ModifyFormRequest, PasswordForm, EmailRequest, NewPasswordRequest
-from database import User, Password, create_or_get_movie, get_storage, Storage
+from database import User, Password, create_or_get_movie
 from repositories.user_repository import UserRepository
 from models_db import get_db, DB, engine, SessionLocal
+from database import get_storage, Storage
 from jose import JWTError, jwt
 
 ALGORITHM = "HS256"
@@ -143,7 +141,6 @@ app.include_router(auth_router)
 app.include_router(users_router)
 app.include_router(movies_router)
 app.include_router(comment_router)
-app.include_router(mails_router)
 
 
 @app.get("/api/verify-token/{token}")
@@ -157,6 +154,7 @@ async def verify_user_token(token: str, storage: Storage = Depends(get_storage))
     except JWTError:
         raise HTTPException(status_code=401, detail="Unauthorized")
 
+
 @app.get("/api/hello")
 async def get_hello():
-	return {"message": "Hello from FastAPI 👋"}
+    return {"message": "Hello from FastAPI"}

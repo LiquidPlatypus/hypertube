@@ -1,14 +1,9 @@
 from fastapi import HTTPException, Depends
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
-from database import Storage, get_storage
+from database import get_storage, Storage
 from fastapi.security import OAuth2PasswordBearer
-from dotenv import load_dotenv
-from pathlib import Path
 import os
-
-env_path = Path(__file__).parent / ".env"
-load_dotenv(dotenv_path=env_path)
 
 ALGORITHM = "HS256"
 SECRET_KEY = os.getenv("SECRET_KEY")  # Ben faut proteger sa niveau sécurité sinon t'es pas gentil
@@ -30,7 +25,7 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
 def verif_access_token(token: str = Depends(oauth2_scheme), storage: Storage = Depends(get_storage)):
 	try:
 		payload = jwt.decode(token, SECRET_KEY, algorithms=ALGORITHM)
-		user = storage.get_user_by_id(int(payload["sub"]), True)
+		user = storage.get_user_by_id(int(payload["sub"]))
 		if user == None:
 			raise HTTPException(
 				status_code=410,

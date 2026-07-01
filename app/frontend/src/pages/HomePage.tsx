@@ -2,7 +2,7 @@ import * as React from "react";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState, useCallback } from "react";
 import { useSearch } from "../utils/searchContext.tsx";
-import {type FiltersState, useFilters} from "../utils/filterContext.tsx";
+import { useFilters } from "../utils/filterContext.tsx";
 
 import { useTranslation } from "../hooks/useTranslation.tsx";
 
@@ -60,7 +60,7 @@ export default function HomePage() {
 	const isFetchingRef = React.useRef(false);
 
 	const loadMovies = useCallback(
-		async (query: string, pageNum: number, isNewSearch: boolean, filters: FiltersState) => {
+		async (query: string, pageNum: number, isNewSearch: boolean) => {
 			if (isFetchingRef.current) return;
 			isFetchingRef.current = true;
 			setLoading(true);
@@ -68,25 +68,18 @@ export default function HomePage() {
 
 			try {
 				const params = new URLSearchParams();
-
-				function normalizeRating(rating: number): number {
-					if (rating <= 10) return rating;
-					return rating / 10;
-				}
-
 				params.set("page", String(pageNum));
 
 				if (query) params.set("query", query);
 
 				if (filters.genreId != null) params.set("genre", String(filters.genreId));
-				if (filters.minRating !== null) {
-					const rating = normalizeRating(filters.minRating);
-					params.set("min_rating", String(rating));
+				if (filters.minRating != null) {
+					const minRatingVal = filters.minRating / 10;
+					params.set("min_rating", String(minRatingVal));
 				}
 				if (filters.yearFrom != null) params.set("year_from", String(filters.yearFrom));
 				if (filters.yearTo != null) params.set("year_to", String(filters.yearTo));
 				if (filters.sort) params.set("sort", filters.sort);
-				params.set("language", getCurrentLang() === "fr" ? "fr-FR" : "en-US");
 
 				const url = `/api/movies?${params.toString()}`;
 
@@ -116,7 +109,7 @@ export default function HomePage() {
 				isFetchingRef.current = false;
 			}
 		},
-		[]
+		[filters]
 	);
 
 	const observerReference = useCallback(
@@ -143,21 +136,13 @@ export default function HomePage() {
 
 	useEffect(() => {
 		resettingRef.current = true;
-		isFetchingRef.current = false;
 		setResults([]);
-		setHasMore(true);
 		setPage(1);
-
-		loadMovies(searchTerm, 1, true, filters).finally(() => {
-			resettingRef.current = false;
-		});
-
-		observer.current?.disconnect();
-	}, [searchTerm, filters, loadMovies]);
+		setHasMore(true);
+	}, [searchTerm, filters]);
 
 	useEffect(() => {
-		if (page === 1) return;
-		loadMovies(searchTerm, page, page === 1, filters);
+		loadMovies(searchTerm, page, page === 1);
 	}, [page, searchTerm, loadMovies]);
 
 	useEffect(() => {

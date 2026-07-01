@@ -54,7 +54,6 @@
 	"video.post": "Poster",
 
 	"loading": "Chargement...",
-	"send": "Envoyer",
 
 	"filters.sort.relevance": "Popularité",
 	"filters.sort.score.desc": "Note TMDB ↓",
@@ -68,8 +67,5 @@
 	"filters.year.to": "Année (à)",
 	"filters.sort": "Trier",
 	"filters.reset": "Réinitialiser",
-	"filters.all": "Tous",
-
-	"passwordResetText": "Un mail vous sera envoyé avec un lien pour réinitialiser votre mot de passe.",
-	"newPassword": "Veuillez entrer votre nouveau mot de passe."
+	"filters.all": "Tous"
 }

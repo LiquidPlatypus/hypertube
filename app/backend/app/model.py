@@ -1,5 +1,4 @@
 from pydantic import BaseModel, EmailStr
-from fastapi import UploadFile, File
 
 class RegisterRequest(BaseModel):
 	"""
@@ -29,7 +28,6 @@ class ModifyFormRequest(BaseModel):
 	firstname: str
 	lastname: str
 	email: EmailStr
-	file: UploadFile | None = File(default=None)
 
 class PasswordForm(BaseModel):
 	"""
@@ -57,12 +55,9 @@ class SuccessException(Exception):
 class CommentForm(BaseModel):
 	content: str
 
-class ChunkCommentForm(BaseModel):
-	chunk: int
-
 class CustomCommentForm(BaseModel):
 	id: int
 	new_content: str
 
-class ChunkInfoForm(BaseModel):
-	pos: int
+class ChunkCommentForm(BaseModel):
+	chunk: int

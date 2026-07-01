@@ -8,7 +8,6 @@ import Input from "../components/ui/Input.tsx";
 import { useTranslation } from "../hooks/useTranslation.tsx";
 
 import styles from "./LoginScreen.module.css";
-import {useNavigate} from "react-router-dom";
 
 interface LoginScreenProps {
 	onLoginSuccess?: () => void;
@@ -37,7 +36,6 @@ const FT_AUTHORIZE_URL = "https://api.intra.42.fr/oauth/authorize";
 
 export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 	const { t } = useTranslation();
-	const navigate = useNavigate();
 
 	const [isLogin, setIsLogin] = useState(true);
 	const [message, setMessage] = useState<string>("");
@@ -285,6 +283,7 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 				</p>
 			)}
 
+			{/* UI V1: 2 boutons clairs */}
 			<div className={styles.LoginRegisterBtn}>
 				<Button
 					text={t("login.button")}
@@ -335,7 +334,7 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 							type="button"
 							className={styles.ForgotPasswordLink}
 							onClick={() => {
-								navigate("/auth/login/forgot-password");
+
 							}}
 							disabled={isLoading}
 						>
