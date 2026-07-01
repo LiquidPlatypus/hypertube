@@ -46,7 +46,6 @@ fclean: #Removes everything
 	@echo "$(CYA)=== Cleaning data...$(STOP)"
 	@make clean
 	@make iclean
-	@make cleandb
 	@sudo docker system prune -a --volumes
 	@echo "$(CYA)=== Removing files...$(STOP)"
 	@sudo rm -rf mariadb/data
