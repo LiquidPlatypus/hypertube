@@ -1,42 +1,44 @@
-from fastapi import APIRouter, Depends, File, UploadFile, HTTPException
-from model import ModifyFormRequest, PasswordForm, NewPasswordRequest, EmailRequest
-from database import get_storage, Storage
-from utils import create_access_token, verif_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
-from fastapi.responses import FileResponse
-from datetime import timedelta
-from fastapi_mail import FastMail, MessageSchema, ConnectionConfig
+from fastapi import APIRouter, Depends, File, UploadFile, Query, Form
+from model import ModifyFormRequest, PasswordForm, NewPasswordRequest
+from database import Storage, get_storage
+from utils import verif_access_token
+from fastapi.responses import FileResponse, JSONResponse
+from pydantic import EmailStr
 import os
 
 router = APIRouter()
-conf = ConnectionConfig(
-	MAIL_USERNAME="test@example.com",
-	MAIL_PASSWORD="password",
-	MAIL_PORT=1025,
-	MAIL_SERVER="localhost",
-	MAIL_FROM="test@example.com",
-	MAIL_STARTTLS = True,
-	MAIL_SSL_TLS = False,
-	USE_CREDENTIALS=False,
-)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 UPLOAD_DIR = os.path.join(BASE_DIR, "../profile-pic")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-@router.post("/api/modify-profile")
-async def modify_user(data: ModifyFormRequest, current_user=Depends(verif_access_token), storage: Storage = Depends(get_storage)):
+@router.patch("/api/users")
+async def modify_user(
+	username: str = Form(),
+    firstname: str = Form(),
+    lastname: str = Form(),
+    email: EmailStr = Form(),
+	file: UploadFile | None = File(default=None),
+	# data: ModifyFormRequest,
+	current_user=Depends(verif_access_token),
+	storage: Storage = Depends(get_storage)
+):
 	"""
 	Return Value :
 	True if information was correct and changed or else False
 	"""
-	user = storage.modify_user(data.username, data.email, data.firstname, data.lastname, current_user["id"])
+	file_path = os.path.join(UPLOAD_DIR, file.filename)
+
+	with open(file_path, "wb") as buffer:
+		buffer.write(file.file.read())
+	storage.modify_user(username, email, firstname, lastname, file_path, current_user["id"])
 	return {"returnValue": True}
 
 @router.post("/api/upload-picture")
 async def upload_picture(
 	file: UploadFile = File(...),
 	current_user=Depends(verif_access_token),
-	storage: Storage = Depends(get_storage)
+	storage: Storage=Depends(get_storage)
 ):
 	file_path = os.path.join(UPLOAD_DIR, file.filename)
 
@@ -57,6 +59,10 @@ async def get_current_profile_pic(current_user=Depends(verif_access_token), stor
 @router.get("/api/me")
 async def read_user_me(current_user=Depends(verif_access_token)):
 	return {"user": current_user}
+
+@router.get("/api/users", response_class=JSONResponse)
+async def get_other_profile(username: str | int = Query(...), storage: Storage = Depends(get_storage)):
+	return storage.get_user_by_id(username)
 
 @router.post("/api/reset-password")
 async def reset_password(data: PasswordForm, current_user=Depends(verif_access_token), storage: Storage = Depends(get_storage)):
@@ -80,51 +86,8 @@ async def forgot_password(current_user=Depends(verif_access_token)):
 	print(f"{username} load forgot password form\n")
 	return {"returnValue": True}
 
-@router.post("/api/send-email")
-async def send_email(data: EmailRequest, storage: Storage = Depends(get_storage)):
-	access_token = None
-	user_list = storage.get_all_users()
-	for u in user_list:
-		if u["email"] == data.email:
-			access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-			access_token = create_access_token(data={"sub": str(u["id"])}, expires_delta=access_token_expires)
-	if access_token == None:
-		return {"returnValue": False}
-	contenthtml = f"""<p>PAYLOAD: \n\n\nlocalhost:5173/reset/{access_token}\n\n\n:END PAYLOAD</p>"""
-	message = MessageSchema(
-		subject="Reset Password Mail",
-		recipients=[data.email],
-		body=contenthtml,
-		subtype="html"
-	)
+@router.get("/api/users")
+async def get_users(current_user=Depends(verif_access_token), storage: Storage = Depends(get_storage)):
+	return storage.get_all_users()
 
-	print(message)
-	return {"returnValue": True}
 
-@router.get("/api/users/{user_id}")
-async def get_user_public(user_id: int, current_user=Depends(verif_access_token)):
-	u = storage.get_user_by_id(user_id)
-	if not u:
-		raise HTTPException(status_code=404, detail="User not found")
-
-	# NE RENVOIE PAS L'EMAIL
-	public = {
-		"id": u["id"],
-		"username": u["username"],
-		"firstname": u["firstname"],
-		"lastname": u["lastname"],
-	}
-	return {"user": public}
-
-@router.get("/api/users/{user_id}/profile-pic")
-async def get_user_profile_pic(user_id: int, current_user=Depends(verif_access_token)):
-	u = storage.get_user_by_id(user_id)
-	if not u:
-		raise HTTPException(status_code=404, detail="User not found")
-
-	url = storage.get_profile_pic(user_id)
-	if url and url[:4] == "http":
-		return url
-	if url is None:
-		return None
-	return FileResponse(url)

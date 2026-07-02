@@ -2,9 +2,10 @@ import * as React from "react";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState, useCallback } from "react";
 import { useSearch } from "../utils/searchContext.tsx";
-import { useFilters } from "../utils/filterContext.tsx";
+import {type FiltersState, useFilters} from "../utils/filterContext.tsx";
 
 import { useTranslation } from "../hooks/useTranslation.tsx";
+import { getCurrentLang } from "../lang/i18n.tsx";
 
 import Thumbnail from "../components/ui/Thumbnail.tsx";
 import FiltersBar from "../components/ui/FiltersBar.tsx";
@@ -13,12 +14,10 @@ import styles from "./HomePage.module.css";
 
 interface Movie {
 	id: number;
-	archive_id: string;
 	title: string;
-	poster_url: string | null;
-	year: number | null;
-	rating: number | null;
-	watched: boolean;
+	poster_path: string;
+	release_date: string;
+	score: number;
 }
 
 export default function HomePage() {
@@ -60,30 +59,38 @@ export default function HomePage() {
 	const isFetchingRef = React.useRef(false);
 
 	const loadMovies = useCallback(
-		async (query: string, pageNum: number, isNewSearch: boolean) => {
+		async (query: string, pageNum: number, isNewSearch: boolean, filters: FiltersState) => {
 			if (isFetchingRef.current) return;
 			isFetchingRef.current = true;
 			setLoading(true);
-			setError(null);
+			setError("");
 
 			try {
 				const params = new URLSearchParams();
+
+				function normalizeRating(rating: number): number {
+					if (rating <= 10) return rating;
+					return rating / 10;
+				}
+
 				params.set("page", String(pageNum));
 
 				if (query) params.set("query", query);
 
 				if (filters.genreId != null) params.set("genre", String(filters.genreId));
-				if (filters.minRating != null) {
-					const minRatingVal = filters.minRating / 10;
-					params.set("min_rating", String(minRatingVal));
+				if (filters.minRating !== null) {
+					const rating = normalizeRating(filters.minRating);
+					params.set("min_rating", String(rating));
 				}
 				if (filters.yearFrom != null) params.set("year_from", String(filters.yearFrom));
 				if (filters.yearTo != null) params.set("year_to", String(filters.yearTo));
 				if (filters.sort) params.set("sort", filters.sort);
+				params.set("language", getCurrentLang() === "fr" ? "fr-FR" : "en-US");
 
-				const url = `/api/movies?${params.toString()}`;
+				const url = `/api/thumbnails?${params.toString()}`;
 
 				const response = await fetch(url, {
+					method: "GET",
 					headers: { "Content-Type": "application/json" },
 				});
 
@@ -97,25 +104,27 @@ export default function HomePage() {
 				} else {
 					setResults((prev) => {
 						const merged = isNewSearch ? data : [...prev, ...data];
-						return Array.from(new Map(merged.map((m) => [m.archive_id, m])).values());
+						return Array.from(new Map(merged.map((m) => [m.id, m])).values());
 					});
 					setHasMore(true);
 				}
 			} catch (err) {
 				setError("Erreur lors de la recherche de films.");
-				console.error("Error fetching movies:", err);
+				console.error("Error fetching thumbnails:", err);
 			} finally {
 				setLoading(false);
 				isFetchingRef.current = false;
 			}
 		},
-		[filters]
+		[]
 	);
 
 	const observerReference = useCallback(
 		(node: HTMLLIElement | null) => {
 			if (!node) return;
+
 			observer.current?.disconnect();
+
 			observer.current = new IntersectionObserver(
 				(entries) => {
 					const first = entries[0];
@@ -125,24 +134,33 @@ export default function HomePage() {
 				},
 				{ rootMargin: "200px 0px", threshold: 0 }
 			);
+
 			observer.current.observe(node);
 		},
 		[hasMore]
 	);
 
-	const handleThumbnailClick = (archiveId: string) => {
-		navigate(`/movie/${archiveId}`);
+	const handleThumbnailClick = (movieId: number) => {
+		navigate(`/movie/${movieId}`);
 	};
 
 	useEffect(() => {
 		resettingRef.current = true;
+		isFetchingRef.current = false;
 		setResults([]);
-		setPage(1);
 		setHasMore(true);
-	}, [searchTerm, filters]);
+		setPage(1);
+
+		loadMovies(searchTerm, 1, true, filters).finally(() => {
+			resettingRef.current = false;
+		});
+
+		observer.current?.disconnect();
+	}, [searchTerm, filters, loadMovies]);
 
 	useEffect(() => {
-		loadMovies(searchTerm, page, page === 1);
+		if (page === 1) return;
+		loadMovies(searchTerm, page, page === 1, filters);
 	}, [page, searchTerm, loadMovies]);
 
 	useEffect(() => {
@@ -168,14 +186,14 @@ export default function HomePage() {
 						const isLast = index === results.length - 1;
 
 						return (
-							<li key={movie.archive_id} ref={isLast ? observerReference : null}>
+							<li key={movie.id} ref={isLast ? observerReference : null}>
 								<Thumbnail
-									thumbnailSrc={movie.poster_url || `https://archive.org/services/img/${movie.archive_id}`}
+									thumbnailSrc={movie.poster_path}
 									thumbnailAlt={movie.title}
 									title={movie.title}
-									year={movie.year ? String(movie.year) : undefined}
-									rating={movie.rating ?? undefined}
-									onClick={() => handleThumbnailClick(movie.archive_id)}
+									year={movie.release_date}
+									rating={movie.score}
+									onClick={() => handleThumbnailClick(movie.id)}
 								/>
 							</li>
 						);

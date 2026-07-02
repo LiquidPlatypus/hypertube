@@ -49,17 +49,13 @@ export default function RetroTvFrame({
 			setScale(next);
 		};
 
-		// 1) calcul immédiat
 		compute();
 
-		// 2) recalcul après layout stable (utile en devtools / transitions)
 		requestAnimationFrame(() => requestAnimationFrame(compute));
 
-		// 3) ResizeObserver : recalcul dès que .TVScreen change de taille
 		const ro = new ResizeObserver(() => compute());
 		ro.observe(el);
 
-		// 4) optionnel: visualViewport (Firefox RDM / zoom)
 		const vv = window.visualViewport;
 		vv?.addEventListener("resize", compute);
 

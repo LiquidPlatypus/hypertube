@@ -54,6 +54,7 @@
 	"video.noMoreComments": "No more comments.",
 
 	"loading": "Loading...",
+	"send": "Send",
 
 	"filters.sort.relevance": "Relevance",
 	"filters.sort.score.desc": "Score TMDB ↓",
@@ -67,5 +68,8 @@
 	"filters.year.to": "Year (to)",
 	"filters.sort": "Sort",
 	"filters.reset": "Reset",
-	"filters.all": "All"
+	"filters.all": "All",
+
+	"passwordResetText": "An email will be sent to you with a link to reset your password.",
+	"newPassword": "Please enter your new password."
 }

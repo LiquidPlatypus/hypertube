@@ -1,8 +1,6 @@
 app/frontend/node_modules
 app/frontend/dist
 mariadb/data
-movie_data/
-logs/
 .env
 .env.*
 venv
@@ -10,4 +8,5 @@ test
 .idea
 app/backend/app/__pycache__/
 app/backend/app/repositories/__pycache__/
+app/backend/app/downloads
 app/backend/app/.env

@@ -22,7 +22,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
 			className={`${styles.MainLayout} ${!fxEnabled ? styles.noFx : ""}`}
 			style={{
 				"--header-height": "150px",
-				"--footer-height": "100px",
+				"--footer-height": "20px",
 			} as React.CSSProperties}
 		>
 
@@ -30,6 +30,9 @@ export default function MainLayout({ children }: MainLayoutProps) {
 				<MainHeader />
 			</header>
 
+			<div className={styles.BackgroundWrapper}>
+				<div className={styles.Background}></div>
+			</div>
 
 			<main className={styles.ScrollArea}>
 				{children}
