@@ -1,5 +1,5 @@
 import * as React from "react";
-import {useState, useEffect} from "react";
+import {useState, useEffect, useRef} from "react";
 import { useParams, Link } from "react-router-dom";
 
 import Button from "../components/ui/Button.tsx";
@@ -9,20 +9,25 @@ import { useTranslation } from "../hooks/useTranslation.tsx";
 
 import styles from "./VideoPage.module.css";
 
+interface CastMember {
+	name: string;
+	character: string;
+	picture_url: string | null;
+}
+
 interface Movie {
 	id: number;
+	archive_id: string;
 	title: string;
-	tagline: string;
-	overview: string;
-	poster_path: string;
-	release_date: string;
-	runtime: number;
-	score: number;
-	cast: {
-		actor_name: string;
-		character_name: string;
-		actor_picture_path: string;
-	}[];
+	overview: string | null;
+	poster_url: string | null;
+	year: number | null;
+	runtime: number | null;
+	rating: number | null;
+	genres: string[];
+	cast: CastMember[];
+	status: string;
+	subtitles: string[];
 }
 
 interface Comment {
@@ -33,6 +38,17 @@ interface Comment {
 	date: string;
 }
 
+interface Progress {
+	progress: number;
+	speed_kbs?: number;
+	peers?: number;
+	status: string;
+	downloaded_mb?: number;
+	transcoded_mb?: number;
+	speed_x?: number | null;
+	transcoded_sec?: number;
+}
+
 export default function VideoPage() {
 	const [loading, setLoading] = useState(false);
 	const [showLoader, setShowLoader] = useState(false);
@@ -40,27 +56,27 @@ export default function VideoPage() {
 	const [error, setError] = useState<string | null>(null);
 	const [comment, setComment] = useState("");
 	const [comments, setComments] = useState<Comment[]>([]);
+	const [downloadProgress, setDownloadProgress] = useState<Progress | null>(null);
+	const [streamReady, setStreamReady] = useState(false);
+	const [streamError, setStreamError] = useState(false);
 	const commentFormRef = React.useRef<HTMLFormElement | null>(null);
-	const { id } = useParams<{ id: string }>();
+	const eventSourceRef = useRef<EventSource | null>(null);
+	const videoRef = useRef<HTMLVideoElement | null>(null);
 
+	const { archiveId } = useParams<{ archiveId: string }>();
 	const { t } = useTranslation();
 
-	const getMovieDetails = async (movieId: number) => {
+	const getMovieDetails = async (id: string) => {
 		setLoading(true);
 		setError(null);
 
 		try {
-			const url = `/api/movie/${movieId}`;
-			const response = await fetch(url, {
-				method: "GET",
-				headers: {
-					"Content-Type": "application/json",
-				},
+			const response = await fetch(`/api/movies/${id}`, {
+				headers: { "Content-Type": "application/json" },
 			});
 
-			if (!response.ok) {
+			if (!response.ok)
 				throw new Error(`HTTP error! status: ${response.status}`);
-			}
 
 			const data: Movie = await response.json();
 			setMovieDetails(data);
@@ -112,6 +128,40 @@ export default function VideoPage() {
 		setComment("");
 	}
 
+	// Start SSE progress once we have the DB id
+	const startProgressSSE = (movieDbId: number) => {
+		if (eventSourceRef.current) eventSourceRef.current.close();
+		const es = new EventSource(`/api/stream/${movieDbId}/progress`);
+		eventSourceRef.current = es;
+		es.onmessage = (ev) => {
+			try {
+				const data: Progress = JSON.parse(ev.data);
+				if (data.status === "idle") {
+					es.close();
+					eventSourceRef.current = null;
+					setDownloadProgress(null);
+					setStreamReady(true);
+				} else if (data.status === "error") {
+					// Pipeline gave up (e.g. torrent source unreachable). Show the
+					// error panel with a retry button instead of an empty player.
+					es.close();
+					eventSourceRef.current = null;
+					setDownloadProgress(null);
+					setStreamError(true);
+				} else {
+					setDownloadProgress(data);
+				}
+			} catch {
+				// ignore parse errors
+			}
+		};
+		es.onerror = () => {
+			es.close();
+			eventSourceRef.current = null;
+			// Don't flip to ready on error — leave overlay up so user knows.
+		};
+	};
+
 	useEffect(() => {
 		void getComments().catch(console.error);
 	}, []);
@@ -119,7 +169,7 @@ export default function VideoPage() {
 	React.useEffect(() => {
 		let cancelled = false;
 
-		if (!id) {
+		if (!archiveId) {
 			setError(t("error.invalidID"));
 			return ;
 		}
@@ -130,7 +180,7 @@ export default function VideoPage() {
 			if (!cancelled) setShowLoader(true);
 		}, 250);
 
-		getMovieDetails(parseInt(id, 10)).finally(() => {
+		getMovieDetails(archiveId).finally(() => {
 			window.clearTimeout(loaderTimer);
 			if (!cancelled) setShowLoader(false);
 		});
@@ -138,10 +188,32 @@ export default function VideoPage() {
 		return () => {
 			cancelled = true;
 			window.clearTimeout(loaderTimer);
+			eventSourceRef.current?.close();;
+			const v = videoRef.current;
+			if (v) {
+				try {
+					v.pause();
+					v.removeAttribute("src");
+					v.load();
+				} catch { /* ignore */ }
+			}
 		};
-	}, [id]);
+	}, [archiveId]);
 
-	function toHoursAndMinutes(totalMinutes?: number) {
+	// Start SSE as soon as we know the DB id (movie might need to download)
+	useEffect(() => {
+		if (movieDetails?.id) {
+			setStreamError(false);
+			setStreamReady(false);
+			setDownloadProgress({ status: "starting", progress: 0 });
+			startProgressSSE(movieDetails.id);
+		}
+		return () => {
+			eventSourceRef.current?.close();
+		};
+	}, [movieDetails?.id]);
+
+	function toHoursAndMinutes(totalMinutes?: number | null) {
 		if (totalMinutes === undefined) return ;
 		const hours = Math.floor(totalMinutes / 60);
 		const minutes = totalMinutes % 60;
@@ -149,7 +221,9 @@ export default function VideoPage() {
 		return (`${hours}h${minutes > 0 ? `${minutes}m` : ''}`);
 	}
 
-	const truncRating = movieDetails ? `${Math.trunc(movieDetails.score * 10)}%` : "";
+	const truncRating = movieDetails ? `${Math.trunc(movieDetails.rating * 10)}%` : "";
+	// Don't set src when there's a stream error — prevents the browser retry loop
+	const streamSrc = (movieDetails && !streamError) ? `/api/stream/${movieDetails.id}` : undefined;
 
 	return (
 		<div className={styles.wrapper}>
@@ -163,30 +237,85 @@ export default function VideoPage() {
 
 			<div className={styles.contentPart}>
 				<div className={styles.videoPart}>
-					<video
-						className={styles.video}
-						src="/videos/screen2.mp4"
-						controls
-					>
-						<p>{t("video.error")}</p>
-					</video>
+					{streamError ? (
+						<div className={styles.downloadOverlay}>
+							<p className={styles.overlayTitle}>
+								{t("video.streamError") || "Stream failed — try again"}
+							</p>
+							<button onClick={() => { setStreamError(false); setStreamReady(false); setDownloadProgress({ status: "starting", progress: 0 }); if (movieDetails?.id) startProgressSSE(movieDetails.id); }}>
+								{t("video.retry") || "Retry"}
+							</button>
+						</div>
+					) : !streamReady ? (
+						<div className={styles.downloadOverlay}>
+							<span className={styles.overlaySpinner} />
+							<p className={styles.overlayTitle}>
+								{downloadProgress?.status === "starting"
+									? (t("video.preparing") || "Preparing torrent…")
+									: downloadProgress?.status === "transcoding"
+										? (t("video.transcoding") || "Transcoding…")
+										: (t("video.downloading") || "Downloading…")}
+							</p>
+							{downloadProgress && downloadProgress.status !== "starting" && (
+								<>
+									<div className={styles.overlayBar}>
+										<div
+											className={styles.overlayBarFill}
+											style={{ width: `${downloadProgress.progress}%` }}
+										/>
+									</div>
+									<p className={styles.overlayMeta}>
+										{downloadProgress.progress.toFixed(1)}%
+										{downloadProgress.status === "transcoding"
+											? (downloadProgress.speed_x != null
+												? <>&nbsp;·&nbsp;{downloadProgress.speed_x}x</>
+												: downloadProgress.transcoded_mb != null
+													? <>&nbsp;·&nbsp;{downloadProgress.transcoded_mb} MB</>
+													: null)
+											: <>
+												&nbsp;·&nbsp;{downloadProgress.speed_kbs ?? 0} KB/s
+												&nbsp;·&nbsp;{downloadProgress.peers ?? 0} peer{(downloadProgress.peers ?? 0) !== 1 ? "s" : ""}
+											</>}
+									</p>
+								</>
+							)}
+						</div>
+					) : (
+						<video
+							ref={videoRef}
+							className={styles.video}
+							src={streamSrc}
+							controls
+							crossOrigin="anonymous"
+							onError={() => setStreamError(true)}
+						>
+							{movieDetails?.subtitles?.map((lang) => (
+								<track
+									key={lang}
+									kind="subtitles"
+									label={lang.toUpperCase()}
+									srcLang={lang}
+									src={`/api/subtitles/${movieDetails.archive_id}/${lang}`}
+								/>
+							))}
+							<p>{t("video.error")}</p>
+						</video>
+					)}
 				</div>
 				<div className={styles.miscellaneousPart}>
 					<div className={styles.mainInfos}>
 						<h2>{movieDetails?.title}</h2>
-						<p className={styles.summary}>
-							{movieDetails?.overview}
-						</p>
+						<p className={styles.summary}>{movieDetails?.overview}</p>
 					</div>
 					<div className={styles.rightInfos}>
 						<div className={styles.meta}>
-							<p>{movieDetails?.release_date}</p>
+							<p>{movieDetails?.year}</p>
 							<p>{toHoursAndMinutes(movieDetails?.runtime)}</p>
 							<p>{truncRating}</p>
 						</div>
 						<div className={styles.cover}>
 							<img
-								src={movieDetails?.poster_path}
+								src={movieDetails?.poster_url ?? undefined}
 								alt={`${movieDetails?.title} Poster`}
 							/>
 						</div>
@@ -198,13 +327,12 @@ export default function VideoPage() {
 					<ul className={styles.castList}>
 						{movieDetails?.cast.map((member, index) => (
 							<li key={index} className={styles.actorCard}>
-								<img
-									src={member.actor_picture_path}
-									alt={member.actor_name}
-								/>
+								{member.picture_url && (
+									<img src={member.picture_url} alt={member.name} />
+								)}
 								<div>
-									<p>{member.actor_name}</p>
-									<p>{member.character_name}</p>
+									<p>{member.name}</p>
+									<p>{member.character}</p>
 								</div>
 							</li>
 						))}
