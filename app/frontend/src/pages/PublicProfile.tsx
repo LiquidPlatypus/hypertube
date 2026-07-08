@@ -39,7 +39,7 @@ export default function PublicProfile() {
 			}
 
 			const res = await fetch(
-				`/api/users?username=${encodeURIComponent(displayedUsername)}`,
+				`/api/users/${encodeURIComponent(displayedUsername)}`,
 				{ headers: { Authorization: `Bearer ${token}` } }
 			);
 

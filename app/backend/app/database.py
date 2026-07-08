@@ -229,8 +229,26 @@ class Storage:
             print(f"add_user error: {ie}")
         return convert_user_format(user)
 
-    def get_user_by_id(self, user_id: int):
-        return convert_user_format(self.session.query(User).filter(User.id == user_id).first())
+    def get_user_by_id(self, element: int | str, iscurrent: bool = False):
+        if iscurrent == True:
+            return convert_user_format(self.session.query(User).filter(User.id == element).first())
+        if isinstance(element, str):
+            user = convert_user_format(self.session.query(User).filter(User.username == element).first())
+            # user = self.session.query(User).all()
+            # print(element)
+            # print("GROS CACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+            # for it in user:
+            #     if convert_user_format(it)["username"] == element:
+            #         print("c'est rentré dedans sa mère la pute")
+            # print("GROS CACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+            # return (None)
+            pic = self.session.query(ProfilePic).filter(ProfilePic.user_id == element).first()
+        else:
+            user =  convert_user_format(self.session.query(User).filter(User.id == element).first())
+            pic: ProfilePic = self.session.query(ProfilePic).filter(ProfilePic.user_id == user['id']).first()
+        if not pic:
+            return {'user_id': user['id'], 'username': user['username'], 'pic_url': None}
+        return {'user_id': user['id'], 'username': user['username'], 'pic_url': pic.url}
 
     def modify_user(self, username: str, email: str, firstname: str, lastname: str, image_url: str, user_id: int):
         """

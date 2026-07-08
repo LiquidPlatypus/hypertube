@@ -103,20 +103,11 @@ async def forgot_password(current_user=Depends(verif_access_token)):
 #     print(message)
 #     return {"returnValue": True}
 
-@router.get("/api/users/{user_id}")
-async def get_user_public(user_id: int, current_user=Depends(verif_access_token)):
-    u = storage.get_user_by_id(user_id)
-    if not u:
-        raise HTTPException(status_code=404, detail="User not found")
-
-    # NE RENVOIE PAS L'EMAIL
-    public = {
-        "id": u["id"],
-        "username": u["username"],
-        "firstname": u["firstname"],
-        "lastname": u["lastname"],
-    }
-    return {"user": public}
+@router.get("/api/users/{id}")
+async def get_other_profile(id: str | int, storage: Storage = Depends(get_storage), current_user=Depends(verif_access_token)):
+    if current_user["id"] == id:
+        return {"user": current_user}
+    return storage.get_user_by_id(id)
 
 @router.get("/api/users/{user_id}/profile-pic")
 async def get_user_profile_pic(user_id: int, current_user=Depends(verif_access_token)):
