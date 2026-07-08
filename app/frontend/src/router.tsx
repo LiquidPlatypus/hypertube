@@ -31,7 +31,7 @@ export const router = createBrowserRouter([
 						),
 					},
 					{
-						path: "/movie/:id",
+						path: "/movie/:archiveId",
 						element: (
 							<VideoPage />
 						),
