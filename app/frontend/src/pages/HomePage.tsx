@@ -14,10 +14,12 @@ import styles from "./HomePage.module.css";
 
 interface Movie {
 	id: number;
+	archive_id: string;
 	title: string;
-	poster_path: string;
-	release_date: string;
-	score: number;
+	poster_url: string | null;
+	year: number | null;
+	rating: number | null;
+	watched: boolean;
 }
 
 export default function HomePage() {
@@ -87,10 +89,9 @@ export default function HomePage() {
 				if (filters.sort) params.set("sort", filters.sort);
 				params.set("language", getCurrentLang() === "fr" ? "fr-FR" : "en-US");
 
-				const url = `/api/thumbnails?${params.toString()}`;
+				const url = `/api/movies?${params.toString()}`;
 
 				const response = await fetch(url, {
-					method: "GET",
 					headers: { "Content-Type": "application/json" },
 				});
 
@@ -104,27 +105,25 @@ export default function HomePage() {
 				} else {
 					setResults((prev) => {
 						const merged = isNewSearch ? data : [...prev, ...data];
-						return Array.from(new Map(merged.map((m) => [m.id, m])).values());
+						return Array.from(new Map(merged.map((m) => [m.archive_id, m])).values());
 					});
 					setHasMore(true);
 				}
 			} catch (err) {
 				setError("Erreur lors de la recherche de films.");
-				console.error("Error fetching thumbnails:", err);
+				console.error("Error fetching movies:", err);
 			} finally {
 				setLoading(false);
 				isFetchingRef.current = false;
 			}
 		},
-		[]
+		[filters]
 	);
 
 	const observerReference = useCallback(
 		(node: HTMLLIElement | null) => {
 			if (!node) return;
-
 			observer.current?.disconnect();
-
 			observer.current = new IntersectionObserver(
 				(entries) => {
 					const first = entries[0];
@@ -134,14 +133,13 @@ export default function HomePage() {
 				},
 				{ rootMargin: "200px 0px", threshold: 0 }
 			);
-
 			observer.current.observe(node);
 		},
 		[hasMore]
 	);
 
-	const handleThumbnailClick = (movieId: number) => {
-		navigate(`/movie/${movieId}`);
+	const handleThumbnailClick = (archiveId: string) => {
+		navigate(`/movie/${archiveId}`);
 	};
 
 	useEffect(() => {
@@ -186,14 +184,14 @@ export default function HomePage() {
 						const isLast = index === results.length - 1;
 
 						return (
-							<li key={movie.id} ref={isLast ? observerReference : null}>
+							<li key={movie.archive_id} ref={isLast ? observerReference : null}>
 								<Thumbnail
-									thumbnailSrc={movie.poster_path}
+									thumbnailSrc={movie.poster_url || `https://archive.org/services/img/${movie.archive_id}`}
 									thumbnailAlt={movie.title}
 									title={movie.title}
-									year={movie.release_date}
-									rating={movie.score}
-									onClick={() => handleThumbnailClick(movie.id)}
+									year={movie.year ? String(movie.year) : undefined}
+									rating={movie.rating ?? undefined}
+									onClick={() => handleThumbnailClick(movie.archive_id)}
 								/>
 							</li>
 						);
