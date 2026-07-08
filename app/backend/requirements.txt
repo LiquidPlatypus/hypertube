@@ -60,3 +60,5 @@ uvicorn==0.37.0
 watchfiles==1.1.1
 websockets==15.0.1
 tmdbsimple==2.9.1
+apscheduler>=3.10.0
+sse-starlette>=1.6.5
