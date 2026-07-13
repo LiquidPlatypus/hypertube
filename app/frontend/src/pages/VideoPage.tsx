@@ -59,6 +59,7 @@ export default function VideoPage() {
 	const [downloadProgress, setDownloadProgress] = useState<Progress | null>(null);
 	const [streamReady, setStreamReady] = useState(false);
 	const [streamError, setStreamError] = useState(false);
+	const [currentUsername, setCurrentUsername] = useState<string | null>(null);
 	const commentFormRef = React.useRef<HTMLFormElement | null>(null);
 	const eventSourceRef = useRef<EventSource | null>(null);
 	const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -212,6 +213,18 @@ export default function VideoPage() {
 			eventSourceRef.current?.close();
 		};
 	}, [movieDetails?.id]);
+
+	useEffect(() => {
+		const token = localStorage.getItem("access_token");
+		if (!token) return;
+
+		fetch("/api/me", {
+			headers: { Authorization: `Bearer ${token}` },
+		})
+			.then((res) => res.json())
+			.then((data) => setCurrentUsername(data.user?.username ?? null))
+			.catch(console.error);
+	}, []);
 
 	function toHoursAndMinutes(totalMinutes?: number | null) {
 		if (totalMinutes === undefined) return ;
@@ -376,7 +389,15 @@ export default function VideoPage() {
 					{comments.map((c) => (
 						<div key={c.id} className={styles.comment}>
 							<h3>
-								<Link to={`/users/${encodeURIComponent(c.author)}`}>{c.author}</Link>
+								<Link
+									to={
+										c.author === currentUsername
+											? "/profile"
+											: `/users/${encodeURIComponent(c.author)}`
+									}
+								>
+									{c.author}
+								</Link>
 							</h3>
 							<small>{new Date(c.date).toLocaleString()}</small>
 							<p>{c.content}</p>
