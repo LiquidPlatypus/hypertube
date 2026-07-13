@@ -22,8 +22,8 @@ interface Movie {
 	overview: string | null;
 	poster_url: string | null;
 	year: number | null;
-	runtime: number | null;
-	rating: number | null;
+	runtime: number;
+	rating: number;
 	genres: string[];
 	cast: CastMember[];
 	status: string;
@@ -226,7 +226,7 @@ export default function VideoPage() {
 			.catch(console.error);
 	}, []);
 
-	function toHoursAndMinutes(totalMinutes?: number | null) {
+	function toHoursAndMinutes(totalMinutes?: number) {
 		if (totalMinutes === undefined) return ;
 		const hours = Math.floor(totalMinutes / 60);
 		const minutes = totalMinutes % 60;
