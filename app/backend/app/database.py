@@ -234,14 +234,6 @@ class Storage:
             return convert_user_format(self.session.query(User).filter(User.id == element).first())
         if isinstance(element, str):
             user = convert_user_format(self.session.query(User).filter(User.username == element).first())
-            # user = self.session.query(User).all()
-            # print(element)
-            # print("GROS CACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-            # for it in user:
-            #     if convert_user_format(it)["username"] == element:
-            #         print("c'est rentré dedans sa mère la pute")
-            # print("GROS CACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-            # return (None)
             pic = self.session.query(ProfilePic).filter(ProfilePic.user_id == element).first()
         else:
             user =  convert_user_format(self.session.query(User).filter(User.id == element).first())
