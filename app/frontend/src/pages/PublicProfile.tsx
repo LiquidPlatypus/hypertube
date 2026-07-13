@@ -6,6 +6,8 @@ import styles from "./ProfilePage.module.css";
 
 type PublicUserResponse = {
 	user_id: number;
+	firstname: string;
+	lastname: string;
 	username: string;
 	pic_url: string | null;
 };
