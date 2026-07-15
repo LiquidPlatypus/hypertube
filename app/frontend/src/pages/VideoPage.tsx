@@ -80,7 +80,7 @@ export default function VideoPage() {
 		const all: Comment[] = [];
 
 		while (true) {
-			const res = await fetch(`/api/comments?pos=${pos}`, {
+			const res = await fetch(`/api/comments?pos=${pos}&movie_id=${movieDetails.id}`, {
 				headers: { Authorization: `Bearer ${token}` },
 			});
 			const json = await res.json();
@@ -98,6 +98,7 @@ export default function VideoPage() {
 
 	const postComment = async (e: React.FormEvent) => {
 		e.preventDefault();
+
 		const token = localStorage.getItem("access_token");
 		const res = await fetch("/api/comments", {
 			method: "POST",
@@ -105,7 +106,7 @@ export default function VideoPage() {
 				Authorization: `Bearer ${token}`,
 				"Content-Type": "application/json",
 			},
-			body: JSON.stringify({ content: comment }),
+			body: JSON.stringify({ content: comment, movie_id: movieDetails.id }),
 		});
 		const json = await res.json();
 		setComments((prev) => [json.comment, ...prev]);
@@ -113,8 +114,10 @@ export default function VideoPage() {
 	}
 
 	useEffect(() => {
+		if (!movieDetails)
+			return
 		void getComments().catch(console.error);
-	}, []);
+	}, [movieDetails]);
 
 	React.useEffect(() => {
 		let cancelled = false;

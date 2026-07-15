@@ -22,7 +22,12 @@ async def get_comment_byid(id: int, current_user=Depends(verif_access_token), st
 
 @router.post("/api/comments")
 async def post_comment(data: CommentForm, current_user=Depends(verif_access_token), storage: Storage = Depends(get_storage)):
-	comment = storage.add_comment(data.content, current_user["id"])
+	if data.movie_id == None:
+		raise HTTPException(
+			status_code=400,
+			detail="Movie id is missing"
+		)
+	comment = storage.add_comment(data.content, current_user["id"], data.movie_id)
 	print(comment)
 	return {"comment": comment}
 	
@@ -38,8 +43,13 @@ async def modif_comment_byid(data: CustomCommentForm, current_user=Depends(verif
 	return {"comment": comment}
 
 @router.get("/api/comments", response_class=JSONResponse)
-async def get_comments(pos: int = Query(0, ge=0), storage: Storage = Depends(get_storage), current_user=Depends(verif_access_token)):
-	comments = storage.get_comments(pos)
+async def get_comments(pos: int = Query(0, ge=0), movie_id: int = Query(None), storage: Storage = Depends(get_storage), current_user=Depends(verif_access_token)):
+	if movie_id == None:
+		raise HTTPException(
+			status_code=400,
+			detail="Movie id is missing"
+		)
+	comments = storage.get_comments(pos, movie_id)
 	return {"comments": comments}
 
 @router.delete("/api/comments/{id}")

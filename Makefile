@@ -3,9 +3,31 @@ YEL=\033[33m
 CYA=\033[36m
 STOP=\033[0m
 
+ifeq ($(OS),Windows_NT)
+	OPEN_CMD = explorer
+else
+	ifeq ($(shell grep -e "Microsoft" -e "wsl" /proc/version 2>/dev/null),)
+		OPEN_CMD = powershell.exe -Command Start-Process
+	else
+		UNAME_S := $(shell uname -s)
+		ifeq ($(UNAME_S),Darwin)
+			OPEN_CMD = open
+		else
+			OPEN_CMD = xdg-open
+		endif
+	endif
+endif
+URL = https://localhost/
+
 all: 
 	@echo "$(CYA)=== Building & starting containers...$(STOP)"
 	@sudo docker-compose up -d
+
+start:
+	@echo "$(CYA)=== Building, starting and getting logs... $(STOP)"
+	@sudo docker-compose up -d
+	$(OPEN_CMD) "$(URL)"
+	$(MAKE) logs
 
 logs: #Tails logs of all containers
 	@echo "$(CYA)=== Tailing logs...$(STOP)"

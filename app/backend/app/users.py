@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, File, UploadFile, Query, Form
+from fastapi import APIRouter, Depends, File, UploadFile, Form
 from model import ModifyFormRequest, PasswordForm, NewPasswordRequest
 from database import Storage, get_storage
 from utils import verif_access_token
@@ -60,9 +60,11 @@ async def get_current_profile_pic(current_user=Depends(verif_access_token), stor
 async def read_user_me(current_user=Depends(verif_access_token)):
 	return {"user": current_user}
 
-@router.get("/api/users", response_class=JSONResponse)
-async def get_other_profile(username: str | int = Query(...), storage: Storage = Depends(get_storage)):
-	return storage.get_user_by_id(username)
+@router.get("/api/users/{id}")
+async def get_other_profile(id: str | int, storage: Storage = Depends(get_storage), current_user=Depends(verif_access_token)):
+    if current_user["id"] == id:
+        return {"user": current_user}
+    return storage.get_user_by_id(id)
 
 @router.post("/api/reset-password")
 async def reset_password(data: PasswordForm, current_user=Depends(verif_access_token), storage: Storage = Depends(get_storage)):

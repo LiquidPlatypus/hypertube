@@ -1,3 +1,4 @@
+import os
 import datetime
 from models_db import DB
 from fastapi import Depends
@@ -43,6 +44,7 @@ class Comment(DB):
 	author_id = Column(Integer, ForeignKey("users.id"))
 	date = Column(String(255))
 	content = Column(String(255))
+	movie_id = Column(String(50), index=True, nullable=False)
 
 def get_movie_by_tmdb_id(session, tmdb_id):
     return session.query(Movie).filter(Movie.tmdb_id == tmdb_id).first()
@@ -184,20 +186,29 @@ class Storage:
 		instance: ProfilePic = self.session.query(ProfilePic).filter(ProfilePic.user_id == user_id).first()
 		if not instance:
 			return None
-		return instance.url
+		if os.path.exists(instance.url):
+			return instance.url
+		try:
+			self.session.delete(instance)
+			self.session.commit()
+		except:
+			self.session.rollback()
+		return None
 
-	def add_comment(self, content: str, author_id: int):
+	def add_comment(self, content: str, author_id: int, movie_id):
 		"""
 		DESK:
 		Set in DB the comment and metadata of this
 		date : mm/jj/aaaa : must be an array of int: 0[mm], 1[jj], 2[aaaa]
 		author : author username
+		movie_id : Id of movie
 		"""
 		date = datetime.datetime.now()
 		comment = Comment(
 			content=content,
 			author_id=author_id,
-			date=date
+			date=date,
+			movie_id=movie_id
 		)
 		self.session.add(comment)
 		self.session.commit()
@@ -214,8 +225,8 @@ class Storage:
 		self.session.commit()
 		return convert_comment_format(comment, self.session)
 
-	def get_comments(self, chunk):
-		comments_list = self.session.query(Comment).all()
+	def get_comments(self, chunk, movie_id):
+		comments_list = self.session.query(Comment).filter(Comment.movie_id == movie_id).all()
 		comments = [
 			{"id": it.id, "content": it.content, "author": self.session.query(User).filter(User.id == it.author_id).first().username, "date": it.date} 
 			for it in comments_list

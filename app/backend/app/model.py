@@ -56,6 +56,7 @@ class SuccessException(Exception):
 
 class CommentForm(BaseModel):
 	content: str
+	movie_id: int
 
 class ChunkCommentForm(BaseModel):
 	chunk: int
