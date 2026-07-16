@@ -4,10 +4,13 @@ import Button from "../components/ui/Button.tsx";
 import { useTranslation } from "../hooks/useTranslation.tsx";
 import styles from "./FgPasswordPage.module.css";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function FgPassword() {
 	const { t } = useTranslation();
 	const [email, setEmail] = useState("");
+
+	const navigate = useNavigate();
 
 	async function sendMail(userEmail: string) {
 		try {
@@ -51,6 +54,7 @@ export default function FgPassword() {
 				/>
 
 				<Button text={t("send")} size="large" shape="pill" type="submit" />
+				<Button text={t("back")} size="small" shape="pill" onClick={() => navigate("/auth/login")} />
 			</form>
 		</div>
 	);
