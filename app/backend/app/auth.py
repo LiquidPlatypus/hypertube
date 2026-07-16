@@ -72,7 +72,7 @@ async def google_login(data: GoogleToken, storage: Storage = Depends(get_storage
 		print(f"Google error expection: {e.args[0]}")
 		if e.args[0] == "family_name":
 			raise HTTPException(
-				status_code=418,
+				status_code=406,
 				detail="Missing information in google account"
 			)
 		raise HTTPException(

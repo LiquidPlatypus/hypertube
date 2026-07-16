@@ -61,9 +61,5 @@ class CommentForm(BaseModel):
 class ChunkCommentForm(BaseModel):
 	chunk: int
 
-class CustomCommentForm(BaseModel):
-	id: int
-	new_content: str
-
 class ChunkInfoForm(BaseModel):
 	pos: int

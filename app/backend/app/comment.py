@@ -3,7 +3,7 @@ from fastapi import HTTPException, Depends, APIRouter, Query
 from fastapi.responses import JSONResponse
 from utils import verif_access_token
 import datetime
-from model import CommentForm, CustomCommentForm, ChunkCommentForm
+from model import CommentForm, ChunkCommentForm
 from typing import Optional
 import string, random
 
@@ -31,10 +31,10 @@ async def post_comment(data: CommentForm, current_user=Depends(verif_access_toke
 	print(comment)
 	return {"comment": comment}
 	
-@router.patch("/api/comments")
-async def modif_comment_byid(data: CustomCommentForm, current_user=Depends(verif_access_token), storage: Storage = Depends(get_storage)):
-	comment = storage.custom_comment(data.id, data.new_content)
-	if not data.id or comment == None:
+@router.patch("/api/comments/{id}")
+async def modif_comment_byid(id: int, new_content: str, current_user=Depends(verif_access_token), storage: Storage = Depends(get_storage)):
+	comment = storage.custom_comment(id, new_content)
+	if not id or comment == None:
 		raise HTTPException(
 			status_code=404,
 			detail="Comment not found"
