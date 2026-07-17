@@ -1,3 +1,5 @@
+import { t } from "../../lang/i18n.tsx";
+
 import styles from "./Thumbnail.module.css";
 
 interface ThumbnailProps {
@@ -6,6 +8,7 @@ interface ThumbnailProps {
 	title: string;
 	year?: string;
 	rating?: number;
+	watched?: boolean;
 	onClick?: () => void;
 }
 
@@ -15,6 +18,7 @@ export default function Thumbnail({
 	title,
 	year,
 	rating,
+	watched,
 	onClick,
 }: ThumbnailProps) {
 
@@ -23,12 +27,15 @@ export default function Thumbnail({
 
 	return (
 		<div className={styles.Thumbnail} onClick={onClick} >
+			{watched && (
+				<span className={styles.WatchedBadge}>✓ {t("thumbnail.watched")}</span>
+			)}
 			<div className={styles.CoverWrapper}>
 				<img
 					src={thumbnailSrc || "/assets/image-placeholder-vertical.jpg"}
 					alt={thumbnailAlt}
 					loading="lazy"
-					className={styles.Image}
+					className={`${styles.Image}${watched ? ` ${styles.Watched}` : ""}`}
 				/>
 			</div>
 

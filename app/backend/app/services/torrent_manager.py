@@ -398,10 +398,17 @@ class TorrentManager:
                 break
 
             if not dh.buffer_event.is_set():
-                if s.total_done >= MIN_BUFFER_BYTES and dh.file_path:
+                # Adaptive buffer: a fixed 30 MB forces small movies to download a
+                # big fraction (e.g. 11% of a 270 MB file) before the player shows.
+                # Use 4% of the target file, floored at 8 MB (enough for the fmp4
+                # transcode to get going) and capped at MIN_BUFFER_BYTES for big files.
+                buffer_target = MIN_BUFFER_BYTES
+                if s.total_wanted > 0:
+                    buffer_target = min(MIN_BUFFER_BYTES, max(8 * 1024 * 1024, int(s.total_wanted * 0.04)))
+                if s.total_done >= buffer_target and dh.file_path:
                     dh.buffer_event.set()
                     logger.info(f"[TorrentManager] ✓ buffer ready movie_id={dh.movie_id} "
-                                f"({s.total_done // (1024*1024)} MB downloaded)")
+                                f"({s.total_done // (1024*1024)} MB / target {buffer_target // (1024*1024)} MB)")
 
             if state_str in states_done:
                 logger.info(f"[TorrentManager] download complete movie_id={dh.movie_id} state={state_str}")

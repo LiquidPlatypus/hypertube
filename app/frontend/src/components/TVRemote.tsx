@@ -6,6 +6,7 @@ import Button from "./ui/Button.tsx";
 import SearchBar from "./ui/SearchBar.tsx";
 import { useSearch } from "../utils/searchContext.tsx";
 import { useTranslation } from "../hooks/useTranslation.tsx";
+import { clearWatched } from "../utils/watchedSession.ts";
 
 import styles from "./TVRemote.module.css";
 
@@ -51,6 +52,7 @@ export default function TVRemote({
 	const handleLogout = () => {
 		try {
 			localStorage.removeItem("access_token");
+			clearWatched();
 			localStorage.setItem("just_logged_out", "true");
 			navigate("/auth/login");
 		} catch (error) {

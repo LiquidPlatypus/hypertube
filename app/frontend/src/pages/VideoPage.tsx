@@ -6,6 +6,7 @@ import Button from "../components/ui/Button.tsx";
 import Textarea from "../components/ui/Textarea.tsx";
 
 import { useTranslation } from "../hooks/useTranslation.tsx";
+import { markWatched } from "../utils/watchedSession.ts";
 
 import styles from "./VideoPage.module.css";
 
@@ -90,14 +91,14 @@ export default function VideoPage() {
 		}
 	};
 
-	const getComments = async () => {
+	const getComments = async (movieId: number) => {
 		const token = localStorage.getItem("access_token");
 		const pageSize = 10;
 		let pos = 0;
 		const all: Comment[] = [];
 
 		while (true) {
-			const res = await fetch(`/api/comments?pos=${pos}`, {
+			const res = await fetch(`/api/movies/${movieId}/comments?pos=${pos}`, {
 				headers: { Authorization: `Bearer ${token}` },
 			});
 			const json = await res.json();
@@ -115,6 +116,7 @@ export default function VideoPage() {
 
 	const postComment = async (e: React.FormEvent) => {
 		e.preventDefault();
+		if (!movieDetails?.id) return;
 		const token = localStorage.getItem("access_token");
 		const res = await fetch("/api/comments", {
 			method: "POST",
@@ -122,7 +124,7 @@ export default function VideoPage() {
 				Authorization: `Bearer ${token}`,
 				"Content-Type": "application/json",
 			},
-			body: JSON.stringify({ content: comment }),
+			body: JSON.stringify({ content: comment, movie_id: movieDetails.id }),
 		});
 		const json = await res.json();
 		setComments((prev) => [json.comment, ...prev]);
@@ -164,8 +166,18 @@ export default function VideoPage() {
 	};
 
 	useEffect(() => {
-		void getComments().catch(console.error);
-	}, []);
+		if (!movieDetails?.id) return;
+		void getComments(movieDetails.id).catch(console.error);
+		// Badge "vu": session-only (cleared on browser close / logout).
+		markWatched(movieDetails.id);
+		// Server retention: POST /watch bumps last_watched (30-day cleanup). GET
+		// /movies/:id stays safe (RESTful) — the mutation lives here, not in the GET.
+		const token = localStorage.getItem("access_token");
+		void fetch(`/api/movies/${movieDetails.id}/watch`, {
+			method: "POST",
+			headers: { Authorization: `Bearer ${token}` },
+		}).catch(console.error);
+	}, [movieDetails?.id]);
 
 	React.useEffect(() => {
 		let cancelled = false;
@@ -280,11 +292,10 @@ export default function VideoPage() {
 									<p className={styles.overlayMeta}>
 										{downloadProgress.progress.toFixed(1)}%
 										{downloadProgress.status === "transcoding"
-											? (downloadProgress.speed_x != null
-												? <>&nbsp;·&nbsp;{downloadProgress.speed_x}x</>
-												: downloadProgress.transcoded_mb != null
-													? <>&nbsp;·&nbsp;{downloadProgress.transcoded_mb} MB</>
-													: null)
+											? <>
+												&nbsp;·&nbsp;{(downloadProgress.transcoded_mb ?? 0).toFixed(1)} MB
+												{downloadProgress.speed_x != null ? <>&nbsp;·&nbsp;{downloadProgress.speed_x}x</> : null}
+											</>
 											: <>
 												&nbsp;·&nbsp;{downloadProgress.speed_kbs ?? 0} KB/s
 												&nbsp;·&nbsp;{downloadProgress.peers ?? 0} peer{(downloadProgress.peers ?? 0) !== 1 ? "s" : ""}

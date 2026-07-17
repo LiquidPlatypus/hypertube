@@ -70,6 +70,8 @@
 	"filters.reset": "Réinitialiser",
 	"filters.all": "Tous",
 
+	"thumbnail.watched": "Vu",
+
 	"passwordResetText": "Un mail vous sera envoyé avec un lien pour réinitialiser votre mot de passe.",
 	"newPassword": "Veuillez entrer votre nouveau mot de passe."
 }

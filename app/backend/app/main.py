@@ -87,6 +87,15 @@ app.add_middleware(
 @app.on_event("startup")
 async def on_startup():
     DB.metadata.create_all(bind=engine)
+    # create_all never ALTERs existing tables. Add comment.movie_id in place so
+    # comments can be scoped per movie without dropping the table. Idempotent:
+    # a duplicate-column error just means the migration already ran.
+    from sqlalchemy import text
+    try:
+        with engine.begin() as conn:
+            conn.execute(text("ALTER TABLE comment ADD COLUMN movie_id INT NULL"))
+    except Exception:
+        pass  # column already exists
     from services.cleanup_scheduler import start_scheduler
     from movies import reap_orphan_transcodes
     reap_orphan_transcodes()

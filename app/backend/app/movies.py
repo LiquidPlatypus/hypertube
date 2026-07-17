@@ -23,10 +23,11 @@ from starlette.background import BackgroundTask
 from database import (
     Movie, MovieStatus,
     create_or_get_movie, get_movie_by_archive_id, get_movie_by_id,
-    get_popular_movies,
+    count_comments_for_movie,
     mark_movie_watched, update_movie_path, update_movie_status, update_movie_tmdb,
 )
 from models_db import get_db
+from utils import verif_access_token
 from services.archive_client import get_thumbnail_url, get_torrent_url, search_archive
 from services.subtitle_service import fetch_subtitles, get_subtitle_path, list_available_subtitles
 from services.tmdb_client import get_genres as tmdb_get_genres, search_tmdb
@@ -84,6 +85,26 @@ VIDEO_DIRECT       = {".mp4", ".webm"}
 VIDEO_TRANSCODE    = {".mkv", ".avi", ".mov", ".wmv", ".flv"}
 CHUNK_DIRECT       = 1 * 1024 * 1024   # 1 MB
 CHUNK_TRANSCODE    = 64 * 1024          # 64 KB
+
+
+def _safe_direct(movie_id: int, path: str) -> bool:
+    """True only when it's safe to serve a file as raw bytes (direct + seekable):
+    a browser-native container whose FULL content is on disk.
+
+    A .mp4 whose torrent stalled at 99% is NOT safe — the missing tail may hold
+    the moov atom (non-faststart files put it last), so the browser can't parse
+    it and the <video> errors out. In that case we must route through the fmp4
+    remux (moov-front, plays progressively) instead. The torrent's real progress
+    is the authoritative completeness signal while a handle is active; otherwise
+    fall back to the on-disk heuristic."""
+    ext = os.path.splitext(path.lower())[1]
+    if ext not in VIDEO_DIRECT:
+        return False
+    if movie_id in torrent_manager._handles:
+        prog = torrent_manager.get_progress(movie_id)
+        if prog is None or prog.get("progress", 0) < 100.0:
+            return False
+    return _is_file_complete(path)
 
 # Tracks active FFmpeg processes by file_path — prevents concurrent transcodes of finished files
 _active_transcodes: dict[str, subprocess.Popen] = {}
@@ -267,7 +288,7 @@ def _movie_thumbnail(movie: Movie, db: Session) -> dict:
         "poster_url": movie.poster_url or get_thumbnail_url(movie.archive_id),
         "rating": movie.rating,
         "genres": json.loads(movie.genres_json) if movie.genres_json else [],
-        "watched": bool(movie.mp4_path and (movie.watch_count or 0) > 0),
+        "watched": (movie.watch_count or 0) > 0,
         "status": movie.status,
     }
 
@@ -319,7 +340,7 @@ def _movie_detail(movie: Movie) -> dict:
         "genres": genres,
         "cast": cast,
         "status": movie.status,
-        "watched": bool(movie.mp4_path and (movie.watch_count or 0) > 0),
+        "watched": (movie.watch_count or 0) > 0,
     }
 
 
@@ -339,29 +360,34 @@ async def list_movies(
         min_rating: Optional[float] = Query(None),
         db: Session = Depends(get_db),
 ):
-    if query:
-        archive_movies = await search_archive(query=query, page=page, page_size=page_size)
-        page_movies_objs = []
-        for am in archive_movies:
-            movie = create_or_get_movie(db, am.identifier, am.title, am.year)
-            page_movies_objs.append(movie)
-        results = [_movie_thumbnail(m, db) for m in page_movies_objs]
-    else:
-        # No query: serve from DB (pre-seeded at startup)
-        movies = get_popular_movies(db, limit=page_size * page)
-        offset = page_size * (page - 1)
-        page_movies_objs = movies[offset:offset + page_size]
-        if not page_movies_objs:
-            # DB empty (seeding failed) — fall back to live Archive.org call
-            logger.warning("[list_movies] DB empty, falling back to live Archive.org search")
-            archive_movies = await search_archive(query=None, page=page, page_size=page_size)
-            page_movies_objs = []
-            for am in archive_movies:
-                movie = create_or_get_movie(db, am.identifier, am.title, am.year)
-                page_movies_objs.append(movie)
-        results = [_movie_thumbnail(m, db) for m in page_movies_objs]
+    # Map an incoming TMDb genre id → its name. The frontend FiltersBar sends the
+    # numeric genre id, but genres are stored (and filtered) by name in genres_json.
+    if genre and genre.isdigit():
+        gid = int(genre)
+        for g in await tmdb_get_genres():
+            if g.get("id") == gid:
+                genre = g.get("name")
+                break
 
-    # Trigger background TMDb enrichment for movies without poster
+    # Default sort: a search orders by name (subject III.2.1); the no-query front
+    # page keeps Archive's popularity order (downloads desc). Resolve before the
+    # call so genre/year/sort are pushed into the Archive.org query — that lets
+    # the infinite scroll page through the *filtered* catalog, not just one page.
+    if sort in (None, "relevance"):
+        sort = "title_asc" if query else None
+
+    archive_movies = await search_archive(
+        query=query, page=page, page_size=page_size,
+        genre=genre, year_from=year_from, year_to=year_to, sort=sort,
+    )
+
+    page_movies_objs = [
+        create_or_get_movie(db, am.identifier, am.title, am.year)
+        for am in archive_movies
+    ]
+    results = [_movie_thumbnail(m, db) for m in page_movies_objs]
+
+    # Background TMDb enrichment (poster/genres/rating) for rows not enriched yet.
     need_enrich = [
         (m.id, m.title, m.year)
         for m in page_movies_objs
@@ -370,33 +396,15 @@ async def list_movies(
     if need_enrich:
         asyncio.create_task(enrich_movies_background(need_enrich))
 
-    # Apply client-side filters on DB results
+    # Rating has no Archive.org field (it comes from TMDb), so it can't be pushed
+    # into the query — filter/sort it here, best-effort on already-enriched rows.
+    # Genre + year were filtered at Archive; title/year/downloads sorted there too.
     if min_rating is not None:
         results = [r for r in results if r["rating"] is not None and r["rating"] >= min_rating]
-    if year_from is not None:
-        results = [r for r in results if r["year"] is not None and r["year"] >= year_from]
-    if year_to is not None:
-        results = [r for r in results if r["year"] is not None and r["year"] <= year_to]
-    if genre:
-        # Case-insensitive match against the movie's TMDb genres. Movies whose
-        # genres aren't enriched yet (empty list) are excluded from a genre query.
-        g = genre.strip().lower()
-        results = [r for r in results if any(g == (x or "").lower() for x in r.get("genres", []))]
-
-    # Sorting. Explicit sort param wins; otherwise the subject requires search
-    # results to be ordered by name (III.2.1), so default a query to title_asc.
-    if sort is None and query:
-        sort = "title_asc"
     if sort == "rating_desc":
         results.sort(key=lambda r: r["rating"] or 0, reverse=True)
     elif sort == "rating_asc":
         results.sort(key=lambda r: r["rating"] or 0)
-    elif sort == "year_desc":
-        results.sort(key=lambda r: r["year"] or 0, reverse=True)
-    elif sort == "year_asc":
-        results.sort(key=lambda r: r["year"] or 0)
-    elif sort == "title_asc":
-        results.sort(key=lambda r: (r["title"] or "").lower())
 
     return results
 
@@ -405,16 +413,23 @@ async def list_movies(
 # GET /api/movies/{archive_id} — detail page
 # ---------------------------------------------------------------------------
 
-@router.get("/api/movies/{archive_id}")
-async def get_movie(archive_id: str, db: Session = Depends(get_db)):
-    movie = get_movie_by_archive_id(db, archive_id)
-    if not movie:
-        # Try to create it on the fly from Archive.org search
-        archive_results = await search_archive(query=archive_id, page=1, page_size=1)
-        if not archive_results:
+@router.get("/api/movies/{movie_ref}")
+async def get_movie(movie_ref: str, db: Session = Depends(get_db)):
+    # Accept a numeric DB id (RESTful GET /movies/:id) or an Archive.org slug.
+    # Archive identifiers are alphanumeric slugs, so a pure-digit ref is an id.
+    if movie_ref.isdigit():
+        movie = get_movie_by_id(db, int(movie_ref))
+        if not movie:
             raise HTTPException(status_code=404, detail="Movie not found")
-        am = archive_results[0]
-        movie = create_or_get_movie(db, am.identifier, am.title, am.year)
+    else:
+        movie = get_movie_by_archive_id(db, movie_ref)
+        if not movie:
+            # Try to create it on the fly from Archive.org search
+            archive_results = await search_archive(query=movie_ref, page=1, page_size=1)
+            if not archive_results:
+                raise HTTPException(status_code=404, detail="Movie not found")
+            am = archive_results[0]
+            movie = create_or_get_movie(db, am.identifier, am.title, am.year)
 
     # Enrich with TMDb if not yet done
     if movie.tmdb_id is None:
@@ -442,7 +457,20 @@ async def get_movie(archive_id: str, db: Session = Depends(get_db)):
     subtitles = await list_available_subtitles(movie.archive_id)
     detail = _movie_detail(movie)
     detail["subtitles"] = subtitles
+    detail["comments_count"] = count_comments_for_movie(db, movie.id)
     return detail
+
+
+@router.post("/api/movies/{movie_id}/watch")
+async def mark_watched(movie_id: int, current_user=Depends(verif_access_token), db: Session = Depends(get_db)):
+    """Mark a movie as watched. Kept as a POST (not folded into GET /movies/:id)
+    so the detail GET stays safe/side-effect-free and the API is truly RESTful.
+    Called by the player page on open. Dedup'd 60s in mark_movie_watched."""
+    movie = get_movie_by_id(db, movie_id)
+    if not movie:
+        raise HTTPException(status_code=404, detail="Movie not found")
+    mark_movie_watched(db, movie_id)
+    return {"watched": True}
 
 
 # ---------------------------------------------------------------------------
@@ -459,9 +487,18 @@ async def stream_movie(movie_id: int, request: Request, db: Session = Depends(ge
 
     # Case 1: already downloaded
     if movie.status == MovieStatus.ready and movie.mp4_path and os.path.isfile(movie.mp4_path):
-        logger.info(f"[Stream] serving from disk: {movie.mp4_path}")
+        mp4 = movie.mp4_path
+        ext = os.path.splitext(mp4.lower())[1]
         mark_movie_watched(db, movie_id)
-        return _serve(movie.mp4_path, request)
+        # A "ready" .mp4 whose torrent actually stalled short of 100% is missing
+        # its tail (possibly the moov) → serving it raw makes the browser error.
+        # Route it through the fmp4 remux instead (moov-front, plays progressively).
+        if ext in VIDEO_DIRECT and not _safe_direct(movie_id, mp4):
+            logger.info(f"[Stream] ready but not fully on disk, remuxing: {mp4}")
+            _start_growing_fmp4_writer(mp4, movie_id)
+            return _serve_fmp4_growing(mp4, request)
+        logger.info(f"[Stream] serving from disk: {mp4}")
+        return _serve(mp4, request)
 
     # Case 1b: file exists on disk from a prior run but DB lost the path/status
     # (e.g. cleanup reset, container rebuild). Only trigger when no active torrent
@@ -494,7 +531,7 @@ async def stream_movie(movie_id: int, request: Request, db: Session = Depends(ge
             # faststart) — the leading bytes alone are undecodable. Route the
             # incomplete case through the fmp4 remux (cheap -c copy) which emits
             # a moov-front fragmented stream playable progressively.
-            if fext in VIDEO_DIRECT and _is_file_complete(file_path):
+            if _safe_direct(movie_id, file_path):
                 update_movie_path(db, movie_id, file_path)
                 update_movie_status(db, movie_id, MovieStatus.ready)
                 return _stream_direct(file_path, request)
@@ -547,8 +584,8 @@ async def stream_movie(movie_id: int, request: Request, db: Session = Depends(ge
     _, fext = os.path.splitext((file_path or "").lower())
     logger.info(f"[Stream] 30 MB buffer ready, serving: {file_path}")
     mark_movie_watched(db, movie_id)
-    # Raw direct serve only when complete (see Case 2 note on moov placement).
-    if fext in VIDEO_DIRECT and _is_file_complete(file_path):
+    # Raw direct serve only when truly complete (see Case 2 note on moov placement).
+    if _safe_direct(movie_id, file_path):
         update_movie_path(db, movie_id, file_path)
         update_movie_status(db, movie_id, MovieStatus.ready)
         return _stream_direct(file_path, request)
@@ -827,48 +864,35 @@ def _fmp4_state_idle(file_path: str) -> bool:
 
 
 def _fmp4_progress_event(file_path: str) -> dict:
-    """SSE payload describing the in-progress fmp4 build (status=`transcoding`).
+    """SSE payload for the in-progress fmp4 build (status=`transcoding`).
 
-    Prefers FFmpeg's real progress (encoded time / total duration + speed). Falls
-    back to output-bytes-vs-ready-threshold when duration or progress is unknown.
+    The transcoding overlay only spans the pre-playback buffering window (0 →
+    FMP4_READY_BYTES): the SSE releases the player as soon as the fmp4 crosses
+    that threshold. So progress is measured against the ready threshold — how
+    close we are to being able to play — NOT against the whole movie's duration
+    (which would sit near 0% while we encode the first few seconds). Also reports
+    MB with one decimal (so <1 MB doesn't render as "0 MB") and FFmpeg speed.
     """
     _fmp4_path, tmp_path, _done_marker = _fmp4_paths(file_path)
-    prog = _read_ffmpeg_progress(file_path)
-    duration = _probe_duration(file_path)
-
-    out_us = None
-    try:
-        out_us = int(prog["out_time_us"])
-    except (KeyError, ValueError):
-        try:
-            out_us = int(prog["out_time_ms"]) * 1000  # older ffmpeg names it _ms (still µs)
-        except (KeyError, ValueError):
-            out_us = None
-
-    if out_us is not None and duration and duration > 0:
-        pct = min(99.0, (out_us / 1_000_000) / duration * 100.0)
-        speed = prog.get("speed", "").rstrip("x")
-        try:
-            speed_x = round(float(speed), 1) if speed and speed != "N/A" else None
-        except ValueError:
-            speed_x = None
-        return {
-            "status": "transcoding",
-            "progress": round(pct, 1),
-            "speed_x": speed_x,
-            "transcoded_sec": round(out_us / 1_000_000),
-        }
-
-    # Fallback: output bytes vs the ready threshold (no duration available).
     try:
         tmp_size = os.path.getsize(tmp_path) if os.path.exists(tmp_path) else 0
     except OSError:
         tmp_size = 0
-    pct = min(99.0, (tmp_size / FMP4_READY_BYTES) * 100.0) if tmp_size else 0.0
+
+    pct = min(99.0, tmp_size / FMP4_READY_BYTES * 100.0)
+
+    prog = _read_ffmpeg_progress(file_path)
+    speed = prog.get("speed", "").rstrip("x")
+    try:
+        speed_x = round(float(speed), 1) if speed and speed != "N/A" else None
+    except ValueError:
+        speed_x = None
+
     return {
         "status": "transcoding",
         "progress": round(pct, 1),
-        "transcoded_mb": tmp_size // (1024 * 1024),
+        "transcoded_mb": round(tmp_size / (1024 * 1024), 1),
+        "speed_x": speed_x,
     }
 
 
@@ -1483,7 +1507,7 @@ async def stream_progress(movie_id: int):
                 # a "direct" file goes through the fmp4 remux so the overlay tracks the
                 # transcode and the browser gets a moov-front fragmented stream.
                 resolved = torrent_manager.resolve_video_file(movie_id) or file_path
-                serve_direct = is_direct and bool(resolved) and _is_file_complete(resolved)
+                serve_direct = bool(resolved) and _safe_direct(movie_id, resolved)
 
                 if not serve_direct:
                     # Non-direct, or direct-but-incomplete: drive the growing fmp4.

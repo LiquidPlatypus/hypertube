@@ -32,20 +32,54 @@ def _parse_year(raw) -> Optional[int]:
         return None
 
 
+# Map our sort keys → Archive.org Solr sort clauses. Rating isn't an Archive
+# field (it comes from TMDb), so rating sorts fall back to popularity and are
+# re-sorted downstream on the enriched data.
+_ARCHIVE_SORT = {
+    "year_asc":  "year asc",
+    "year_desc": "year desc",
+    "title_asc": "titleSorter asc",
+}
+
+
+def _escape_solr(value: str) -> str:
+    """Neutralise Solr special chars in a user-supplied term."""
+    out = []
+    for ch in value:
+        if ch in '+-&|!(){}[]^"~*?:\\/':
+            out.append("\\" + ch)
+        else:
+            out.append(ch)
+    return "".join(out)
+
+
 async def search_archive(
     query: Optional[str] = None,
     page: int = 1,
     page_size: int = 20,
+    genre: Optional[str] = None,
+    year_from: Optional[int] = None,
+    year_to: Optional[int] = None,
+    sort: Optional[str] = None,
 ) -> List[ArchiveMovie]:
-    if query:
-        q = f"({query}) AND mediatype:movies"
-    else:
-        q = f"{_COLLECTION_QUERY} AND mediatype:movies"
+    # Build the Solr query so genre/year filtering happens at Archive.org — this
+    # is what lets the infinite scroll page through the *filtered* catalog (tens
+    # of thousands of items) instead of only the current page. Genre maps to the
+    # item's `subject` tags (Archive has no TMDb-style genre field), so it's a
+    # best-effort match. Rating has no Archive field → filtered/sorted downstream.
+    parts = [f"({query})" if query else _COLLECTION_QUERY, "mediatype:movies"]
+    if genre:
+        parts.append(f'subject:("{_escape_solr(genre.lower())}")')
+    if year_from is not None or year_to is not None:
+        lo = year_from if year_from is not None else "*"
+        hi = year_to if year_to is not None else "*"
+        parts.append(f"year:[{lo} TO {hi}]")
+    q = " AND ".join(parts)
 
     params = {
         "q": q,
         "fl[]": ["identifier", "title", "year", "description", "downloads"],
-        "sort[]": "downloads desc",
+        "sort[]": _ARCHIVE_SORT.get(sort or "", "downloads desc"),
         "rows": page_size,
         "page": page,
         "output": "json",

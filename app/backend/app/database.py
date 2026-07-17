@@ -7,7 +7,7 @@ from models_db import DB
 from fastapi import Depends
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import relationship, Session
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Enum, Float, Text, update as sql_update
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Enum, Float, Text, func, update as sql_update
 from models_db import get_db
 
 
@@ -68,6 +68,7 @@ class Comment(DB):
     id = Column(Integer, primary_key=True, index=True)
     # author = Column(String(255))
     author_id = Column(Integer, ForeignKey("users.id"))
+    movie_id = Column(Integer, ForeignKey("movies.id"), index=True, nullable=True)
     date = Column(String(255))
     content = Column(String(255))
 
@@ -177,6 +178,58 @@ def get_popular_movies(session: Session, limit: int = 100) -> List[Movie]:
     return session.query(Movie).order_by(Movie.id).limit(limit).all()
 
 
+def query_movies_db(
+    session: Session,
+    *,
+    genre: Optional[str] = None,
+    year_from: Optional[int] = None,
+    year_to: Optional[int] = None,
+    min_rating: Optional[float] = None,
+    sort: Optional[str] = None,
+    page: int = 1,
+    page_size: int = 20,
+) -> List[Movie]:
+    """Filter + sort + paginate the movie library at the SQL layer.
+
+    Filtering and ordering must happen in the query (not on an already-sliced
+    page) so the criteria apply across the whole library and pagination stays
+    correct for the frontend's infinite scroll.
+
+    ``genre`` matches a name against the JSON array stored in ``genres_json``
+    (e.g. ``["Action","Drama"]``) via a lowercased LIKE on the quoted element,
+    so ``"comedy"`` matches ``"Comedy"`` but not ``"Romantic Comedy"`` as a
+    substring accident.
+    """
+    q = session.query(Movie)
+    if year_from is not None:
+        q = q.filter(Movie.year.isnot(None), Movie.year >= year_from)
+    if year_to is not None:
+        q = q.filter(Movie.year.isnot(None), Movie.year <= year_to)
+    if min_rating is not None:
+        q = q.filter(Movie.rating.isnot(None), Movie.rating >= min_rating)
+    if genre:
+        q = q.filter(func.lower(Movie.genres_json).like(f'%"{genre.lower()}"%'))
+
+    if sort == "rating_desc":
+        q = q.order_by(Movie.rating.is_(None), Movie.rating.desc())
+    elif sort == "rating_asc":
+        q = q.order_by(Movie.rating.asc())
+    elif sort == "year_desc":
+        q = q.order_by(Movie.year.is_(None), Movie.year.desc())
+    elif sort == "year_asc":
+        q = q.order_by(Movie.year.asc())
+    elif sort == "title_asc":
+        q = q.order_by(func.lower(Movie.title).asc())
+    else:  # relevance / default → seeding order (≈ popularity)
+        q = q.order_by(Movie.id)
+
+    return q.offset(page_size * (page - 1)).limit(page_size).all()
+
+
+def count_movies_db(session: Session) -> int:
+    return session.query(Movie).count()
+
+
 def get_movie_by_tmdb_id(session: Session, tmdb_id: int) -> Optional[Movie]:
     return session.query(Movie).filter(Movie.tmdb_id == tmdb_id).first()
 
@@ -200,9 +253,34 @@ def convert_user_format(user: User):
 def convert_comment_format(comment: Comment, session: Session):
     if not comment:
         return None
-    author_username = session.query(User).filter(User.id == comment.author_id).first().username
-    res = {"id": comment.id, "author": author_username, "date": comment.date, "content": comment.content}
+    author = session.query(User).filter(User.id == comment.author_id).first()
+    author_username = author.username if author else None
+    res = {
+        "id": comment.id,
+        "author": author_username,
+        "author_id": comment.author_id,
+        "movie_id": comment.movie_id,
+        "date": comment.date,
+        "content": comment.content,
+    }
     return res
+
+
+def get_comments_for_movie(session: Session, movie_id: int, chunk: int = 0) -> list:
+    """Return a page of 10 comments for one movie, newest first."""
+    rows = (
+        session.query(Comment)
+        .filter(Comment.movie_id == movie_id)
+        .order_by(Comment.id.desc())
+        .offset(chunk)
+        .limit(10)
+        .all()
+    )
+    return [convert_comment_format(c, session) for c in rows]
+
+
+def count_comments_for_movie(session: Session, movie_id: int) -> int:
+    return session.query(Comment).filter(Comment.movie_id == movie_id).count()
 
 # ---------------------------------------------------------------------------
 # Storage class (legacy — kept for auth/users/comment routes)
@@ -302,9 +380,9 @@ class Storage:
         instance: ProfilePic = self.session.query(ProfilePic).filter(ProfilePic.user_id == user_id).first()
         return instance.url if instance else None
 
-    def add_comment(self, content: str, author_id: str):
+    def add_comment(self, content: str, author_id: int, movie_id: int = None):
         date = datetime.datetime.now()
-        comment = Comment(content=content, author_id=author_id, date=date)
+        comment = Comment(content=content, author_id=author_id, movie_id=movie_id, date=date)
         self.session.add(comment)
         self.session.commit()
         return convert_comment_format(comment, self.session)
@@ -312,13 +390,25 @@ class Storage:
     def get_comment(self, id):
         return convert_comment_format(self.session.query(Comment).filter(Comment.id == id).first(), self.session)
 
-    def custom_comment(self, id: int, new_content: str):
+    def custom_comment(self, id: int, new_content: str, user_id: int):
         comment: Comment = self.session.query(Comment).filter(Comment.id == id).first()
         if not comment:
             return None
+        if comment.author_id != user_id:
+            return "forbidden"
         comment.content = new_content
         self.session.commit()
         return convert_comment_format(comment, self.session)
+
+    def delete_comments(self, comment_id: int, user_id: int):
+        comment: Comment = self.session.query(Comment).filter(Comment.id == comment_id).first()
+        if not comment:
+            return None
+        if comment.author_id != user_id:
+            return "forbidden"
+        self.session.delete(comment)
+        self.session.commit()
+        return True
 
     def get_comments(self, chunk):
         comments_list = self.session.query(Comment).all()

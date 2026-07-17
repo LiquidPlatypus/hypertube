@@ -1,5 +1,6 @@
 from pydantic import BaseModel, EmailStr
 from fastapi import UploadFile, File
+from typing import Optional
 
 class RegisterRequest(BaseModel):
 	"""
@@ -56,6 +57,7 @@ class SuccessException(Exception):
 
 class CommentForm(BaseModel):
 	content: str
+	movie_id: Optional[int] = None
 
 class ChunkCommentForm(BaseModel):
 	chunk: int

@@ -6,6 +6,7 @@ import Button from "../components/ui/Button.tsx";
 import Input from "../components/ui/Input.tsx";
 
 import { useTranslation } from "../hooks/useTranslation.tsx";
+import { clearWatched } from "./watchedSession.ts";
 
 import styles from "./LoginScreen.module.css";
 import {useNavigate} from "react-router-dom";
@@ -83,6 +84,7 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 	// post-auth uniforme
 	const finishAuth = (accessToken: string) => {
 		localStorage.setItem("access_token", accessToken);
+		clearWatched();  // fresh session — don't inherit another user's badges
 		onLoginSuccess?.();
 	};
 

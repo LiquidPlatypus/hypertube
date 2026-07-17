@@ -9,6 +9,7 @@ import { getCurrentLang } from "../lang/i18n.tsx";
 
 import Thumbnail from "../components/ui/Thumbnail.tsx";
 import FiltersBar from "../components/ui/FiltersBar.tsx";
+import { isWatched } from "../utils/watchedSession.ts";
 
 import styles from "./HomePage.module.css";
 
@@ -191,6 +192,7 @@ export default function HomePage() {
 									title={movie.title}
 									year={movie.year ? String(movie.year) : undefined}
 									rating={movie.rating ?? undefined}
+									watched={isWatched(movie.id)}
 									onClick={() => handleThumbnailClick(movie.archive_id)}
 								/>
 							</li>

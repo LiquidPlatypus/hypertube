@@ -70,6 +70,8 @@
 	"filters.reset": "Reset",
 	"filters.all": "All",
 
+	"thumbnail.watched": "Watched",
+
 	"passwordResetText": "An email will be sent to you with a link to reset your password.",
 	"newPassword": "Please enter your new password."
 }
