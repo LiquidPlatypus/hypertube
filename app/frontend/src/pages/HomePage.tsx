@@ -71,7 +71,6 @@ export default function HomePage() {
 				const params = new URLSearchParams();
 
 				function normalizeRating(rating: number): number {
-					if (rating <= 10) return rating;
 					return rating / 10;
 				}
 
