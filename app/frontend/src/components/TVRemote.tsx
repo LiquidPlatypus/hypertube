@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import Button from "./ui/Button.tsx";
 import SearchBar from "./ui/SearchBar.tsx";
 import { useSearch } from "../utils/searchContext.tsx";
+import { useFilters } from "../utils/filterContext.tsx";
 import { useTranslation } from "../hooks/useTranslation.tsx";
 
 import styles from "./TVRemote.module.css";
@@ -23,7 +24,8 @@ export default function TVRemote({
 	const navigate = useNavigate();
 	const [showSearch, setShowSearch] = useState(false);
 	const { currentLang, changeLang } = useTranslation();
-	const { setSearchTerm } = useSearch();
+	const { setSearchTerm, resetSearch } = useSearch();
+	const { resetFilters } = useFilters();
 
 	const goHome = () => {
 		setSearchTerm("");
@@ -50,6 +52,8 @@ export default function TVRemote({
 
 	const handleLogout = () => {
 		try {
+			resetSearch();
+			resetFilters();
 			localStorage.removeItem("access_token");
 			localStorage.setItem("just_logged_out", "true");
 			navigate("/auth/login");
