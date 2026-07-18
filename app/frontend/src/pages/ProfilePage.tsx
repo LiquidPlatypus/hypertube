@@ -202,7 +202,6 @@ export default function ProfilInfo() {
 			fd.append("email", formData.email);
 			fd.append("file", fileToSend);
 
-			console.log(fd);
 			const res = await fetch("/api/users", {
 				method: "PATCH",
 				headers: {

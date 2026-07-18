@@ -6,6 +6,8 @@ import styles from "./ProfilePage.module.css";
 
 type PublicUserResponse = {
 	user_id: number;
+	firstname: string;
+	lastname: string;
 	username: string;
 	pic_url: string | null;
 };
@@ -39,7 +41,7 @@ export default function PublicProfile() {
 			}
 
 			const res = await fetch(
-				`/api/users?username=${encodeURIComponent(displayedUsername)}`,
+				`/api/users/${encodeURIComponent(displayedUsername)}`,
 				{ headers: { Authorization: `Bearer ${token}` } }
 			);
 

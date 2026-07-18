@@ -71,5 +71,7 @@
 	"filters.all": "All",
 
 	"passwordResetText": "An email will be sent to you with a link to reset your password.",
-	"newPassword": "Please enter your new password."
+	"newPassword": "Please enter your new password.",
+
+	"back": "Retour"
 }

@@ -81,4 +81,4 @@ list: #Lists all containers, images, volumes and networks. Running or not, used 
 	@echo "\n$(CYA)======== NETWORKS ==========$(STOP)"
 	@sudo docker network ls
 
-.PHONY: all start stop clean iclean fclean lsit
+.PHONY: all logs start stop clean iclean fclean lsit

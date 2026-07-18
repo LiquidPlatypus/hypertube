@@ -1,6 +1,10 @@
 .SearchBar {
 	position: relative;
 	font-family: "CommodoreRounded", serif;
+	width: 30rem;
+	max-width: 100%;
+	box-sizing: border-box;
+	font-size: 16px;
 }
 
 .SearchBar:hover {
@@ -16,4 +20,11 @@
 	font-family: "CommodoreRounded", serif;
 	color: gray;
 	opacity: 0.5;
+}
+
+@media (max-width: 480px) {
+	.SearchBar {
+		width: 100%;
+		font-size: 16px;
+	}
 }
