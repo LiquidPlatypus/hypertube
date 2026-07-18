@@ -88,42 +88,21 @@ async def forgot_password(current_user=Depends(verif_access_token)):
     print(f"{username} load forgot password form\n")
     return {"returnValue": True}
 
-# @router.post("/api/send-email")
-# async def send_email(data: EmailRequest, storage: Storage = Depends(get_storage)):
-#     access_token = None
-#     user_list = storage.get_all_users()
-#     for u in user_list:
-#         if u["email"] == data.email:
-#             access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-#             access_token = create_access_token(data={"sub": str(u["id"])}, expires_delta=access_token_expires)
-#     if access_token == None:
-#         return {"returnValue": False}
-#     contenthtml = f"""<p>PAYLOAD: \n\n\nlocalhost:5173/reset/{access_token}\n\n\n:END PAYLOAD</p>"""
-#     message = MessageSchema(
-#         subject="Reset Password Mail",
-#         recipients=[data.email],
-#         body=contenthtml,
-#         subtype="html"
-#     )
-#
-#     print(message)
-#     return {"returnValue": True}
-
 @router.get("/api/users/{id}")
 async def get_other_profile(id: str | int, storage: Storage = Depends(get_storage), current_user=Depends(verif_access_token)):
     if current_user["id"] == id:
         return {"user": current_user}
     return storage.get_user_by_id(id)
 
-@router.get("/api/users/{user_id}/profile-pic")
-async def get_user_profile_pic(user_id: int, current_user=Depends(verif_access_token)):
-    u = storage.get_user_by_id(user_id)
-    if not u:
-        raise HTTPException(status_code=404, detail="User not found")
+# @router.get("/api/users/{user_id}/profile-pic")
+# async def get_user_profile_pic(user_id: int, current_user=Depends(verif_access_token)):
+#     u = storage.get_user_by_id(user_id)
+#     if not u:
+#         raise HTTPException(status_code=404, detail="User not found")
 
-    url = storage.get_profile_pic(user_id)
-    if url and url[:4] == "http":
-        return url
-    if url is None:
-        return None
-    return FileResponse(url)
+#     url = storage.get_profile_pic(user_id)
+#     if url and url[:4] == "http":
+#         return url
+#     if url is None:
+#         return None
+#     return FileResponse(url)

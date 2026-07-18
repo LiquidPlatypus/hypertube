@@ -3,6 +3,7 @@ import logging
 import logging.handlers
 import os
 import sys
+from fastapi.staticfiles import StaticFiles
 
 # ---------------------------------------------------------------------------
 # Logging setup — write to file AND keep console output
@@ -83,6 +84,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# app.mount("/api/profile-pic", StaticFiles(directory="/profile-pic"), name="profile-pic")
 
 @app.on_event("startup")
 async def on_startup():

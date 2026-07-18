@@ -3,6 +3,8 @@ import datetime
 from datetime import timezone
 import enum
 import json
+import requests
+from fastapi.responses import FileResponse
 from typing import Optional, List
 from models_db import DB
 from fastapi import Depends
@@ -65,13 +67,13 @@ class ProfilePic(DB):
 
 
 class Comment(DB):
-	__tablename__ = "comment"
-	id = Column(Integer, primary_key=True, index=True)
-	# author = Column(String(255))
-	author_id = Column(Integer, ForeignKey("users.id"))
-	date = Column(String(255))
-	content = Column(String(255))
-	movie_id = Column(String(50), index=True, nullable=False)
+    __tablename__ = "comment"
+    id = Column(Integer, primary_key=True, index=True)
+    # author = Column(String(255))
+    author_id = Column(Integer, ForeignKey("users.id"))
+    date = Column(String(255))
+    content = Column(String(255))
+    movie_id = Column(String(50), index=True, nullable=False)
 
 
 # ---------------------------------------------------------------------------
@@ -236,12 +238,16 @@ class Storage:
             return convert_user_format(self.session.query(User).filter(User.id == element).first())
         if isinstance(element, str):
             user = convert_user_format(self.session.query(User).filter(User.username == element).first())
-            pic = self.session.query(ProfilePic).filter(ProfilePic.user_id == element).first()
+            pic = self.session.query(ProfilePic).filter(ProfilePic.user_id == user["id"]).first()
         else:
             user =  convert_user_format(self.session.query(User).filter(User.id == element).first())
             pic: ProfilePic = self.session.query(ProfilePic).filter(ProfilePic.user_id == user['id']).first()
         if not pic:
             return {'user_id': user['id'], 'username': user['username'], 'pic_url': None}
+        elif pic.url[:4] != "http":
+            return {'user_id': user['id'], 'username': user['username'], 'pic_url': pic.url}
+            # return {'user_id': user['id'], 'username': user['username'], 'pic_url': f"/api{pic.url}"}
+            # return {'user_id': user['id'], 'username': user['username'], 'pic_url': FileResponse(pic.url)}
         return {'user_id': user['id'], 'username': user['username'], 'pic_url': pic.url}
 
     def modify_user(self, username: str, email: str, firstname: str, lastname: str, image_url: str, user_id: int):
@@ -296,13 +302,9 @@ class Storage:
         img: ProfilePic = self.session.query(ProfilePic).filter(ProfilePic.user_id == user_id).first()
         if not img:
             self.session.add(ProfilePic(user_id=user_id, url=image_url))
+            self.session.commit()
         else:
             img.url = image_url
-        self.session.commit()
-
-    def get_profile_pic(self, user_id: int):
-        instance: ProfilePic = self.session.query(ProfilePic).filter(ProfilePic.user_id == user_id).first()
-        return instance.url if instance else None
 
     def add_comment(self, content: str, author_id: str):
         date = datetime.datetime.now()
@@ -314,97 +316,97 @@ class Storage:
     def get_comment(self, id):
         return convert_comment_format(self.session.query(Comment).filter(Comment.id == id).first(), self.session)
 
-	def get_profile_pic(self, user_id: int):
-		"""
-		DESK:
-		Return URL of user image or None if he haven't
-		"""
-		instance: ProfilePic = self.session.query(ProfilePic).filter(ProfilePic.user_id == user_id).first()
-		if not instance:
-			return None
-		if os.path.exists(instance.url):
-			return instance.url
-		try:
-			self.session.delete(instance)
-			self.session.commit()
-		except:
-			self.session.rollback()
-		return None
+    def get_profile_pic(self, user_id: int):
+        """
+        DESK:
+        Return URL of user image or None if he haven't
+        """
+        instance: ProfilePic = self.session.query(ProfilePic).filter(ProfilePic.user_id == user_id).first()
+        if not instance:
+            return None
+        if os.path.exists(instance.url) or requests.head(instance.url, timeout=2.0, allow_redirects=True).status_code == 200:
+            return instance.url
+        try:
+            self.session.delete(instance)
+            self.session.commit()
+        except:
+            self.session.rollback()
+        return None
 
-	def add_comment(self, content: str, author_id: int, movie_id):
-		"""
-		DESK:
-		Set in DB the comment and metadata of this
-		date : mm/jj/aaaa : must be an array of int: 0[mm], 1[jj], 2[aaaa]
-		author : author username
-		movie_id : Id of movie
-		"""
-		date = datetime.datetime.now()
-		comment = Comment(
-			content=content,
-			author_id=author_id,
-			date=date,
-			movie_id=movie_id
-		)
-		self.session.add(comment)
-		self.session.commit()
-		return convert_comment_format(comment, self.session)
-		
-	def get_comment(self, id):
-		return convert_comment_format(self.session.query(Comment).filter(Comment.id == id).first(), self.session)
+    def add_comment(self, content: str, author_id: int, movie_id):
+        """
+        DESK:
+        Set in DB the comment and metadata of this
+        date : mm/jj/aaaa : must be an array of int: 0[mm], 1[jj], 2[aaaa]
+        author : author username
+        movie_id : Id of movie
+        """
+        date = datetime.datetime.now()
+        comment = Comment(
+            content=content,
+            author_id=author_id,
+            date=date,
+            movie_id=movie_id
+        )
+        self.session.add(comment)
+        self.session.commit()
+        return convert_comment_format(comment, self.session)
+        
+    def get_comment(self, id):
+        return convert_comment_format(self.session.query(Comment).filter(Comment.id == id).first(), self.session)
 
-	def custom_comment(self, id: int, new_content: str):
-		comment: Comment = self.session.query(Comment).filter(Comment.id == id).first()
-		if not comment:
-			return None
-		comment.content = new_content
-		self.session.commit()
-		return convert_comment_format(comment, self.session)
+    def custom_comment(self, id: int, new_content: str):
+        comment: Comment = self.session.query(Comment).filter(Comment.id == id).first()
+        if not comment:
+            return None
+        comment.content = new_content
+        self.session.commit()
+        return convert_comment_format(comment, self.session)
 
-	def get_comments(self, chunk, movie_id):
-		comments_list = self.session.query(Comment).filter(Comment.movie_id == movie_id).all()
-		comments = [
-			{"id": it.id, "content": it.content, "author": self.session.query(User).filter(User.id == it.author_id).first().username, "date": it.date} 
-			for it in comments_list
-		]
-		comments_reversed = comments[::-1]
-		return comments_reversed[chunk : chunk + 10]
+    def get_comments(self, chunk, movie_id):
+        comments_list = self.session.query(Comment).filter(Comment.movie_id == movie_id).all()
+        comments = [
+            {"id": it.id, "content": it.content, "author": self.session.query(User).filter(User.id == it.author_id).first().username, "date": it.date} 
+            for it in comments_list
+        ]
+        comments_reversed = comments[::-1]
+        return comments_reversed[chunk : chunk + 10]
 
-	def delete_comments(self, comment_id):
-		comment = self.session.query(Comment).filter(Comment.id == comment_id).first()
-		if comment:
-			self.session.delete(comment)
-			self.session.commit()
+    def delete_comments(self, comment_id):
+        comment = self.session.query(Comment).filter(Comment.id == comment_id).first()
+        if comment:
+            self.session.delete(comment)
+            self.session.commit()
 
-	# def add_movie(self, title: str, release_date: str, mp4_path: str):
-	# 	"""
-	# 	DESK:
-	# 	Store movie in DB
-	# 	"""
-	# 	movie = {"title": title, "release_date": release_date, "mp4_path": mp4}
-	# 	self.movies.append(movie)
-	# 	return movie
-	
-	# def get_movie(self, title: str, release_date: str):
-	# 	"""
-	# 	DESK:
-	# 	Get mp4_path from a move in DB with title and release_date
-	# 	"""
-	# 	for m in self.movies:
-	# 		if m["title"] == title and m["release_date"] == release_date:
-	# 			return m.mp4_path
-	# 	return None
+    # def add_movie(self, title: str, release_date: str, mp4_path: str):
+    # 	"""
+    # 	DESK:
+    # 	Store movie in DB
+    # 	"""
+    # 	movie = {"title": title, "release_date": release_date, "mp4_path": mp4}
+    # 	self.movies.append(movie)
+    # 	return movie
+    
+    # def get_movie(self, title: str, release_date: str):
+    # 	"""
+    # 	DESK:
+    # 	Get mp4_path from a move in DB with title and release_date
+    # 	"""
+    # 	for m in self.movies:
+    # 		if m["title"] == title and m["release_date"] == release_date:
+    # 			return m.mp4_path
+    # 	return None
 
-	# def remove_movie(self, title: str, release_date: str):
-	# 	"""
-	# 	DESK:
-	# 	Remove movie in DB with title and release_date
-	# 	"""
-	# 	for m in self.movies:
-	# 		if m["title"] == title and m["release_date"] == release_date:
-	# 			self.movies.remove(m)
-	# 			return True
-	# 	return False
+    # def remove_movie(self, title: str, release_date: str):
+    # 	"""
+    # 	DESK:
+    # 	Remove movie in DB with title and release_date
+    # 	"""
+    # 	for m in self.movies:
+    # 		if m["title"] == title and m["release_date"] == release_date:
+    # 			self.movies.remove(m)
+    # 			return True
+    # 	return False
 
 def get_storage(db: Session = Depends(get_db)):
     return Storage(db)

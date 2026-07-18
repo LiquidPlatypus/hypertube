@@ -97,6 +97,10 @@ export default function VideoPage() {
 		const all: Comment[] = [];
 
 		while (true) {
+			if (!movieDetails) {
+				console.warn("movieDetails empty")
+				return;
+			}
 			const res = await fetch(`/api/comments?pos=${pos}&movie_id=${movieDetails.id}`, {
 				headers: { Authorization: `Bearer ${token}` },
 			});
@@ -115,6 +119,10 @@ export default function VideoPage() {
 
 	const postComment = async (e: React.FormEvent) => {
 		e.preventDefault();
+		if (!movieDetails) {
+			console.warn("movieDetails empty")
+			return;
+		}
 
 		const token = localStorage.getItem("access_token");
 		const res = await fetch("/api/comments", {
