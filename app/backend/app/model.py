@@ -46,6 +46,10 @@ class EmailRequest(BaseModel):
 class NewPasswordRequest(BaseModel):
 	newpassword: str
 
+class FortyTwoCode(BaseModel):
+	code: str
+	state: str | None = None
+
 class GoogleToken(BaseModel):
 	token: str
 

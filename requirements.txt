@@ -54,3 +54,5 @@ urllib3==2.5.0
 uvicorn==0.37.0
 watchfiles==1.1.1
 websockets==15.0.1
+requests-oauthlib==2.0.0
+oauthlib==3.3.1

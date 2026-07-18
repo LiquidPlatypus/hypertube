@@ -114,8 +114,8 @@ export default function VideoPage() {
 	}
 
 	useEffect(() => {
-		if (!movieDetails)
-			return
+		// if (!movieDetails)
+		// 	return
 		void getComments().catch(console.error);
 	}, [movieDetails]);
 

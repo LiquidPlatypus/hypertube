@@ -1,17 +1,25 @@
-from model import RegisterRequest, LoginRequest, GoogleToken, SuccessException
+from model import RegisterRequest, LoginRequest, GoogleToken, SuccessException, FortyTwoCode
 from database import get_storage, Storage
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Body
 from google.oauth2 import id_token
 from google.auth.transport import requests
+from fastapi.responses import JSONResponse
+from oauthlib.oauth2 import WebApplicationClient
+from requests_oauthlib import OAuth2Session
 from datetime import timedelta
 from utils import create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES, GOOGLE_CLIENT_ID
 import tmdbsimple as tmdb
 import os
+import httpx
 
 router = APIRouter()
 
 tmdb.API_KEY = os.getenv("TMDB_API_KEY")
 tmdb.REQUESTS_TIMEOUT = 5
+
+FT_UID=os.getenv("FT_UID")
+FT_SECRET=os.getenv("FT_SECRET")
+FT_REDIRECT_URI=os.getenv("FT_REDIRECT_URI")
 
 @router.post("/api/register")
 async def register(data: RegisterRequest, storage: Storage = Depends(get_storage)):
@@ -44,6 +52,50 @@ async def login(data: LoginRequest, storage: Storage = Depends(get_storage)):
 		status_code=401,
 		detail="Invalid username or password",
 	)
+
+@router.post("/api/42auth")
+async def ft_login(code: str = Body(embed=True), storage: Storage = Depends(get_storage)):
+	if not code:
+		raise HTTPException(
+			status_code=406,
+			detail="No code received"
+		)
+	current_user = None
+	try:
+		print("AaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+		client = WebApplicationClient(client_id=FT_UID)
+		oauth = OAuth2Session(client=client, redirect_uri=FT_REDIRECT_URI)
+		token = oauth.fetch_token(
+			token_url="https://api.intra.42.fr/oauth/token",
+			code=code,
+			client_secret=FT_SECRET,
+		)
+		response = oauth.get("https://api.intra.42.fr/v2/me")
+		user_data = response.json()
+		username = user_data.get("login")
+		email = user_data.get("email")
+		first_name = user_data.get("first_name")
+		last_name = user_data.get("last_name")
+		image_url = user_data.get("image", {}).get("link")
+		ft_id = user_data.get("id")
+		users = storage.get_all_users()
+		for user in users:
+			if user["email"] == email:
+				current_user = user
+				raise SuccessException("Profile already create")
+		current_user = storage.add_user(username, email, ft_id, first_name, last_name)
+		storage.add_profile_pic(current_user["id"], image_url)
+		raise SuccessException("Profile create now")
+	except SuccessException:
+		access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+		access_token = create_access_token(data={"sub": str(current_user["id"])}, expires_delta=access_token_expires)
+		return {"access_token": access_token, "token_type": "bearer"}
+	except Exception as e:
+		print(e)
+		raise HTTPException(
+			status_code=400,
+			detail=f"{e}"
+		)
 
 @router.post("/api/google-auth")
 async def google_login(data: GoogleToken, storage: Storage = Depends(get_storage)):

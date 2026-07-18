@@ -8,7 +8,8 @@ import Input from "../components/ui/Input.tsx";
 import { useTranslation } from "../hooks/useTranslation.tsx";
 
 import styles from "./LoginScreen.module.css";
-import {useNavigate} from "react-router-dom";
+import {useNavigate, useSearchParams} from "react-router-dom";
+import {useEffect} from "react";
 
 interface LoginScreenProps {
 	onLoginSuccess?: () => void;
@@ -42,6 +43,9 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 	const [isLogin, setIsLogin] = useState(true);
 	const [message, setMessage] = useState<string>("");
 	const [isLoading, setIsLoading] = useState(false);
+	
+	const [searchParams] = useSearchParams();
+	const [isCalled, setIsCalled] = useState(false);
 
 	const emptyLoginData = useMemo<LoginData>(() => ({ username: "", password: "" }), []);
 	const emptyRegisterData = useMemo<RegisterData>(
@@ -181,89 +185,49 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 		}
 	};
 
-	// OAuth 42
 	const handleIntra42Login = () => {
 		setMessage("");
 
-		const clientId = import.meta.env.VITE_FT_CLIENT_ID as string | undefined;
-		const redirectUri = import.meta.env.VITE_FT_REDIRECT_URI as string | undefined;
-
+		const clientId = import.meta.env.VITE_FT_CLIENT_ID;
+		const redirectUri = import.meta.env.VITE_FT_REDIRECT_URI;
 		if (!clientId || !redirectUri) {
-			setMessage(t("login.error.ftConfigMissing"));
-			return;
+			return setMessage(t("login.error.ftConfigMissing"));
 		}
 
 		const state = crypto.randomUUID();
 		sessionStorage.setItem("ft_oauth_state", state);
-
 		const params = new URLSearchParams({
 			client_id: clientId,
 			redirect_uri: redirectUri,
 			response_type: "code",
 			scope: "public",
-			state,
+			state
 		});
 
-		// Popup positioning
-		const w = 520;
-		const h = 700;
-		const left = window.screenX + window.outerWidth - w - 20;
-		const top = window.screenY + 80;
-
-		const popup = window.open(
-			`${FT_AUTHORIZE_URL}?${params.toString()}`,
-			"ft_oauth",
-			`width=${w}, height=${h}, left${left}, top=${top}`
-		);
-
-		if (!popup) {
-			setMessage(t("login.error.popupBlocked"));
-			return;
-		}
-
-		const onMessage = async(evt: MessageEvent) => {
-			if (evt.origin !== window.location.origin) return;
-
-			const { type, code, state: returnedState, error } = (evt.data ?? {}) as any;
-			if (type !== "ft_oauth_code") return;
-
-			window.removeEventListener("message", onMessage);
-			try {
-				popup.close();
-			} catch{
-				// ignore
-			}
-
-			const expectedState = sessionStorage.getItem("ft_oauth_state");
-			sessionStorage.removeItem("ft_oauth_state");
-
-			if (!code || !returnedState || returnedState !==  expectedState) {
-				setMessage(t("login.error.oauthState"));
-				return;
-			}
-			if (error) {
-				setMessage(typeof error === "string" ? error: t("login.error.oauth"));
-				return;
-			}
-
-			setIsLoading(true);
-			setMessage("");
-
-			try {
-				const data = await postJson<ApiAuthResponse, { code: string; redirectUri: string }>(
-					"/api/ft-auth/callback",
-					{ code, redirectUri }
-				);
-				finishAuth(data.access_token);
-			} catch (err) {
-				setErrorMessage(err, t("login.error.oauth"));
-			} finally {
-				setIsLoading(false);
-			}
-		};
-
-		window.addEventListener("message", onMessage);
+		window.location.href = `${FT_AUTHORIZE_URL}?${params.toString()}`;
 	};
+
+	useEffect(() => {		
+		const code = searchParams.get("code");
+		if (code) {
+			const login42 = async () => {
+				if (isCalled) return;
+				setIsCalled(true);
+				try {
+					const data = await postJson<ApiAuthResponse, { code: string }>("/api/42auth", { code });
+					finishAuth(data.access_token);
+					navigate("/")
+				} catch (err) {
+					if (!sessionStorage.getItem("access_token"))
+						console.error(err);
+				} finally {
+					setIsCalled(false);
+				}
+			}
+
+			login42();
+		}
+	}, [searchParams, navigate]);
 
 	// Google client id (env)
 	const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined;
