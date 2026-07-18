@@ -6,7 +6,7 @@ from typing import Optional, List
 TMDB_BASE = "https://api.themoviedb.org/3"
 TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p/w500"
 
-_genres_cache: Optional[List[dict]] = None
+_genres_cache: dict[str, List[dict]] = {}
 
 
 @dataclass
@@ -86,11 +86,10 @@ async def search_tmdb(title: str, year: Optional[int] = None) -> Optional[TMDbEn
         director=director,
     )
 
-
-async def get_genres() -> List[dict]:
+async def get_genres(language: str = "en-US") -> List[dict]:
     global _genres_cache
-    if _genres_cache is not None:
-        return _genres_cache
+    if language in _genres_cache:
+        return _genres_cache[language]
 
     key = _api_key()
     if not key:
@@ -98,10 +97,14 @@ async def get_genres() -> List[dict]:
 
     try:
         async with httpx.AsyncClient(timeout=10) as client:
-            r = await client.get(f"{TMDB_BASE}/genre/movie/list", params={"api_key": key})
+            r = await client.get(
+                f"{TMDB_BASE}/genre/movie/list",
+                params={"api_key": key, "language": language},
+            )
             if r.status_code != 200:
                 return []
-            _genres_cache = r.json().get("genres", [])
-            return _genres_cache
+            genres = r.json().get("genres", [])
+            _genres_cache[language] = genres
+            return genres
     except (httpx.ConnectError, httpx.TimeoutException):
         return []

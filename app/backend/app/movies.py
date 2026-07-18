@@ -1530,8 +1530,8 @@ async def stream_progress(movie_id: int):
 # ---------------------------------------------------------------------------
 
 @router.get("/api/genres")
-async def get_genres():
-    return await tmdb_get_genres()
+async def get_genres_route(language: str = "en-US"):
+    return await tmdb_get_genres(language)
 
 
 # ---------------------------------------------------------------------------
