@@ -136,9 +136,9 @@ async def _seed_movies():
 # Middleware
 @app.middleware("http")
 async def verif_header(request: Request, call_next):
-    element = request.headers.get("sec-fetch-user")
-    if element is not None:
-        return JSONResponse(status_code=403, content={"reason": "Forbidden"})
+    origin = request.headers.get("origin")
+    if origin and "localhost" not in origin:
+        return JSONResponse(status_code=403, content={"reason": "Forbidden: Invalid Origin"})
     response = await call_next(request)
     return response
 

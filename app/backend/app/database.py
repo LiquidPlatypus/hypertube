@@ -245,9 +245,9 @@ class Storage:
         if not pic:
             return {'user_id': user['id'], 'username': user['username'], 'pic_url': None}
         elif pic.url[:4] != "http":
-            return {'user_id': user['id'], 'username': user['username'], 'pic_url': pic.url}
+            # return {'user_id': user['id'], 'username': user['username'], 'pic_url': pic.url}
             # return {'user_id': user['id'], 'username': user['username'], 'pic_url': f"/api{pic.url}"}
-            # return {'user_id': user['id'], 'username': user['username'], 'pic_url': FileResponse(pic.url)}
+            return {'user_id': user['id'], 'username': user['username'], 'pic_url': FileResponse(pic.url)}
         return {'user_id': user['id'], 'username': user['username'], 'pic_url': pic.url}
 
     def modify_user(self, username: str, email: str, firstname: str, lastname: str, image_url: str, user_id: int):
