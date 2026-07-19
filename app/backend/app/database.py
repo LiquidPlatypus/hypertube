@@ -3,6 +3,7 @@ import datetime
 from datetime import timezone
 import enum
 import json
+import base64
 import requests
 from fastapi.responses import FileResponse
 from typing import Optional, List
@@ -245,9 +246,10 @@ class Storage:
         if not pic:
             return {'user_id': user['id'], 'username': user['username'], 'pic_url': None}
         elif pic.url[:4] != "http":
-            # return {'user_id': user['id'], 'username': user['username'], 'pic_url': pic.url}
-            # return {'user_id': user['id'], 'username': user['username'], 'pic_url': f"/api{pic.url}"}
-            return {'user_id': user['id'], 'username': user['username'], 'pic_url': FileResponse(pic.url)}
+            with open(pic.url, "rb") as image_file:
+                encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
+                data_url = f"data:image/jpeg;base64,{encoded_string}"
+                return {'user_id': user['id'], 'username': user['username'], 'pic_url': data_url}
         return {'user_id': user['id'], 'username': user['username'], 'pic_url': pic.url}
 
     def modify_user(self, username: str, email: str, firstname: str, lastname: str, image_url: str, user_id: int):

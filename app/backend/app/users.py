@@ -12,8 +12,9 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 UPLOAD_DIR = os.path.join(BASE_DIR, "../profile-pic")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-@router.patch("/api/users")
+@router.patch("/api/users/{id}")
 async def modify_user(
+    id: int,
     username: str = Form(),
     firstname: str = Form(),
     lastname: str = Form(),

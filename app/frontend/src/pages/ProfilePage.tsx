@@ -202,7 +202,7 @@ export default function ProfilInfo() {
 			fd.append("email", formData.email);
 			fd.append("file", fileToSend);
 
-			const res = await fetch("/api/users", {
+			const res = await fetch(`/api/users/${user.id}`, {
 				method: "PATCH",
 				headers: {
 					Authorization: `Bearer ${token}`,

@@ -55,6 +55,7 @@ export default function PublicProfile() {
 			}
 
 			const data: PublicUserResponse = await res.json();
+			console.log(data);
 
 			if (!cancelled) {
 				setUser(data ?? null);
@@ -86,7 +87,7 @@ export default function PublicProfile() {
 	}
 
 	const displayedPic =
-		user.pic_url && user.pic_url.startsWith("http")
+		user?.pic_url && (user.pic_url.startsWith("http") || user.pic_url.startsWith("data:"))
 			? user.pic_url
 			: "/assets/Profil.png";
 
