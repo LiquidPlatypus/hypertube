@@ -52,6 +52,10 @@
 	"video.comments": "Comments",
 	"video.post": "Post",
 	"video.noMoreComments": "No more comments.",
+	"video.edit": "Edit",
+	"video.saving": "Saving...",
+	"video.save": "Save",
+	"video.cancel": "Cancel",
 
 	"loading": "Loading...",
 	"send": "Send",

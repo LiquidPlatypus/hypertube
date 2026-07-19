@@ -13,6 +13,7 @@ type ButtonProps = {
 	variant?: "default" | "dark" | "remote" | "profileEdit"
 	onClick?: () => void;
 	alt?: string;
+	disabled?: boolean;
 };
 
 export default function Button({
@@ -27,13 +28,15 @@ export default function Button({
 	variant = "default",
 	onClick,
 	alt = "",
-}: ButtonProps) {
+	disabled = false,
+    }: ButtonProps) {
 	const classNames = [
 		styles.button,
 		styles[size],
 		styles[shape],
 		styles[variant || "default"],
 		!imageOnly && styles.colored,
+		disabled && styles.disabled,
 		className,
 	]
 		.filter(Boolean)
@@ -45,6 +48,7 @@ export default function Button({
 			className={classNames}
 			style={!imageOnly ? style : undefined}
 			type={type}
+			disabled={disabled}
 		>
 			{icon && (
 				<img

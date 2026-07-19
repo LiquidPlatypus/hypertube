@@ -52,6 +52,10 @@
 	"video.comments": "Commentaires",
 	"video.noMoreComments": "Fin des commentaires.",
 	"video.post": "Poster",
+	"video.edit": "Modifier",
+	"video.saving": "Sauvegarde...",
+	"video.save": "Sauvegarder",
+	"video.cancel": "Annuler",
 
 	"loading": "Chargement...",
 	"send": "Envoyer",

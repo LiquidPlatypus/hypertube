@@ -61,6 +61,11 @@
 	background-color: #eab308;
 }
 
+.disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
 /* ----- Icône ----- */
 .icon {
 	display: inline-block;

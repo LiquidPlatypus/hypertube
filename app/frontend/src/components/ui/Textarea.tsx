@@ -18,6 +18,7 @@ type TextareaProps = {
 	variant?: "default" | "comment";
 	autoGrow?: boolean;
 	maxAutoGrowHeightPx?: number;
+	autoFocus?: boolean;
 }
 
 export default function Textarea({
@@ -37,6 +38,7 @@ export default function Textarea({
 	variant = "default",
 	autoGrow = true,
 	maxAutoGrowHeightPx,
+	autoFocus = false,
 }: TextareaProps) {
 	const textareaRef = React.useRef<HTMLTextAreaElement | null>(null);
 
@@ -63,6 +65,17 @@ export default function Textarea({
 		resize();
 	}, [value, resize]);
 
+	// Focus (and place cursor at the end) when autoFocus flips on, e.g. when
+	// an inline edit form mounts.
+	React.useEffect(() => {
+		if (!autoFocus) return;
+		const el = textareaRef.current;
+		if (!el) return;
+		el.focus();
+		const end = el.value.length;
+		el.setSelectionRange(end, end);
+	}, [autoFocus]);
+
 	const classNames = [
 		styles.textarea,
 		styles[size],
@@ -75,22 +88,22 @@ export default function Textarea({
 
 	return (
 		<div className={styles.wrapper}>
-			<textarea
-				ref={textareaRef}
-				placeholder={placeholder}
-				cols={cols}
-				rows={rows}
-				maxLength={maxLength}
-				wrap={wrap}
-				value={value}
-				onChange={(e) => {
-					onChange(e);
-				}}
-				onKeyDown={onKeyDown}
-				className={classNames}
-				style={style}
-				required={required}
-			/>
+		  <textarea
+			  ref={textareaRef}
+			  placeholder={placeholder}
+			  cols={cols}
+			  rows={rows}
+			  maxLength={maxLength}
+			  wrap={wrap}
+			  value={value}
+			  onChange={(e) => {
+				  onChange(e);
+			  }}
+			  onKeyDown={onKeyDown}
+			  className={classNames}
+			  style={style}
+			  required={required}
+		  />
 		</div>
 	);
 }

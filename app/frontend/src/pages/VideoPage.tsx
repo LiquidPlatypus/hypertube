@@ -56,6 +56,9 @@ export default function VideoPage() {
 	const [error, setError] = useState<string | null>(null);
 	const [comment, setComment] = useState("");
 	const [comments, setComments] = useState<Comment[]>([]);
+	const [editingId, setEditingId] = useState<number | null>(null);
+	const [editContent, setEditContent] = useState("false")
+	const [editSaving, setEditSaving] = useState(false);
 	const [downloadProgress, setDownloadProgress] = useState<Progress | null>(null);
 	const [streamReady, setStreamReady] = useState(false);
 	const [streamError, setStreamError] = useState(false);
@@ -137,6 +140,45 @@ export default function VideoPage() {
 		setComments((prev) => [json.comment, ...prev]);
 		setComment("");
 	}
+
+	const startEditing = (c: Comment) => {
+		setEditingId(c.id);
+		setEditContent(c.content);
+	};
+
+	const cancelEditing = () => {
+		setEditingId(null);
+		setEditContent("");
+	}
+
+	const saveEdit = async (id: number) => {
+		const trimmed = editContent.trim();
+		if (trimmed.length === 0 || editSaving) return;
+
+		const token = localStorage.getItem("access_token");
+		setEditSaving(true);
+		try {
+			const res = await fetch(`/api/comments/${id}?new_content=${encodeURIComponent(trimmed.trim())}`,
+				{
+					method: "PATCH",
+					headers: { Authorization: `Bearer ${token}` },
+				}
+			);
+
+			if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+
+			const json = await res.json();
+			setComments((prev) =>
+				prev.map((c) => (c.id === id ? { ...c, ...json.comment } : c))
+			);
+			setEditingId(null);
+			setEditContent("");
+		} catch (err) {
+			console.error("Error editing comment:", err);
+		} finally {
+			setEditSaving(false);
+		}
+	};
 
 	// Start SSE progress once we have the DB id
 	const startProgressSSE = (movieDbId: number) => {
@@ -399,7 +441,7 @@ export default function VideoPage() {
 				<div className={styles.commentsList}>
 					{comments.map((c) => (
 						<div key={c.id} className={styles.comment}>
-							<h3>
+							<h3 className={styles.commentHeader}>
 								<Link
 									to={
 										c.author === currentUsername
@@ -409,9 +451,59 @@ export default function VideoPage() {
 								>
 									{c.author}
 								</Link>
+								{c.author === currentUsername && editingId !== c.id && (
+									<button
+										type="button"
+										className={styles.editTrigger}
+										onClick={() => startEditing(c)}
+									>
+										{t("video.edit") || "Edit"}
+									</button>
+								)}
 							</h3>
 							<small>{new Date(c.date).toLocaleString()}</small>
-							<p>{c.content}</p>
+
+							{editingId === c.id ? (
+								<div className={styles.editForm}>
+									<Textarea
+										rows={1}
+										maxLength={360}
+										wrap="soft"
+										variant="comment"
+										size="large"
+										shape="square"
+										maxAutoGrowHeightPx={180}
+										value={editContent}
+										onChange={(e) => setEditContent(e.target.value)}
+										onKeyDown={(e) => {
+											if (e.key === "Enter" && !e.shiftKey) {
+												e.preventDefault();
+												void saveEdit(c.id);
+											} else if (e.key === "Escape") {
+												cancelEditing();
+											}
+										}}
+										autoFocus
+									/>
+									<div className={styles.editActions}>
+										<Button
+											text={editSaving ? (t("video.saving") || "Saving…") : (t("video.save") || "Save")}
+											size="large"
+											shape="square"
+											onClick={() => void saveEdit(c.id)}
+											disabled={editSaving || editContent.trim().length === 0}
+										/>
+										<Button
+											text={t("video.cancel") || "Cancel"}
+											size="large"
+											shape="square"
+											onClick={cancelEditing}
+										/>
+									</div>
+								</div>
+							) : (
+								<p>{c.content}</p>
+							)}
 						</div>
 					))}
 				</div>

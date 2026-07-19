@@ -17,7 +17,7 @@ export const router = createBrowserRouter([
 			// Routes protégées
 			{
 				element: <ProtectedRoute />,
-				children: [,
+				children: [
 					{
 						path: "/profile",
 						element: (

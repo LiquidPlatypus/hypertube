@@ -6,6 +6,7 @@ import Input from "../components/ui/Input.tsx";
 import styles from "./ProfilePage.module.css";
 
 type User = {
+	id: number;
 	username: string;
 	email: string;
 	firstname: string;
@@ -202,6 +203,8 @@ export default function ProfilInfo() {
 			fd.append("email", formData.email);
 			fd.append("file", fileToSend);
 
+			if (!user)
+				throw new Error("No user found");
 			const res = await fetch(`/api/users/${user.id}`, {
 				method: "PATCH",
 				headers: {
