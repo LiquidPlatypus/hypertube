@@ -1,6 +1,7 @@
 import * as React from "react";
 import {useState, useEffect, useRef} from "react";
 import { useParams, Link } from "react-router-dom";
+import Hls from "hls.js";
 
 import Button from "../components/ui/Button.tsx";
 import Textarea from "../components/ui/Textarea.tsx";
@@ -16,9 +17,17 @@ interface CastMember {
 	picture_url: string | null;
 }
 
+interface VideoFile {
+	index: number;
+	name: string;
+	size: number;
+}
+
 interface Movie {
 	id: number;
 	archive_id: string;
+	source: string;
+	media_kind: string;
 	title: string;
 	overview: string | null;
 	poster_url: string | null;
@@ -29,6 +38,7 @@ interface Movie {
 	cast: CastMember[];
 	status: string;
 	subtitles: string[];
+	files: VideoFile[];
 }
 
 interface Comment {
@@ -48,6 +58,10 @@ interface Progress {
 	transcoded_mb?: number;
 	speed_x?: number | null;
 	transcoded_sec?: number;
+	segments?: number;
+	// Server hint: "hls" → play the growing segment playlist, "direct" → the
+	// file is complete/native, play it straight with Range seeking.
+	mode?: "hls" | "direct";
 }
 
 export default function VideoPage() {
@@ -63,9 +77,21 @@ export default function VideoPage() {
 	const [currentUsername, setCurrentUsername] = useState<string | null>(null);
 	const [activeSubtitle, setActiveSubtitle] = useState<string | null>(null);
 	const [subtitleMenuOpen, setSubtitleMenuOpen] = useState(false);
+	// Subtitles arrive asynchronously (OpenSubtitles / extraction), so track them
+	// in their own state refreshed by polling — the CC menu updates without reload.
+	const [subtitles, setSubtitles] = useState<string[]>([]);
+	// Chosen file inside a multi-file (academic) torrent; null → server auto-picks.
+	const [selectedFile, setSelectedFile] = useState<number | null>(null);
+	// While downloading we play the progressively-produced HLS segments (playback
+	// can start after the first ~2s segment). Once the file is fully on disk we
+	// switch to the plain file endpoint: real Range seeking over the whole movie.
+	const [sourceMode, setSourceMode] = useState<"hls" | "direct">("hls");
+	const hlsRef = useRef<Hls | null>(null);
 	const commentFormRef = React.useRef<HTMLFormElement | null>(null);
 	const eventSourceRef = useRef<EventSource | null>(null);
 	const videoRef = useRef<HTMLVideoElement | null>(null);
+	// Guards the one-shot reload to the complete (seekable) file once downloaded.
+	const fullReloadedRef = useRef(false);
 	const subtitleControlRef = useRef<HTMLDivElement | null>(null);
 
 	const { archiveId } = useParams<{ archiveId: string }>();
@@ -85,14 +111,18 @@ export default function VideoPage() {
 
 			const data: Movie = await response.json();
 			setMovieDetails(data);
-		} catch (err) {
+			setSubtitles(data.subtitles ?? []);
+		} catch {
 			setMovieDetails(null);
 			setError(t("error"));
-			console.error("Error fetching Movies:", err);
 		} finally {
 			setLoading(false);
 		}
 	};
+
+	// Build the stream/progress query string, carrying the chosen file (if any).
+	const fileParam = (prefix: "?" | "&") =>
+		selectedFile !== null ? `${prefix}file=${selectedFile}` : "";
 
 	const getComments = async (movieId: number) => {
 		const token = localStorage.getItem("access_token");
@@ -137,7 +167,7 @@ export default function VideoPage() {
 	// Start SSE progress once we have the DB id
 	const startProgressSSE = (movieDbId: number) => {
 		if (eventSourceRef.current) eventSourceRef.current.close();
-		const es = new EventSource(`/api/stream/${movieDbId}/progress`);
+		const es = new EventSource(`/api/stream/${movieDbId}/progress${fileParam("?")}`);
 		eventSourceRef.current = es;
 		es.onmessage = (ev) => {
 			try {
@@ -146,6 +176,7 @@ export default function VideoPage() {
 					es.close();
 					eventSourceRef.current = null;
 					setDownloadProgress(null);
+					if (data.mode) setSourceMode(data.mode);
 					setStreamReady(true);
 				} else if (data.status === "error") {
 					// Pipeline gave up (e.g. torrent source unreachable). Show the
@@ -170,17 +201,66 @@ export default function VideoPage() {
 
 	useEffect(() => {
 		if (!movieDetails?.id) return;
-		void getComments(movieDetails.id).catch(console.error);
-		// Badge "vu": session-only (cleared on browser close / logout).
+		void getComments(movieDetails.id).catch(() => { /* handled by empty list */ });
+		// Badge "vu": immediate session feedback (persisted per-user server-side below).
 		markWatched(movieDetails.id);
-		// Server retention: POST /watch bumps last_watched (30-day cleanup). GET
-		// /movies/:id stays safe (RESTful) — the mutation lives here, not in the GET.
+		// Per-user watched + retention clock: POST /watch. GET /movies/:id stays
+		// side-effect-free (RESTful) — the mutation lives here, not in the GET.
 		const token = localStorage.getItem("access_token");
 		void fetch(`/api/movies/${movieDetails.id}/watch`, {
 			method: "POST",
 			headers: { Authorization: `Bearer ${token}` },
-		}).catch(console.error);
+		}).catch(() => { /* non-critical */ });
 	}, [movieDetails?.id]);
+
+	// While the torrent is still downloading, playback runs off the growing
+	// fragmented MP4, which only exposes what has been transcoded so far (a 90 min
+	// film shows as ~10 min). Once the whole file is on disk the server can serve
+	// it with a real Content-Length — full duration + seeking. Poll for that and
+	// reload the player once, restoring the current position so playback isn't cut.
+	useEffect(() => {
+		if (!movieDetails?.id || !streamReady || fullReloadedRef.current) return;
+		const id = movieDetails.id;
+		let stop = false;
+		const timer = window.setInterval(async () => {
+			if (stop || fullReloadedRef.current) return;
+			try {
+				const res = await fetch(`/api/stream/${id}/ready`);
+				const json = await res.json();
+				if (!json?.downloaded) return;
+				fullReloadedRef.current = true;
+				window.clearInterval(timer);
+				const v = videoRef.current;
+				if (!v) return;
+				const at = v.currentTime;
+				const wasPlaying = !v.paused;
+				// The whole file is on disk now: drop HLS and switch to the plain
+				// file endpoint, which serves real Range requests → full duration
+				// and seeking anywhere instead of only the produced segments.
+				if (hlsRef.current) {
+					hlsRef.current.destroy();
+					hlsRef.current = null;
+				}
+				setSourceMode("direct");
+				v.src = `/api/stream/${id}?complete=1${fileParam("&")}`;
+				v.load();
+				v.addEventListener(
+					"loadedmetadata",
+					() => {
+						try {
+							if (at > 0) v.currentTime = at;
+							if (wasPlaying) void v.play();
+						} catch { /* ignore */ }
+					},
+					{ once: true },
+				);
+			} catch { /* keep polling */ }
+		}, 5000);
+		return () => {
+			stop = true;
+			window.clearInterval(timer);
+		};
+	}, [movieDetails?.id, streamReady]);
 
 	React.useEffect(() => {
 		let cancelled = false;
@@ -194,6 +274,9 @@ export default function VideoPage() {
 		setShowLoader(false);
 		setActiveSubtitle(null);
 		setSubtitleMenuOpen(false);
+		setSelectedFile(null);
+		setSubtitles([]);
+		setSourceMode("hls");
 		const loaderTimer = window.setTimeout(() => {
 			if (!cancelled) setShowLoader(true);
 		}, 250);
@@ -206,7 +289,11 @@ export default function VideoPage() {
 		return () => {
 			cancelled = true;
 			window.clearTimeout(loaderTimer);
-			eventSourceRef.current?.close();;
+			eventSourceRef.current?.close();
+			if (hlsRef.current) {
+				hlsRef.current.destroy();
+				hlsRef.current = null;
+			}
 			const v = videoRef.current;
 			if (v) {
 				try {
@@ -218,16 +305,100 @@ export default function VideoPage() {
 		};
 	}, [archiveId]);
 
-	// Start SSE as soon as we know the DB id (movie might need to download)
+	// Start SSE as soon as we know the DB id (movie might need to download), and
+	// restart it whenever the user picks a different file in a multi-file bundle.
 	useEffect(() => {
 		if (movieDetails?.id) {
 			setStreamError(false);
 			setStreamReady(false);
+			fullReloadedRef.current = false;
 			setDownloadProgress({ status: "starting", progress: 0 });
 			startProgressSSE(movieDetails.id);
 		}
 		return () => {
 			eventSourceRef.current?.close();
+		};
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [movieDetails?.id, selectedFile]);
+
+	// Attach hls.js while streaming the growing HLS playlist. Chrome/Firefox have
+	// no native HLS, so hls.js is required; Safari can play the playlist directly.
+	// Any fatal error falls back to the progressive (fMP4) endpoint.
+	useEffect(() => {
+		const video = videoRef.current;
+		if (!video || !movieDetails?.id || !streamReady || streamError) return;
+		if (sourceMode !== "hls") return;
+
+		const url = `/api/stream/${movieDetails.id}/hls/index.m3u8${fileParam("?")}`;
+
+		if (video.canPlayType("application/vnd.apple.mpegurl")) {
+			video.src = url;
+			return;
+		}
+		if (!Hls.isSupported()) {
+			setSourceMode("direct");
+			return;
+		}
+
+		// Segments are transcoded on demand, so a fragment can legitimately take
+		// a few seconds (fetch the torrent pieces, then encode the slice). The
+		// default 20s timeout would report a fatal error on a healthy stream.
+		// Buffer length is capped so seeking doesn't queue up dozens of
+		// simultaneous segment transcodes ahead of the playhead.
+		const hls = new Hls({
+			enableWorker: true,
+			lowLatencyMode: false,
+			manifestLoadingTimeOut: 60000,
+			levelLoadingTimeOut: 60000,
+			fragLoadingTimeOut: 120000,
+			fragLoadingMaxRetry: 6,
+			maxBufferLength: 20,
+			maxMaxBufferLength: 40,
+		});
+		hlsRef.current = hls;
+		hls.loadSource(url);
+		hls.attachMedia(video);
+		hls.on(Hls.Events.ERROR, (_evt, data) => {
+			if (!data.fatal) return;
+			if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
+				hls.startLoad();
+			} else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
+				hls.recoverMediaError();
+			} else {
+				hls.destroy();
+				hlsRef.current = null;
+				setSourceMode("direct");
+			}
+		});
+
+		return () => {
+			hls.destroy();
+			hlsRef.current = null;
+		};
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [movieDetails?.id, streamReady, streamError, sourceMode, selectedFile]);
+
+	// Subtitles are acquired asynchronously server-side (OpenSubtitles + extraction)
+	// after the detail load, so poll a few times and refresh the CC list in place.
+	useEffect(() => {
+		if (!movieDetails?.id) return;
+		const id = movieDetails.id;
+		let attempts = 0;
+		let stop = false;
+		const timer = window.setInterval(async () => {
+			if (stop) return;
+			attempts += 1;
+			try {
+				const res = await fetch(`/api/movies/${id}/subtitles`);
+				const json = await res.json();
+				const list: string[] = json.subtitles ?? [];
+				setSubtitles((prev) => (list.length !== prev.length ? list : prev));
+			} catch { /* keep trying */ }
+			if (attempts >= 8) window.clearInterval(timer);
+		}, 4000);
+		return () => {
+			stop = true;
+			window.clearInterval(timer);
 		};
 	}, [movieDetails?.id]);
 
@@ -239,7 +410,7 @@ export default function VideoPage() {
 			const track = tracks[i];
 			track.mode = track.language === activeSubtitle ? "showing" : "hidden";
 		}
-	}, [activeSubtitle, movieDetails?.subtitles, streamReady]);
+	}, [activeSubtitle, subtitles, streamReady]);
 
 	// Close the subtitle popup on outside click.
 	useEffect(() => {
@@ -262,7 +433,7 @@ export default function VideoPage() {
 		})
 			.then((res) => res.json())
 			.then((data) => setCurrentUsername(data.user?.username ?? null))
-			.catch(console.error);
+			.catch(() => { /* username is cosmetic */ });
 	}, []);
 
 	function toHoursAndMinutes(totalMinutes?: number) {
@@ -274,8 +445,13 @@ export default function VideoPage() {
 	}
 
 	const truncRating = movieDetails ? `${Math.trunc(movieDetails.rating * 10)}%` : "";
-	// Don't set src when there's a stream error — prevents the browser retry loop
-	const streamSrc = (movieDetails && !streamError) ? `/api/stream/${movieDetails.id}` : undefined;
+	// Don't set src when there's a stream error — prevents the browser retry loop.
+	// In HLS mode hls.js drives the element, so the src attribute stays empty.
+	const streamSrc =
+		movieDetails && !streamError && sourceMode === "direct"
+			? `/api/stream/${movieDetails.id}${fileParam("?")}`
+			: undefined;
+	const videoFiles = movieDetails?.files ?? [];
 
 	return (
 		<div className={styles.wrapper}>
@@ -320,8 +496,7 @@ export default function VideoPage() {
 										{downloadProgress.progress.toFixed(1)}%
 										{downloadProgress.status === "transcoding"
 											? <>
-												&nbsp;·&nbsp;{(downloadProgress.transcoded_mb ?? 0).toFixed(1)} MB
-												{downloadProgress.speed_x != null ? <>&nbsp;·&nbsp;{downloadProgress.speed_x}x</> : null}
+												&nbsp;·&nbsp;{downloadProgress.segments ?? 0} seg.
 											</>
 											: <>
 												&nbsp;·&nbsp;{downloadProgress.speed_kbs ?? 0} KB/s
@@ -333,6 +508,17 @@ export default function VideoPage() {
 						</div>
 					) : (
 						<div className={styles.videoWrap}>
+							{videoFiles.length > 1 && (
+								<select
+									className={styles.fileSelect}
+									value={selectedFile ?? videoFiles[0].index}
+									onChange={(e) => setSelectedFile(Number(e.target.value))}
+								>
+									{videoFiles.map((f) => (
+										<option key={f.index} value={f.index}>{f.name}</option>
+									))}
+								</select>
+							)}
 							<video
 								ref={videoRef}
 								className={styles.video}
@@ -341,13 +527,13 @@ export default function VideoPage() {
 								crossOrigin="anonymous"
 								onError={() => setStreamError(true)}
 							>
-								{movieDetails?.subtitles?.map((lang) => (
+								{subtitles.map((lang) => (
 									<track
 										key={lang}
 										kind="subtitles"
 										label={lang.toUpperCase()}
 										srcLang={lang}
-										src={`/api/subtitles/${movieDetails.archive_id}/${lang}`}
+										src={`/api/subtitles/${movieDetails?.archive_id}/${lang}`}
 									/>
 								))}
 								<p>{t("video.error")}</p>
@@ -365,7 +551,7 @@ export default function VideoPage() {
 								</button>
 								{subtitleMenuOpen && (
 									<div className={styles.subtitleMenu}>
-										{movieDetails?.subtitles && movieDetails.subtitles.length > 0 ? (
+										{subtitles.length > 0 ? (
 											<>
 												<button
 													type="button"
@@ -374,7 +560,7 @@ export default function VideoPage() {
 												>
 													{t("video.subtitlesOff")}
 												</button>
-												{movieDetails.subtitles.map((lang) => (
+												{subtitles.map((lang) => (
 													<button
 														key={lang}
 														type="button"

@@ -52,11 +52,11 @@ sys.stderr = _Tee(sys.__stderr__, _LOG_FILE)
 from fastapi import FastAPI, Depends, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from contextlib import asynccontextmanager
 from auth import router as auth_router
 from utils import verif_access_token
 from users import router as users_router
-# from .stream import router as stream_router
-from movies import router as movies_router
+from streaming.api import router as streaming_router, seed_popular
 from comment import router as comment_router
 from mails import router as mails_router
 import shutil
@@ -73,7 +73,74 @@ from jose import JWTError, jwt
 ALGORITHM = "HS256"
 SECRET_KEY = os.getenv("SECRET_KEY")
 
-app = FastAPI()
+def _run_migrations() -> None:
+    """Idempotent in-place schema migrations. create_all() creates NEW tables
+    (watch_history) but never ALTERs existing ones, so add the streaming columns
+    here. Each ALTER is wrapped independently — a duplicate-column error just
+    means it already ran."""
+    from sqlalchemy import text
+    statements = [
+        "ALTER TABLE comment ADD COLUMN movie_id INT NULL",
+        "ALTER TABLE users ADD COLUMN preferred_language VARCHAR(8) NOT NULL DEFAULT 'en'",
+        "ALTER TABLE movies ADD COLUMN source VARCHAR(32) NOT NULL DEFAULT 'archive_org'",
+        "ALTER TABLE movies ADD COLUMN source_id VARCHAR(255) NULL",
+        "ALTER TABLE movies ADD COLUMN media_kind VARCHAR(16) NOT NULL DEFAULT 'film'",
+        "ALTER TABLE movies ADD COLUMN file_index INT NULL",
+        "ALTER TABLE movies ADD COLUMN last_streamed_at DATETIME NULL",
+        # Backfill source_id for legacy archive.org rows.
+        "UPDATE movies SET source_id = archive_id WHERE source_id IS NULL AND source = 'archive_org'",
+        # Root fix for MariaDB error 1020 ("Record has changed since last read"):
+        # ensure row-level locking (InnoDB), not Aria/MyISAM. The player hits the
+        # stream + SSE endpoints together → concurrent UPDATEs on one movie row,
+        # which Aria rejects. InnoDB handles it. Idempotent (no-op if already
+        # InnoDB). Convert PARENT tables before children so cross-engine foreign
+        # keys don't block the ALTER.
+        "ALTER TABLE users ENGINE=InnoDB",
+        "ALTER TABLE movies ENGINE=InnoDB",
+        "ALTER TABLE passwords ENGINE=InnoDB",
+        "ALTER TABLE picture ENGINE=InnoDB",
+        "ALTER TABLE comment ENGINE=InnoDB",
+        "ALTER TABLE watch_history ENGINE=InnoDB",
+    ]
+    for stmt in statements:
+        try:
+            with engine.begin() as conn:
+                conn.execute(text(stmt))
+        except Exception:
+            pass  # already applied / harmless
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    DB.metadata.create_all(bind=engine)
+    _run_migrations()
+    from streaming.transcode import reap_orphans, DIRECT_EXTS  # noqa: F401
+    from streaming.torrent_engine import DOWNLOAD_DIR
+    from streaming.retention import start_scheduler, stop_scheduler
+    reap_orphans(DOWNLOAD_DIR)
+    start_scheduler()
+    asyncio.create_task(_seed())
+    try:
+        yield
+    finally:
+        stop_scheduler()
+
+
+async def _seed():
+    """Populate the front page from the sources on startup (retry a few times —
+    the network/DB may not be ready immediately)."""
+    for attempt in range(1, 6):
+        try:
+            await seed_popular(60)
+            return
+        except Exception as e:
+            wait = attempt * 5
+            print(f"[Startup] seeding attempt {attempt}/5 failed ({e!r}) — retry in {wait}s")
+            await asyncio.sleep(wait)
+    print("[Startup] seeding gave up — DB fills on first search")
+
+
+app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -82,62 +149,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-@app.on_event("startup")
-async def on_startup():
-    DB.metadata.create_all(bind=engine)
-    # create_all never ALTERs existing tables. Add comment.movie_id in place so
-    # comments can be scoped per movie without dropping the table. Idempotent:
-    # a duplicate-column error just means the migration already ran.
-    from sqlalchemy import text
-    try:
-        with engine.begin() as conn:
-            conn.execute(text("ALTER TABLE comment ADD COLUMN movie_id INT NULL"))
-    except Exception:
-        pass  # column already exists
-    from services.cleanup_scheduler import start_scheduler
-    from movies import reap_orphan_transcodes
-    reap_orphan_transcodes()
-    start_scheduler()
-    asyncio.create_task(_seed_movies())
-
-
-@app.on_event("shutdown")
-async def on_shutdown():
-    from services.cleanup_scheduler import stop_scheduler
-    stop_scheduler()
-
-
-async def _seed_movies():
-    import httpx
-    from services.archive_client import seed_popular_movies
-    from movies import enrich_movies_background
-
-    for attempt in range(1, 6):
-        try:
-            movies = await seed_popular_movies(100)
-            break
-        except (httpx.ConnectError, httpx.TimeoutException, Exception) as e:
-            wait = attempt * 5
-            print(f"[Startup] Seeding attempt {attempt}/5 failed ({e!r}) — retrying in {wait}s")
-            await asyncio.sleep(wait)
-    else:
-        print("[Startup] Movie seeding gave up after 5 attempts — DB will be populated on first search")
-        return
-
-    db = SessionLocal()
-    seeded = []
-    try:
-        for m in movies:
-            row = create_or_get_movie(db, m.identifier, m.title, m.year)
-            if not row.poster_url and not row.tmdb_id:
-                seeded.append((row.id, row.title, row.year))
-    finally:
-        db.close()
-    print(f"[Startup] Seeded {len(movies)} movies from Archive.org")
-    if seeded:
-        asyncio.create_task(enrich_movies_background(seeded))
 
 
 # Middleware
@@ -164,8 +175,7 @@ async def verif_header(request: Request, call_next):
 
 app.include_router(auth_router)
 app.include_router(users_router)
-# app.include_router(stream_router)
-app.include_router(movies_router)
+app.include_router(streaming_router)
 app.include_router(comment_router)
 app.include_router(mails_router)
 

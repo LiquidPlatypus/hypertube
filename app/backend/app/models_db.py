@@ -16,7 +16,7 @@ engine = create_engine(
 	SQLALCHEMY_DATABASE_URL,
 	pool_pre_ping=True, #verifie la connexion avant de l'utiliser
 	pool_recycle=3600,  #recycle les connexions toutes les heures
-	echo=True		   #affiche les requetes sql (debug)
+	echo=False		   #True pour afficher les requetes SQL (debug bruyant)
 )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

@@ -5,9 +5,9 @@ import json
 from typing import Optional, List
 from models_db import DB
 from fastapi import Depends
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, OperationalError
 from sqlalchemy.orm import relationship, Session
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Enum, Float, Text, func, update as sql_update
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Enum, Float, Text, func, UniqueConstraint, update as sql_update
 from models_db import get_db
 
 
@@ -25,6 +25,9 @@ class User(DB):
     email = Column(String(100), unique=True, index=True)
     firstname = Column(String(50))
     lastname = Column(String(50))
+    # Preferred subtitle/UI language (ISO-639-1). Defaults to English (subject
+    # III.1). Feeds the OpenSubtitles fetch (EN + this) and the TMDb locale.
+    preferred_language = Column(String(8), default="en", nullable=False, server_default="en")
     password = relationship("Password", uselist=False)
 
 
@@ -38,15 +41,29 @@ class Password(DB):
 class Movie(DB):
     __tablename__ = "movies"
     id = Column(Integer, primary_key=True, index=True)
+    # ``archive_id`` is the legacy unique key (Archive.org slug). Kept for the
+    # existing rows/UI. Multi-source identity is carried by (source, source_id):
+    # for archive.org source_id == archive_id; for academic_torrents it's the
+    # infohash. archive_id is derived from source_id so the old code path and the
+    # subtitle/thumbnail helpers keep working during and after the migration.
     archive_id    = Column(String(255), unique=True, index=True, nullable=False)
+    source        = Column(String(32), default="archive_org", nullable=False, server_default="archive_org")
+    source_id     = Column(String(255), nullable=True, index=True)
+    media_kind    = Column(String(16), default="film", nullable=False, server_default="film")  # film | video
     tmdb_id       = Column(Integer, nullable=True, index=True)
     title = Column(String(255), nullable=False)
     year          = Column(Integer, nullable=True)
     mp4_path      = Column(String(512), nullable=True)
+    # For multi-file torrents (e.g. an academic course = N videos), the file the
+    # user chose to stream. Null for single-file items (archive.org films).
+    file_index    = Column(Integer, nullable=True)
     torrent_url   = Column(String(512), nullable=True)
     status        = Column(Enum(MovieStatus), default=MovieStatus.pending, nullable=False)
     watch_count   = Column(Integer, default=0, nullable=False)
     last_watched  = Column(DateTime, nullable=True)
+    # Last time ANY user streamed this movie — drives the 30-day retention purge
+    # (subject III.3) independently of the per-user watched badge (watch_history).
+    last_streamed_at = Column(DateTime, nullable=True)
     download_date = Column(DateTime, nullable=True)
     poster_url    = Column(String(512), nullable=True)
     overview      = Column(Text, nullable=True)
@@ -54,6 +71,17 @@ class Movie(DB):
     rating        = Column(Float, nullable=True)
     genres_json   = Column(String(512), nullable=True)
     cast_json     = Column(Text, nullable=True)
+
+
+class WatchHistory(DB):
+    """Per-user watched state (subject III.2.2: differentiate watched/unwatched
+    per user). One row per (user, movie); ``watched_at`` refreshed on each view."""
+    __tablename__ = "watch_history"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id  = Column(Integer, ForeignKey("users.id"), index=True, nullable=False)
+    movie_id = Column(Integer, ForeignKey("movies.id"), index=True, nullable=False)
+    watched_at = Column(DateTime, nullable=False)
+    __table_args__ = (UniqueConstraint("user_id", "movie_id", name="uq_watch_user_movie"),)
 
 
 class ProfilePic(DB):
@@ -100,23 +128,141 @@ def create_or_get_movie(session: Session, archive_id: str, title: str, year: Opt
     return movie
 
 
+def create_or_get_source_movie(
+    session: Session,
+    source: str,
+    source_id: str,
+    title: str,
+    year: Optional[int],
+    media_kind: str = "film",
+) -> Movie:
+    """Multi-source upsert keyed on (source, source_id).
+
+    ``archive_id`` stays the DB-wide unique key: for archive.org it equals the
+    slug; for other sources we namespace it (``<source>:<source_id>``) so the
+    unique constraint never collides across sources.
+    """
+    # archive_id must stay filesystem/URL/subtitle-safe (matches ^[A-Za-z0-9._-]+$).
+    # Namespace non-archive sources with "__" (not ":") so it passes that charset.
+    if source == "archive_org":
+        archive_id = source_id
+    else:
+        archive_id = f"{source}__{source_id}"
+    existing = get_movie_by_archive_id(session, archive_id)
+    if existing:
+        return existing
+    movie = Movie(
+        archive_id=archive_id, source=source, source_id=source_id,
+        title=title, year=year, media_kind=media_kind,
+    )
+    session.add(movie)
+    try:
+        session.commit()
+        session.refresh(movie)
+    except IntegrityError:
+        session.rollback()
+        return get_movie_by_archive_id(session, archive_id)
+    return movie
+
+
+def _commit_with_retry(session: Session, stmt, attempts: int = 3) -> None:
+    """Execute + commit, retrying MariaDB error 1020 ("Record has changed since
+    last read") which the Aria/MyISAM engine raises under concurrent updates of
+    the same row (the SSE progress loop and the stream endpoint both touch a
+    movie row at once). Rolls back and retries; gives up quietly after `attempts`
+    so a cosmetic status write never crashes a request."""
+    import time as _t
+    for i in range(attempts):
+        try:
+            session.execute(stmt)
+            session.commit()
+            return
+        except OperationalError as e:
+            session.rollback()
+            if getattr(e.orig, "args", [None])[0] != 1020 or i == attempts - 1:
+                import logging
+                logging.getLogger(__name__).warning("DB update skipped: %s", e)
+                return
+            _t.sleep(0.05 * (i + 1))
+        except Exception as e:
+            session.rollback()
+            import logging
+            logging.getLogger(__name__).warning("DB update skipped: %s", e)
+            return
+
+
 def update_movie_status(session: Session, movie_id: int, status: MovieStatus) -> None:
-    session.execute(sql_update(Movie).where(Movie.id == movie_id).values(status=status))
-    session.commit()
+    _commit_with_retry(session, sql_update(Movie).where(Movie.id == movie_id).values(status=status))
+
+
+def set_movie_file_index(session: Session, movie_id: int, file_index: Optional[int]) -> None:
+    _commit_with_retry(session, sql_update(Movie).where(Movie.id == movie_id).values(file_index=file_index))
+
+
+def touch_last_streamed(session: Session, movie_id: int) -> None:
+    """Bump ``last_streamed_at`` (retention clock). Swallow concurrent-update
+    errors — this is a cosmetic timestamp, never worth failing a stream over."""
+    try:
+        session.execute(
+            sql_update(Movie).where(Movie.id == movie_id).values(
+                last_streamed_at=datetime.datetime.now(timezone.utc)
+            )
+        )
+        session.commit()
+    except Exception:
+        session.rollback()
+
+
+# ---------------------------------------------------------------------------
+# Per-user watched state (subject III.2.2)
+# ---------------------------------------------------------------------------
+
+def mark_watched_by_user(session: Session, user_id: int, movie_id: int) -> None:
+    """Upsert a (user, movie) watch row. Idempotent — refreshes watched_at."""
+    now = datetime.datetime.now(timezone.utc)
+    try:
+        row = (
+            session.query(WatchHistory)
+            .filter(WatchHistory.user_id == user_id, WatchHistory.movie_id == movie_id)
+            .first()
+        )
+        if row:
+            row.watched_at = now
+        else:
+            session.add(WatchHistory(user_id=user_id, movie_id=movie_id, watched_at=now))
+        session.commit()
+    except IntegrityError:
+        session.rollback()
+    except Exception:
+        session.rollback()
+
+
+def get_watched_movie_ids(session: Session, user_id: int) -> set:
+    rows = session.query(WatchHistory.movie_id).filter(WatchHistory.user_id == user_id).all()
+    return {r[0] for r in rows}
+
+
+def is_watched_by_user(session: Session, user_id: int, movie_id: int) -> bool:
+    return (
+        session.query(WatchHistory.id)
+        .filter(WatchHistory.user_id == user_id, WatchHistory.movie_id == movie_id)
+        .first()
+        is not None
+    )
 
 
 def update_movie_path(session: Session, movie_id: int, path: Optional[str]) -> None:
     values = {"mp4_path": path}
     if path:
         values["download_date"] = datetime.datetime.now(timezone.utc)
-    session.execute(sql_update(Movie).where(Movie.id == movie_id).values(**values))
-    session.commit()
+    _commit_with_retry(session, sql_update(Movie).where(Movie.id == movie_id).values(**values))
 
 
 def update_movie_tmdb(session: Session, movie_id: int, data: dict) -> None:
     genres = data.get("genres", [])
     cast   = data.get("cast", [])
-    session.execute(
+    _commit_with_retry(
+        session,
         sql_update(Movie).where(Movie.id == movie_id).values(
             tmdb_id    = data.get("tmdb_id"),
             poster_url = data.get("poster_url"),
@@ -125,9 +271,8 @@ def update_movie_tmdb(session: Session, movie_id: int, data: dict) -> None:
             runtime    = data.get("runtime"),
             genres_json = json.dumps(genres) if genres else None,
             cast_json   = json.dumps(cast)   if cast   else None,
-        )
+        ),
     )
-    session.commit()
 
 
 _last_watched_call: dict[int, float] = {}
@@ -164,11 +309,16 @@ def mark_movie_watched(session: Session, movie_id: int) -> None:
 
 
 def get_movies_unwatched_since(session: Session, cutoff: datetime.datetime) -> List[Movie]:
+    """Movies with a file on disk that no user has streamed/watched since
+    ``cutoff`` (subject III.3: purge after a month unwatched). Retention clock =
+    the most recent of last_streamed_at / last_watched; NULL on both means it was
+    downloaded but never viewed → eligible."""
     return (
         session.query(Movie)
         .filter(Movie.mp4_path != None)
         .filter(
-            (Movie.last_watched == None) | (Movie.last_watched < cutoff)
+            ((Movie.last_streamed_at == None) | (Movie.last_streamed_at < cutoff))
+            & ((Movie.last_watched == None) | (Movie.last_watched < cutoff))
         )
         .all()
     )
@@ -312,12 +462,21 @@ class Storage:
             return convert_user_format(self.session.query(User).filter(User.id == element).first())
         if isinstance(element, str):
             user = convert_user_format(self.session.query(User).filter(User.username == element).first())
-            pic = self.session.query(ProfilePic).filter(ProfilePic.user_id == element).first()
+            if not user:
+                return {'error': 'No user found'}
+            pic = self.session.query(ProfilePic).filter(ProfilePic.user_id == user["id"]).first()
         else:
             user =  convert_user_format(self.session.query(User).filter(User.id == element).first())
+            if not user:
+                return {'error': 'No user found'}
             pic: ProfilePic = self.session.query(ProfilePic).filter(ProfilePic.user_id == user['id']).first()
         if not pic:
             return {'user_id': user['id'], 'username': user['username'], 'pic_url': None}
+        elif pic.url[:4] != "http":
+            with open(pic.url, "rb") as image_file:
+                encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
+                data_url = f"data:image/jpeg;base64,{encoded_string}"
+                return {'user_id': user['id'], 'username': user['username'], 'pic_url': data_url}
         return {'user_id': user['id'], 'username': user['username'], 'pic_url': pic.url}
 
     def modify_user(self, username: str, email: str, firstname: str, lastname: str, image_url: str, user_id: int):

@@ -26,7 +26,7 @@ export default function ForgotPassword() {
                 navigate("/");
             }
         } catch (error) {
-            console.error(error);
+            /* request failed — no-op */
             setMessage("Error");
         }
     };

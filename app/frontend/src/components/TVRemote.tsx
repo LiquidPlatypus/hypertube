@@ -56,7 +56,7 @@ export default function TVRemote({
 			localStorage.setItem("just_logged_out", "true");
 			navigate("/auth/login");
 		} catch (error) {
-			console.error("Logout failed:", error);
+			/* logout best-effort — token is cleared client-side regardless */
 		}
 	};
 

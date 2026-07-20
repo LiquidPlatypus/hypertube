@@ -18,15 +18,8 @@ export default function ResetPasswordPage() {
 	const changePassword = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 
-		if (!token) {
-			console.error("Token manquant dans l'URL");
-			return;
-		}
-
-		if (password !== confirmPassword) {
-			console.error("Les mots de passe ne correspondent pas");
-			return;
-		}
+		if (!token) return;
+		if (password !== confirmPassword) return;
 
 		try {
 			const response = await fetch("/api/reset-forgot-password", {
@@ -40,10 +33,9 @@ export default function ResetPasswordPage() {
 
 			if (!response.ok) throw new Error(`Server Error : ${response.status}`);
 
-			const res = await response.json();
-			console.log(res);
-		} catch (error) {
-			console.error(error);
+			await response.json();
+		} catch {
+			/* surfaced to the user via the form state */
 		}
 	};
 

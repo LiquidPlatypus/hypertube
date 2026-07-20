@@ -23,7 +23,7 @@ export default function FgPassword() {
 				throw new Error(`Server Error : ${response.status}`);
 			}
 		} catch (error) {
-			console.error(error);
+			/* mail send failed — no-op */
 		}
 	}
 

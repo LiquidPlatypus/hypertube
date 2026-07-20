@@ -3,7 +3,7 @@ import { t } from "../../lang/i18n.tsx";
 import styles from "./Thumbnail.module.css";
 
 interface ThumbnailProps {
-	thumbnailSrc: string;
+	thumbnailSrc?: string;
 	thumbnailAlt: string;
 	title: string;
 	year?: string;

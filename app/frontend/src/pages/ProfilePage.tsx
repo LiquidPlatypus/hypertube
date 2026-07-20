@@ -202,7 +202,6 @@ export default function ProfilInfo() {
 			fd.append("email", formData.email);
 			fd.append("file", fileToSend);
 
-			console.log(fd);
 			const res = await fetch("/api/users", {
 				method: "PATCH",
 				headers: {
@@ -228,8 +227,8 @@ export default function ProfilInfo() {
 
 			setIsEditing(false);
 			setSelectedFile(null);
-		} catch (error) {
-			console.error("profile.errorUpdate", error);
+		} catch {
+			/* update failed — form stays in edit mode */
 		}
 	};
 
