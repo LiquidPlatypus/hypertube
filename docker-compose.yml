@@ -39,6 +39,8 @@ services:
     container_name: hypertube_backend
     ports:
       - 8000:8000
+      - 6881:6881
+      - 6881:6881/udp
     env_file: .env
     volumes:
       - ./app/backend/app:/app

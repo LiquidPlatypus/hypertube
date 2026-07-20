@@ -67,6 +67,7 @@ async def fetch_subtitles(
 
     api_key = os.getenv("OPENSUBTITLES_API_KEY")
     if not api_key:
+        logger.warning("OPENSUBTITLES_API_KEY is not set — skipping subtitle fetch for %s", archive_id)
         return []
 
     out_dir = _safe_subtitle_dir(archive_id)
@@ -79,52 +80,77 @@ async def fetch_subtitles(
         "Api-Key": api_key,
         "Content-Type": "application/json",
         "Accept": "application/json",
+        # Without a custom UA, OpenSubtitles' gateway 403s every request
+        # (kong-user-agent-block) — httpx's default "python-httpx/x.x" gets
+        # blocked outright, so fetch_subtitles silently returned [] for every
+        # movie regardless of whether subtitles actually existed.
+        "User-Agent": "Hypertube v1.0.0",
     }
 
     async with httpx.AsyncClient(timeout=15, headers=headers) as client:
         for lang in languages:
-            if not _SAFE_NAME_RE.match(lang or ""):
-                continue
-            vtt_path = _safe_subtitle_path(archive_id, lang)
-            if vtt_path is None:
-                continue
-            if os.path.isfile(vtt_path):
+            try:
+                if not _SAFE_NAME_RE.match(lang or ""):
+                    continue
+                vtt_path = _safe_subtitle_path(archive_id, lang)
+                if vtt_path is None:
+                    continue
+                if os.path.isfile(vtt_path):
+                    results.append(SubtitleInfo(lang=lang, vtt_path=vtt_path))
+                    continue
+
+                params: dict = {"query": title, "languages": lang}
+                if year:
+                    params["year"] = year
+
+                r = await client.get(f"{OPENSUBS_BASE}/subtitles", params=params)
+                if r.status_code != 200:
+                    logger.warning(
+                        "OpenSubtitles search failed for %s [%s]: %s %s",
+                        archive_id, lang, r.status_code, r.text[:300],
+                    )
+                    continue
+                data = r.json()
+                items = data.get("data", [])
+                if not items:
+                    logger.info("No OpenSubtitles results for %s [%s] (query=%r)", archive_id, lang, title)
+                    continue
+
+                file_id = items[0].get("attributes", {}).get("files", [{}])[0].get("file_id")
+                if not file_id:
+                    logger.warning("OpenSubtitles result for %s [%s] has no file_id", archive_id, lang)
+                    continue
+
+                dl_r = await client.post(f"{OPENSUBS_BASE}/download", json={"file_id": file_id})
+                if dl_r.status_code != 200:
+                    logger.warning(
+                        "OpenSubtitles download request failed for %s [%s]: %s %s",
+                        archive_id, lang, dl_r.status_code, dl_r.text[:300],
+                    )
+                    continue
+                dl_data = dl_r.json()
+                srt_url = dl_data.get("link")
+                if not srt_url:
+                    logger.warning("OpenSubtitles download response for %s [%s] has no link", archive_id, lang)
+                    continue
+
+                srt_r = await client.get(srt_url)
+                if srt_r.status_code != 200:
+                    logger.warning(
+                        "Fetching .srt file failed for %s [%s]: %s", archive_id, lang, srt_r.status_code,
+                    )
+                    continue
+
+                vtt_content = _srt_to_vtt(srt_r.text)
+                with open(vtt_path, "w", encoding="utf-8") as f:
+                    f.write(vtt_content)
+                logger.info("Subtitle saved for %s [%s] -> %s", archive_id, lang, vtt_path)
                 results.append(SubtitleInfo(lang=lang, vtt_path=vtt_path))
-                continue
-
-            params: dict = {"query": title, "languages": lang}
-            if year:
-                params["year"] = year
-
-            r = await client.get(f"{OPENSUBS_BASE}/subtitles", params=params)
-            if r.status_code != 200:
-                continue
-            data = r.json()
-            items = data.get("data", [])
-            if not items:
-                continue
-
-            file_id = items[0].get("attributes", {}).get("files", [{}])[0].get("file_id")
-            if not file_id:
-                continue
-
-            dl_r = await client.post(f"{OPENSUBS_BASE}/download", json={"file_id": file_id})
-            if dl_r.status_code != 200:
-                continue
-            dl_data = dl_r.json()
-            srt_url = dl_data.get("link")
-            if not srt_url:
-                continue
-
-            srt_r = await client.get(srt_url)
-            if srt_r.status_code != 200:
-                continue
-
-            vtt_content = _srt_to_vtt(srt_r.text)
-            with open(vtt_path, "w", encoding="utf-8") as f:
-                f.write(vtt_content)
-
-            results.append(SubtitleInfo(lang=lang, vtt_path=vtt_path))
+            except Exception as e:
+                # Fire-and-forget caller (asyncio.create_task) means an uncaught
+                # exception here would vanish silently — log it so a failure is
+                # actually visible instead of just "subtitles: []" forever.
+                logger.error("Unexpected error fetching subtitle for %s [%s]: %r", archive_id, lang, e)
 
     return results
 

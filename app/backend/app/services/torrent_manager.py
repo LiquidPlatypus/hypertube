@@ -229,15 +229,15 @@ class TorrentManager:
             if target_idx < 0:
                 return 0
 
-            # Piece range covered by the target file. map_file(file, offset, size)
-            # returns a peer_request with .piece (start piece) and length.
-            try:
-                pr = files.map_file(target_idx, 0, target_size)
-                first_piece = int(pr.piece)
-            except Exception:
-                first_piece = 0
-            # Offset of the file within its first piece (file may not start at piece boundary).
-            file_offset_in_first_piece = files.file_offset(target_idx) % piece_length
+            # First piece covered by the target file. map_file(file, offset, size)
+            # is meant for small (peer-request-sized) ranges — calling it with the
+            # WHOLE file size (often hundreds of MB) throws, silently falling back
+            # to piece 0 via the old try/except. Piece 0 almost never belongs to
+            # our target file on a multi-file torrent (thumbnails/derivatives are
+            # frequently listed first), so we'd end up checking have_piece() on a
+            # piece we never download — contiguous_bytes stuck at 0 forever
+            # regardless of real progress. Simple arithmetic avoids map_file entirely.
+            first_piece = files.file_offset(target_idx) // piece_length
 
             # Walk pieces starting at first_piece; stop at first missing.
             last_complete = first_piece - 1
@@ -263,11 +263,6 @@ class TorrentManager:
             bytes_in_file = stream_end - file_stream_start
             if bytes_in_file < 0:
                 return 0
-            # Adjust if file starts mid-piece: first piece's leading bytes belong
-            # to the previous file, so subtract that slack.
-            # (file_stream_start = first_piece*piece_length + file_offset_in_first_piece,
-            #  so stream_end - file_stream_start already accounts for the slack.)
-            _ = file_offset_in_first_piece  # kept for clarity / future debug
             return min(bytes_in_file, target_size)
         except Exception as e:
             logger.error(f"[TorrentManager] contiguous_bytes error movie_id={movie_id}: {e}")
@@ -354,10 +349,11 @@ class TorrentManager:
                 mb_done = s.total_done / (1024 * 1024)
                 mb_total = s.total_wanted / (1024 * 1024)
                 speed_kb = s.download_rate / 1024
+                contig_mb = self.contiguous_bytes(dh.movie_id) / (1024 * 1024) if metadata_set else 0.0
                 logger.info(
                     f"[TorrentManager] movie_id={dh.movie_id} state={state_str} "
-                    f"{mb_done:.1f}/{mb_total:.1f} MB  {speed_kb:.0f} KB/s  "
-                    f"peers={s.num_peers}  file={dh.file_path}"
+                    f"{mb_done:.1f}/{mb_total:.1f} MB  contiguous={contig_mb:.1f} MB  {speed_kb:.0f} KB/s  "
+                    f"peers={s.num_peers}  buffer_ready={dh.buffer_event.is_set()}  file={dh.file_path}"
                 )
                 last_log_tick = tick
 
@@ -405,7 +401,13 @@ class TorrentManager:
                 buffer_target = MIN_BUFFER_BYTES
                 if s.total_wanted > 0:
                     buffer_target = min(MIN_BUFFER_BYTES, max(8 * 1024 * 1024, int(s.total_wanted * 0.04)))
-                if s.total_done >= buffer_target and dh.file_path:
+                # Gate on the CONTIGUOUS prefix, not total_done. total_done counts
+                # bytes completed anywhere in the torrent (piece-boost + sequential
+                # download can land pieces slightly out of order), but the growing
+                # fmp4 feeder can only ever read a contiguous run from byte 0 — using
+                # total_done here can flip buffer_event before there's actually
+                # enough usable data, freezing the "transcoding" stage at 0% forever.
+                if self.contiguous_bytes(dh.movie_id) >= buffer_target and dh.file_path:
                     dh.buffer_event.set()
                     logger.info(f"[TorrentManager] ✓ buffer ready movie_id={dh.movie_id} "
                                 f"({s.total_done // (1024*1024)} MB / target {buffer_target // (1024*1024)} MB)")

@@ -61,9 +61,12 @@ export default function VideoPage() {
 	const [streamReady, setStreamReady] = useState(false);
 	const [streamError, setStreamError] = useState(false);
 	const [currentUsername, setCurrentUsername] = useState<string | null>(null);
+	const [activeSubtitle, setActiveSubtitle] = useState<string | null>(null);
+	const [subtitleMenuOpen, setSubtitleMenuOpen] = useState(false);
 	const commentFormRef = React.useRef<HTMLFormElement | null>(null);
 	const eventSourceRef = useRef<EventSource | null>(null);
 	const videoRef = useRef<HTMLVideoElement | null>(null);
+	const subtitleControlRef = useRef<HTMLDivElement | null>(null);
 
 	const { archiveId } = useParams<{ archiveId: string }>();
 	const { t } = useTranslation();
@@ -189,6 +192,8 @@ export default function VideoPage() {
 
 		// Show loader only if load time > 250ms.
 		setShowLoader(false);
+		setActiveSubtitle(null);
+		setSubtitleMenuOpen(false);
 		const loaderTimer = window.setTimeout(() => {
 			if (!cancelled) setShowLoader(true);
 		}, 250);
@@ -225,6 +230,28 @@ export default function VideoPage() {
 			eventSourceRef.current?.close();
 		};
 	}, [movieDetails?.id]);
+
+	// Keep the <video>'s text tracks in sync with the subtitle menu selection.
+	useEffect(() => {
+		const tracks = videoRef.current?.textTracks;
+		if (!tracks) return;
+		for (let i = 0; i < tracks.length; i++) {
+			const track = tracks[i];
+			track.mode = track.language === activeSubtitle ? "showing" : "hidden";
+		}
+	}, [activeSubtitle, movieDetails?.subtitles, streamReady]);
+
+	// Close the subtitle popup on outside click.
+	useEffect(() => {
+		if (!subtitleMenuOpen) return;
+		const handleClick = (e: MouseEvent) => {
+			if (subtitleControlRef.current && !subtitleControlRef.current.contains(e.target as Node)) {
+				setSubtitleMenuOpen(false);
+			}
+		};
+		document.addEventListener("mousedown", handleClick);
+		return () => document.removeEventListener("mousedown", handleClick);
+	}, [subtitleMenuOpen]);
 
 	useEffect(() => {
 		const token = localStorage.getItem("access_token");
@@ -305,25 +332,66 @@ export default function VideoPage() {
 							)}
 						</div>
 					) : (
-						<video
-							ref={videoRef}
-							className={styles.video}
-							src={streamSrc}
-							controls
-							crossOrigin="anonymous"
-							onError={() => setStreamError(true)}
-						>
-							{movieDetails?.subtitles?.map((lang) => (
-								<track
-									key={lang}
-									kind="subtitles"
-									label={lang.toUpperCase()}
-									srcLang={lang}
-									src={`/api/subtitles/${movieDetails.archive_id}/${lang}`}
-								/>
-							))}
-							<p>{t("video.error")}</p>
-						</video>
+						<div className={styles.videoWrap}>
+							<video
+								ref={videoRef}
+								className={styles.video}
+								src={streamSrc}
+								controls
+								crossOrigin="anonymous"
+								onError={() => setStreamError(true)}
+							>
+								{movieDetails?.subtitles?.map((lang) => (
+									<track
+										key={lang}
+										kind="subtitles"
+										label={lang.toUpperCase()}
+										srcLang={lang}
+										src={`/api/subtitles/${movieDetails.archive_id}/${lang}`}
+									/>
+								))}
+								<p>{t("video.error")}</p>
+							</video>
+
+							<div className={styles.subtitleControl} ref={subtitleControlRef}>
+								<button
+									type="button"
+									className={styles.subtitleToggleBtn}
+									aria-label={t("video.subtitles")}
+									aria-expanded={subtitleMenuOpen}
+									onClick={() => setSubtitleMenuOpen((open) => !open)}
+								>
+									CC
+								</button>
+								{subtitleMenuOpen && (
+									<div className={styles.subtitleMenu}>
+										{movieDetails?.subtitles && movieDetails.subtitles.length > 0 ? (
+											<>
+												<button
+													type="button"
+													className={activeSubtitle === null ? styles.subtitleMenuItemActive : styles.subtitleMenuItem}
+													onClick={() => { setActiveSubtitle(null); setSubtitleMenuOpen(false); }}
+												>
+													{t("video.subtitlesOff")}
+												</button>
+												{movieDetails.subtitles.map((lang) => (
+													<button
+														key={lang}
+														type="button"
+														className={activeSubtitle === lang ? styles.subtitleMenuItemActive : styles.subtitleMenuItem}
+														onClick={() => { setActiveSubtitle(lang); setSubtitleMenuOpen(false); }}
+													>
+														{lang.toUpperCase()}
+													</button>
+												))}
+											</>
+										) : (
+											<p className={styles.subtitleMenuEmpty}>{t("video.noSubtitles")}</p>
+										)}
+									</div>
+								)}
+							</div>
+						</div>
 					)}
 				</div>
 				<div className={styles.miscellaneousPart}>
