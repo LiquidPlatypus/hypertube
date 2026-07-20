@@ -1,19 +1,19 @@
 from sqlalchemy.orm import Session
 from database import User, Password
-from passlib.context import CryptContext
+from security import hash_password, verify_password
 from typing import Optional
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 class UserRepository:
     def __init__(self, db: Session):
         self.db = db
 
+    # Delegate to the shared security module so hashing rules live in one place.
     def hash_password(self, password: str) -> str:
-        return pwd_context.hash(password)
+        return hash_password(password)
 
     def verify_password(self, plain_password: str, hashed_password: str) -> bool:
-        return pwd_context.verify(plain_password, hashed_password)
+        return verify_password(plain_password, hashed_password)
 
     def add_user(self, username: str, email: str, password: str, firstname: str, lastname: str) -> User:
         hashed_password = self.hash_password(password)

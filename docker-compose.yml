@@ -44,6 +44,15 @@ services:
     env_file: .env
     volumes:
       - ./app/backend/app:/app
+      # Downloaded movies live on the host so they survive `docker compose down`
+      # (subject III.3: a finished download is kept and reused instead of being
+      # re-downloaded). Without this the whole library was lost on every restart.
+      - ./movie_data:/data/movies
+      - ./logs:/data/logs
+    environment:
+      # Subtitles sit next to the movies so they persist with them; otherwise a
+      # kept movie would lose its tracks on restart and re-hit OpenSubtitles.
+      - SUBTITLE_DIR=/data/movies/.subtitles
     depends_on:
       - mariadb
     networks:

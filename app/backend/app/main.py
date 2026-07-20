@@ -110,10 +110,41 @@ def _run_migrations() -> None:
             pass  # already applied / harmless
 
 
+def _hash_legacy_passwords() -> None:
+    """Upgrade any password still stored in clear text to a bcrypt hash.
+
+    Storing a plain-text password is an automatic fail (subject chap. II). This
+    runs once at startup so existing accounts keep working while nothing
+    readable remains in the database. A row with no usable value gets a random
+    secret, making password login impossible for it rather than trivial.
+    """
+    import secrets
+    from database import Password
+    from security import hash_password, is_hashed
+
+    db = SessionLocal()
+    try:
+        changed = 0
+        for row in db.query(Password).all():
+            if is_hashed(row.hashed_password):
+                continue
+            row.hashed_password = hash_password(row.hashed_password or secrets.token_urlsafe(48))
+            changed += 1
+        if changed:
+            db.commit()
+            print(f"[migration] hashed {changed} plain-text password(s)")
+    except Exception as e:
+        db.rollback()
+        print(f"[migration] password hashing skipped: {e!r}")
+    finally:
+        db.close()
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     DB.metadata.create_all(bind=engine)
     _run_migrations()
+    _hash_legacy_passwords()
     from streaming.transcode import reap_orphans, DIRECT_EXTS  # noqa: F401
     from streaming.torrent_engine import DOWNLOAD_DIR
     from streaming.retention import start_scheduler, stop_scheduler

@@ -9,6 +9,7 @@ from sqlalchemy.exc import IntegrityError, OperationalError
 from sqlalchemy.orm import relationship, Session
 from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Enum, Float, Text, func, UniqueConstraint, update as sql_update
 from models_db import get_db
+from security import hash_password, verify_password, unusable_password
 
 
 class MovieStatus(str, enum.Enum):
@@ -442,7 +443,8 @@ class Storage:
         self.session = db
 
     def add_user(self, username: str, email: str, password: str, firstname: str, lastname: str):
-        pwd = Password(hashed_password=password)
+        # Hash before it ever reaches the database (subject chap. II).
+        pwd = Password(hashed_password=hash_password(password))
         user = User(
             username=username,
             email=email,
@@ -503,17 +505,31 @@ class Storage:
                 self.session.commit()
 
     def get_user_password(self, user_id: int):
+        """Stored bcrypt hash. Never compare this with `==` against user input —
+        use ``verify_user_password`` instead."""
         user: User = self.session.query(User).filter(User.id == user_id).first()
-        if not user:
+        if not user or not user.password:
             return None
         return user.password.hashed_password
+
+    def verify_user_password(self, user_id: int, plain_password: str) -> bool:
+        return verify_password(plain_password, self.get_user_password(user_id))
 
     def modify_password(self, new_password: str, user_id: int):
         target: Password = self.session.query(Password).filter(Password.user_id == user_id).first()
         if not target:
             return None
-        target.hashed_password = new_password
+        target.hashed_password = hash_password(new_password)
         self.session.commit()
+        return True
+
+    def set_unusable_password(self, user_id: int) -> None:
+        """Give an OAuth account a random hashed secret so no password login is
+        possible for it."""
+        target: Password = self.session.query(Password).filter(Password.user_id == user_id).first()
+        if target:
+            target.hashed_password = unusable_password()
+            self.session.commit()
 
     def get_all_users(self):
         """
