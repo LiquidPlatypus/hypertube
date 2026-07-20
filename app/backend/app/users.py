@@ -61,6 +61,10 @@ async def get_current_profile_pic(current_user=Depends(verif_access_token), stor
 async def read_user_me(current_user=Depends(verif_access_token)):
 	return {"user": current_user}
 
+@router.get("/api/users")
+async def get_all_users(storage: Storage = Depends(get_storage)):
+    return storage.get_all_users(limit=True)
+
 @router.get("/api/users/{id}")
 async def get_other_profile(id: str | int, storage: Storage = Depends(get_storage), current_user=Depends(verif_access_token)):
     if current_user["id"] == id:
@@ -88,12 +92,6 @@ async def forgot_password(current_user=Depends(verif_access_token)):
     username = current_user["username"]
     print(f"{username} load forgot password form\n")
     return {"returnValue": True}
-
-@router.get("/api/users/{id}")
-async def get_other_profile(id: str | int, storage: Storage = Depends(get_storage), current_user=Depends(verif_access_token)):
-    if current_user["id"] == id:
-        return {"user": current_user}
-    return storage.get_user_by_id(id)
 
 # @router.get("/api/users/{user_id}/profile-pic")
 # async def get_user_profile_pic(user_id: int, current_user=Depends(verif_access_token)):

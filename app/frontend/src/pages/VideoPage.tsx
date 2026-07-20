@@ -104,7 +104,7 @@ export default function VideoPage() {
 				console.warn("movieDetails empty")
 				return;
 			}
-			const res = await fetch(`/api/comments?pos=${pos}&movie_id=${movieDetails.id}`, {
+			const res = await fetch(`/api/comment?pos=${pos}&movie_id=${movieDetails.id}`, {
 				headers: { Authorization: `Bearer ${token}` },
 			});
 			const json = await res.json();

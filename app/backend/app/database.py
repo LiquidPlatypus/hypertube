@@ -288,13 +288,19 @@ class Storage:
         target.hashed_password = new_password
         self.session.commit()
 
-    def get_all_users(self):
+    def get_all_users(self, limit: bool = False):
         """
         DESK:
         Return list of user (without password)
         """
         users_list = self.session.query(User).all()
         users = []
+        if limit == True:
+            users = [
+                {"id": it.id, "username": it.username} 
+                for it in users_list
+            ]
+            return users
         for it in users_list:
             user = convert_user_format(it)
             users.append(user)
@@ -353,9 +359,6 @@ class Storage:
         self.session.add(comment)
         self.session.commit()
         return convert_comment_format(comment, self.session)
-        
-    def get_comment(self, id):
-        return convert_comment_format(self.session.query(Comment).filter(Comment.id == id).first(), self.session)
 
     def custom_comment(self, id: int, new_content: str):
         comment: Comment = self.session.query(Comment).filter(Comment.id == id).first()
@@ -364,6 +367,14 @@ class Storage:
         comment.content = new_content
         self.session.commit()
         return convert_comment_format(comment, self.session)
+
+    def get_last_comments(self):
+        comments_list = self.session.query(Comment).all()
+        comments = [
+            {"id": it.id, "content": it.content, "author": self.session.query(User).filter(User.id == it.author_id).first().username, "date": it.date} 
+            for it in comments_list
+        ]
+        return comments[len(comments) - 10::]
 
     def get_comments(self, chunk, movie_id):
         comments_list = self.session.query(Comment).filter(Comment.movie_id == movie_id).all()

@@ -62,7 +62,6 @@ async def ft_login(code: str = Body(embed=True), storage: Storage = Depends(get_
 		)
 	current_user = None
 	try:
-		print("AaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
 		client = WebApplicationClient(client_id=FT_UID)
 		oauth = OAuth2Session(client=client, redirect_uri=FT_REDIRECT_URI)
 		token = oauth.fetch_token(
