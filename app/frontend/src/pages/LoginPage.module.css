@@ -14,21 +14,19 @@
 }
 
 .TVWrapper {
-	position: relative;
-	display: flex;
-	align-items: center;
-	justify-content: center;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
-	margin-top: 1rem;
-	margin-bottom: 1rem;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
 
-	width: min(95vw, 95rem);
-	aspect-ratio: 1 / 1;
+    width: min(95vw, 95rem, calc(100vh - 2rem));
+    aspect-ratio: 1 / 1;
 
-	max-height: calc(100vh - 2rem);
-
-	transition: transform 120ms ease-out;
-	will-change: transform;
+    transition: transform 120ms ease-out;
+    will-change: transform;
 }
 
 /* ----- États init ----- */

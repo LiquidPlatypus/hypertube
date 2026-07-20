@@ -141,6 +141,7 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 
 		try {
 			const payload = {
+				provider: "register",
 				username: registerData.username,
 				password: registerData.password,
 				email: registerData.email,
@@ -148,14 +149,15 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 				lastName: registerData.lastName,
 			};
 
-			const data: any = await postJson<any, typeof payload>("/api/register", payload);
+			const data: any = await postJson<any, typeof payload>("/api/oauth/token", payload);
 
-			if (data?.returnValue) {
+			if (data?.access_token) {
 				setMessage(t("register.success"));
 				setTimeout(() => {
 					setIsLogin(true);
 					setMessage("");
 					clearRegisterData();
+					finishAuth(data.access_token);
 				}, 2000);
 			} else {
 				setMessage(data?.message || t("register.error.notPossible"));
@@ -176,7 +178,10 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 
 		setIsLoading(true);
 		try {
-			const data = await postJson<ApiAuthResponse, { token: string }>("/api/google-auth", { token: credential });
+			const data = await postJson<ApiAuthResponse, { provider: string; token: string }>(
+				"/api/oauth/token", 
+				{ provider: "google", token: credential }
+			);
 			finishAuth(data.access_token);
 		} catch (err) {
 			setErrorMessage(err, t("login.error.oauth", { defaultValue: "Erreur OAuth" }));
@@ -207,23 +212,26 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 		window.location.href = `${FT_AUTHORIZE_URL}?${params.toString()}`;
 	};
 
-	useEffect(() => {		
+	useEffect(() => {       
 		const code = searchParams.get("code");
 		if (code) {
 			const login42 = async () => {
 				if (isCalled) return;
 				setIsCalled(true);
 				try {
-					const data = await postJson<ApiAuthResponse, { code: string }>("/api/42auth", { code });
+					const data = await postJson<ApiAuthResponse, { provider: string; token: string }>(
+						"/api/oauth/token", 
+						{ provider: "42", token: code }
+					);
 					finishAuth(data.access_token);
-					navigate("/")
+					navigate("/");
 				} catch (err) {
 					if (!sessionStorage.getItem("access_token"))
 						console.error(err);
 				} finally {
 					setIsCalled(false);
 				}
-			}
+			};
 
 			login42();
 		}
@@ -304,6 +312,16 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 							disabled={isLoading}
 						>
 							{t("login.forgotPassword")}
+						</button>
+
+						<button
+							type="button"
+							className={styles.ForgotPasswordLink}
+							onClick={() => {
+								navigate("/public-home")
+							}}
+						>
+							{t("login.publicHome")}
 						</button>
 
 						<Button

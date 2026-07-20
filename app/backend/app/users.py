@@ -67,6 +67,10 @@ async def get_all_users(storage: Storage = Depends(get_storage)):
 
 @router.get("/api/users/{id}")
 async def get_other_profile(id: str | int, storage: Storage = Depends(get_storage), current_user=Depends(verif_access_token)):
+    try:
+        id = int(id)
+    except (ValueError, TypeError):
+        pass
     if current_user["id"] == id:
         return {"user": current_user}
     return storage.get_user_by_id(id)

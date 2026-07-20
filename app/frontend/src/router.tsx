@@ -8,6 +8,7 @@ import VideoPage from "./pages/VideoPage.tsx";
 import PublicProfile from "./pages/PublicProfile.tsx";
 import FgPassword from "./pages/FgPasswordPage.tsx";
 import ResetPasswordPage from "./pages/ResetPasswordPage.tsx";
+import PublicHome from "./pages/PublicHome.tsx";
 
 export const router = createBrowserRouter([
 	{
@@ -18,6 +19,12 @@ export const router = createBrowserRouter([
 			{
 				element: <ProtectedRoute />,
 				children: [
+					{
+						path: "/",
+						element: (
+							<HomePage />
+						),
+					},
 					{
 						path: "/profile",
 						element: (
@@ -37,12 +44,6 @@ export const router = createBrowserRouter([
 						),
 					},
 				],
-			},
-			{
-				path: "/",
-				element: (
-					<HomePage />
-				),
 			},
 			// Auth routes
 			{
@@ -68,6 +69,11 @@ export const router = createBrowserRouter([
 				element: (
 					<ResetPasswordPage />
 				)
+			},
+			// Public Home
+			{
+				path: "/public-home",
+				element: <PublicHome />,
 			},
 		],
 	},

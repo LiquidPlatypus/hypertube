@@ -17,6 +17,7 @@
 	"login.error.popupBlocked": "Popup bloquée par le navigateur (désactive le bloqueur)",
 	"login.error.oauthState": "État OAuth invalide, réessaie.",
 	"login.forgotPassword": "Mot de passe oublié?",
+	"login.publicHome": "Voir les films populaires",
 
 	"register.title": "Inscription",
 	"register.button": "Inscription",

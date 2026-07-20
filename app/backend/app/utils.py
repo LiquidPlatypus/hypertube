@@ -13,7 +13,7 @@ load_dotenv(dotenv_path=env_path)
 ALGORITHM = "HS256"
 SECRET_KEY = os.getenv("SECRET_KEY")  # Ben faut proteger sa niveau sécurité sinon t'es pas gentil
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
-GOOGLE_CLIENT_ID = "504765868462-ssreveurjgq1i8tuoinem6fcp0g8kv90.apps.googleusercontent.com"
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="access_token")
 
@@ -39,6 +39,6 @@ def verif_access_token(token: str = Depends(oauth2_scheme), storage: Storage = D
         return user
     except JWTError:
         raise HTTPException(
-            status_code=401,
-            detail="Unauthorized"
+            status_code=403,
+            detail="Forbidden"
         )

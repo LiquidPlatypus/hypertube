@@ -1,5 +1,15 @@
 from pydantic import BaseModel, EmailStr
 from fastapi import UploadFile, File
+from typing import Optional
+
+class UnifiedAuthRequest(BaseModel):
+    provider: str  # "42", "google", ou "register"
+    token: Optional[str] = None  # Contient le code 42 ou le jeton Google
+    username: Optional[str] = None
+    password: Optional[str] = None
+    email: Optional[EmailStr] = None
+    firstName: Optional[str] = None
+    lastName: Optional[str] = None
 
 class RegisterRequest(BaseModel):
 	"""

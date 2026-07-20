@@ -1,4 +1,4 @@
-from model import RegisterRequest, LoginRequest, GoogleToken, SuccessException, FortyTwoCode
+from model import RegisterRequest, LoginRequest, GoogleToken, SuccessException, UnifiedAuthRequest
 from database import get_storage, Storage
 from fastapi import APIRouter, HTTPException, Depends, Body
 from google.oauth2 import id_token
@@ -21,7 +21,33 @@ FT_UID=os.getenv("FT_UID")
 FT_SECRET=os.getenv("FT_SECRET")
 FT_REDIRECT_URI=os.getenv("FT_REDIRECT_URI")
 
-@router.post("/api/register")
+@router.post("/api/oauth/token")
+async def oauth_token(data: UnifiedAuthRequest, storage: Storage = Depends(get_storage)):
+
+    if data.provider == "42":
+        if not data.token:
+            raise HTTPException(status_code=406, detail="No code received")
+        return await ft_login(code=data.token, storage=storage)
+
+    elif data.provider == "google":
+        if not data.token:
+            raise HTTPException(status_code=400, detail="Invalid Google Token")
+        google_data = GoogleToken(token=data.token)
+        return await google_login(data=google_data, storage=storage)
+
+    elif data.provider == "register":
+        register_data = RegisterRequest(
+            username=data.username,
+            password=data.password,
+            email=data.email,
+            firstName=data.firstName,
+            lastName=data.lastName
+        )
+        return await register(data=register_data, storage=storage)
+
+    else:
+        raise HTTPException(status_code=400, detail="Unknown provider strategy")
+
 async def register(data: RegisterRequest, storage: Storage = Depends(get_storage)):
 	"""
 	Return Value : \n
@@ -33,7 +59,9 @@ async def register(data: RegisterRequest, storage: Storage = Depends(get_storage
 			return {"returnValue": False}
 	
 	user = storage.add_user(data.username, data.email, data.password, data.firstName, data.lastName)
-	return {"returnValue": True}
+	access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+	access_token = create_access_token(data={"sub": str(user["id"])}, expires_delta=access_token_expires)
+	return {"access_token": access_token, "token_type": "bearer"}
 
 @router.post("/api/login")
 async def login(data: LoginRequest, storage: Storage = Depends(get_storage)):
@@ -53,7 +81,6 @@ async def login(data: LoginRequest, storage: Storage = Depends(get_storage)):
 		detail="Invalid username or password",
 	)
 
-@router.post("/api/42auth")
 async def ft_login(code: str = Body(embed=True), storage: Storage = Depends(get_storage)):
 	if not code:
 		raise HTTPException(
@@ -96,7 +123,6 @@ async def ft_login(code: str = Body(embed=True), storage: Storage = Depends(get_
 			detail=f"{e}"
 		)
 
-@router.post("/api/google-auth")
 async def google_login(data: GoogleToken, storage: Storage = Depends(get_storage)):
 	user = None
 	try:

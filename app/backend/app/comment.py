@@ -10,7 +10,7 @@ import string, random
 router = APIRouter()
 
 @router.get("/api/comments/{id}")
-async def get_comment_byid(id: int, current_user=Depends(verif_access_token), storage: Storage = Depends(get_storage)):
+async def get_comment_byid(id: int, storage: Storage = Depends(get_storage)):
 	comment = storage.get_comment(id)
 	if not id or comment == None:
 		raise HTTPException(

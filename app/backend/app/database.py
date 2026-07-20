@@ -239,9 +239,13 @@ class Storage:
             return convert_user_format(self.session.query(User).filter(User.id == element).first())
         if isinstance(element, str):
             user = convert_user_format(self.session.query(User).filter(User.username == element).first())
+            if not user:
+                return {'error': 'No user found'}
             pic = self.session.query(ProfilePic).filter(ProfilePic.user_id == user["id"]).first()
         else:
             user =  convert_user_format(self.session.query(User).filter(User.id == element).first())
+            if not user:
+                return {'error': 'No user found'}
             pic: ProfilePic = self.session.query(ProfilePic).filter(ProfilePic.user_id == user['id']).first()
         if not pic:
             return {'user_id': user['id'], 'username': user['username'], 'pic_url': None}
