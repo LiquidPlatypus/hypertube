@@ -17,7 +17,8 @@ RUN apt-get update -y && apt-get install -y \
     wget \
     curl \
     gnupg2 \
-    openssl
+    openssl \
+    gettext-base
 
 RUN wget https://nginx.org/download/nginx-1.24.0.tar.gz && \
     wget https://github.com/nbs-system/naxsi/archive/master.tar.gz && \
@@ -34,13 +35,15 @@ RUN mkdir -p /etc/nginx/ssl /var/log/nginx \
         -keyout /etc/nginx/ssl/hypertube.key \
         -subj "/C=FR/ST=MULHOUSE/L=MULHOUSE/O=42 School/OU=hypertube/CN=hypertube/"
 
-COPY nginx/nginx.conf /usr/local/nginx/conf/.
+COPY nginx/nginx.conf /usr/local/nginx/conf/nginx.conf.template
 COPY nginx/naxsi.rules /usr/local/nginx/conf/.
 COPY nginx/mime.types /etc/nginx/.
 COPY nginx/naxsi_core.rules /usr/local/nginx/conf/.
+COPY nginx/docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
 
 COPY --from=builder /app/dist /usr/local/nginx/html
 
 EXPOSE 80 443
 
-CMD ["/usr/local/nginx/sbin/nginx", "-g", "daemon off;"]
+ENTRYPOINT ["/docker-entrypoint.sh"]

@@ -73,6 +73,10 @@ from jose import JWTError, jwt
 
 ALGORITHM = "HS256"
 SECRET_KEY = os.getenv("SECRET_KEY")
+# Shared with nginx (x-app-internal-secret header) so the backend can tell a
+# request actually came through the reverse proxy rather than hitting the
+# container's published port directly.
+INTERNAL_SECRET = os.getenv("INTERNAL_SECRET")
 
 def _run_migrations() -> None:
     """Idempotent in-place schema migrations. create_all() creates NEW tables
@@ -200,7 +204,9 @@ async def verif_header(request: Request, call_next):
 
     if not is_public:
         internal_secret = request.headers.get("x-app-internal-secret")
-        if internal_secret != "MonSecretReseauInterne123":
+        # Fail closed: an unset INTERNAL_SECRET must not silently disable this
+        # check (None == None would otherwise let an unheadered request through).
+        if not INTERNAL_SECRET or internal_secret != INTERNAL_SECRET:
             return JSONResponse(
                 status_code=403,
                 content={"reason": "Forbidden: Restricted to internal web application"}

@@ -504,7 +504,7 @@ export default function VideoPage() {
 		movieDetails && !streamError && sourceMode === "direct"
 			? `/api/stream/${movieDetails.id}${fileParam("?")}`
 			: undefined;
-	const videoFiles = movieDetails?.files ?? [];
+	// const videoFiles = movieDetails?.files ?? [];
 
 	return (
 		<div className={styles.wrapper}>
