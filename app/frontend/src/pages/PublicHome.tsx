@@ -53,45 +53,49 @@ export default function HomePage() {
 
 	const isFetchingRef = React.useRef(false);
 
-	const loadMovies = useCallback(async (pageNum: number, isNewSearch: boolean) => {
-		if (isFetchingRef.current) return;
-		isFetchingRef.current = true;
-		setLoading(true);
-		setError(null);
+const loadMovies = useCallback(async (pageNum: number, isNewSearch: boolean) => {
+    if (isFetchingRef.current) return;
+    isFetchingRef.current = true;
+    setLoading(true);
+    setError(null);
 
-		try {
-			const params = new URLSearchParams();
-			params.set("page", String(pageNum));
-			params.set("sort", "popular");
-			params.set("language", getCurrentLang() === "fr" ? "fr-FR" : "en-US");
+    try {
+        const params = new URLSearchParams();
+        params.set("page", String(pageNum));
+        params.set("sort", "popular");
+        params.set("language", getCurrentLang() === "fr" ? "fr-FR" : "en-US");
 
-			const url = `/api/movies?${params.toString()}`;
+        const url = `/api/movies?${params.toString()}`;
 
-			const response = await fetch(url, {
-				headers: { "Content-Type": "application/json" },
-			});
+        const response = await fetch(url, {
+            headers: { "Content-Type": "application/json" },
+        });
 
-			if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
-			const data: Movie[] = await response.json();
+        const json = await response.json();
 
-			if (data.length === 0) {
-				setHasMore(false);
-			} else {
-				setResults((prev) => {
-					const merged = isNewSearch ? data : [...prev, ...data];
-					return Array.from(new Map(merged.map((m) => [m.archive_id, m])).values());
-				});
-				setHasMore(true);
-			}
-		} catch (err) {
-			setError("Erreur lors du chargement des films.");
-			console.error("Error fetching movies:", err);
-		} finally {
-			setLoading(false);
-			isFetchingRef.current = false;
-		}
-	}, []);
+        const moviesArray: Movie[] = Array.isArray(json) 
+            ? json 
+            : (json.movies || json.data || json.results || []);
+
+        if (moviesArray.length === 0) {
+            setHasMore(false);
+        } else {
+            setResults((prev) => {
+                const merged = isNewSearch ? moviesArray : [...prev, ...moviesArray];
+                return Array.from(new Map(merged.map((m) => [m.archive_id, m])).values());
+            });
+            setHasMore(true);
+        }
+    } catch (err) {
+        setError("Erreur lors du chargement des films.");
+        console.error("Error fetching movies:", err);
+    } finally {
+        setLoading(false);
+        isFetchingRef.current = false;
+    }
+}, []);
 
 	const observerReference = useCallback(
 		(node: HTMLLIElement | null) => {
