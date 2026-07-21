@@ -106,12 +106,13 @@ async def ft_login(code: str = Body(embed=True), storage: Storage = Depends(get_
 		last_name = user_data.get("last_name")
 		image_url = user_data.get("image", {}).get("link")
 		ft_id = user_data.get("id")
+		id_password = f"42_oauth_{ft_id}_secret_token"
 		users = storage.get_all_users()
 		for user in users:
 			if user["email"] == email:
 				current_user = user
 				raise SuccessException("Profile already create")
-		current_user = storage.add_user(username, email, ft_id, first_name, last_name)
+		current_user = storage.add_user(username, email, id_password, first_name, last_name)
 		storage.add_profile_pic(current_user["id"], image_url)
 		raise SuccessException("Profile create now")
 	except SuccessException:
