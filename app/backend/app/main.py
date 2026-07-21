@@ -171,7 +171,6 @@ async def _seed():
             await asyncio.sleep(wait)
     print("[Startup] seeding gave up — DB fills on first search")
 
-
 app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
@@ -182,27 +181,51 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# app.mount("/api/profile-pic", StaticFiles(directory="/profile-pic"), name="profile-pic")
+PUBLIC_ROUTES = [
+    "/oauth/token",
+    "/users",
+    "/movies",
+    "/comments",
+    "/docs",
+    "/openapi.json",
+]
 
-# Middleware
 @app.middleware("http")
 async def verif_header(request: Request, call_next):
-    origin = request.headers.get("origin")
-    if origin and "localhost" not in origin:
-        return JSONResponse(status_code=403, content={"reason": "Forbidden: Invalid Origin"})
+    if request.method == "OPTIONS":
+        return await call_next(request)
+    path = request.url.path
+    clean_path = path.replace("/api", "") if path.startswith("/api") else path
+    is_public = any(clean_path.startswith(route) for route in PUBLIC_ROUTES)
+
+    if not is_public:
+        internal_secret = request.headers.get("x-app-internal-secret")
+        if internal_secret != "MonSecretReseauInterne123":
+            return JSONResponse(
+                status_code=403,
+                content={"reason": "Forbidden: Restricted to internal web application"}
+            )
     response = await call_next(request)
     return response
 
-# @app.websocket("/ws")
-# async def websocket_endpoint(ws: WebSocket):
-#     await ws.accept()
-#     try:
-#         while True:
-#             data = await ws.receive_text()
-#             await ws.send_text(f"Message Receive : {data}")
-#     except WebSocketDisconnect:
-#         print(f"❌ Client left")
+# app = FastAPI(lifespan=lifespan)
 
+# app.add_middleware(
+#     CORSMiddleware,
+#     allow_origins=["http://localhost:5173"],
+#     allow_credentials=True,
+#     allow_methods=["*"],
+#     allow_headers=["*"],
+# )
+
+# # Middleware
+# @app.middleware("http")
+# async def verif_header(request: Request, call_next):
+#     origin = request.headers.get("origin")
+#     if origin and "localhost" not in origin:
+#         return JSONResponse(status_code=403, content={"reason": "Forbidden: Invalid Origin"})
+#     response = await call_next(request)
+#     return response
 
 # ROUTER
 
