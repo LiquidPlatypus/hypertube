@@ -28,6 +28,7 @@ base_url = "http://localhost:8000/api"
 access_token = None
 
 get_tests = {
+    f"{base_url}/hello": None,
     f"{base_url}/users": None,
     f"{base_url}/comments": None,
 }
@@ -92,8 +93,6 @@ for t in get_tests:
     print(OKCYAN + f"res: {data}\n" + ENDC)
 
 print("TRYING COMMENT CALL")
-if access_token:
-    headers = {'Authorization': f'Bearer ${access_token}', "Content-Type": "application/json"}
 data = get_url(url=f"{base_url}/comments")
 print("\n" if not data else OKCYAN + f"res: {data}\n" + ENDC)
 data = get_url(url=f"{base_url}/comments/1")
