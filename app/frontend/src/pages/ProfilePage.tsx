@@ -75,7 +75,7 @@ export default function ProfilInfo() {
 		}
 
 		const cleaned = txt.replace(/^"+|"+$/g, "");
-		if (cleaned.startsWith("http")) {
+		if (cleaned.startsWith("https")) {
 			setProfilePicUrl(cleaned);
 			return;
 		}

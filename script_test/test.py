@@ -1,3 +1,4 @@
+import sys
 import requests
 
 HEADER = '\033[95m'
@@ -22,6 +23,7 @@ class User:
         self.firstname = f
         self.lastname = l
 user1 = User("user1", "user1", "user1@gmail.com", "u1F", "u1L")
+user1_fail = User("user1", "fail", "user1@gmail.com", "u1F", "u1L")
 base_url = "http://localhost:8000/api"
 access_token = None
 
@@ -64,13 +66,17 @@ def get_url(url: str, header: str = None):
     return(None)
 
 print("TRYING METHOD POST")
-data = post_url(url=f"{base_url}/oauth/token", body={"provider": "register", "username": user1.username, "password": user1.password, "email": user1.email, "firstName": user1.firstname, "lastName": user1.lastname})
-access_token = data.get(access_token)
-access_token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZXhwIjoxNzg0NTg2NzkxfQ.RvScEO2B6ATr54J04Jh1LJjs3f_sV_6iqFiS_fSwrSY'
-if not access_token:
-    print(FAIL + "Please clean the db" + ENDC)
-else:
-    print(access_token + "\n")
+try:
+    list_of_user = [user1, user1_fail]
+    for u in list_of_user:
+        data = post_url(url=f"{base_url}/oauth/token", body={"provider": "register", "username": u.username, "password": u.password, "email": u.email, "firstName": u.firstname, "lastName": u.lastname})
+        access_token = data['access_token']
+        if access_token:
+            print(OKCYAN + "res: access_token generated\n" + ENDC)
+        else:
+            print(FAIL + "res: no user created\n" + ENDC)
+except (ValueError, TypeError):
+    print()
 
 if access_token:
     get_tests[f"{base_url}/users/1"] = { "Authorization": f"Bearer {access_token}" }

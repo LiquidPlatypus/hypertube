@@ -56,7 +56,7 @@ async def register(data: RegisterRequest, storage: Storage = Depends(get_storage
 	users_list = storage.get_all_users()
 	for user in users_list:
 		if user["email"] == data.email:
-			return {"returnValue": False}
+			return await login(data=LoginRequest(username=data.username, password=data.password), storage=storage)
 	
 	user = storage.add_user(data.username, data.email, data.password, data.firstName, data.lastName)
 	access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)

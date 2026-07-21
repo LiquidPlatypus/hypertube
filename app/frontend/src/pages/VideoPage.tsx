@@ -254,6 +254,7 @@ export default function VideoPage() {
 	}, [movieDetails]);
 
 	useEffect(() => {
+		if (!movieDetails) return;
 		// Badge "vu": immediate session feedback (persisted per-user server-side below).
 		markWatched(movieDetails.id);
 		// Per-user watched + retention clock: POST /watch. GET /movies/:id stays
