@@ -54,7 +54,11 @@ class MovieSource(ABC):
     ) -> list[SourceItem]: ...
 
     @abstractmethod
-    async def popular(self, page: int) -> list[SourceItem]: ...
+    async def popular(
+        self, page: int, *,
+        year_from: Optional[int] = None, year_to: Optional[int] = None,
+        genre: Optional[str] = None,
+    ) -> list[SourceItem]: ...
 
     @abstractmethod
     async def resolve_torrent(self, source_id: str) -> Optional[str]:
@@ -140,10 +144,10 @@ class ArchiveOrgSource(MovieSource):
             year_from=year_from, year_to=year_to, sort="title_asc",
         )
 
-    async def popular(self, page):
+    async def popular(self, page, *, year_from=None, year_to=None, genre=None):
         return await self._query(
-            query=None, page=page, page_size=20, genre=None,
-            year_from=None, year_to=None, sort=None,  # downloads desc
+            query=None, page=page, page_size=20, genre=genre,
+            year_from=year_from, year_to=year_to, sort=None,  # downloads desc
         )
 
     async def resolve_torrent(self, source_id: str) -> Optional[str]:
@@ -250,6 +254,10 @@ class AcademicTorrentsSource(MovieSource):
         )
 
     async def search(self, query, page, *, year_from=None, year_to=None, genre=None):
+        # Same reasoning as popular(): no genre/year metadata in the feed, so an
+        # active filter can never be honestly satisfied — exclude, don't ignore.
+        if genre or year_from is not None or year_to is not None:
+            return []
         catalog = await self._catalog()
         q = (query or "").lower().strip()
         matched = [
@@ -261,7 +269,12 @@ class AcademicTorrentsSource(MovieSource):
         start = (page - 1) * 20
         return [self._to_item(a) for a in matched[start:start + 20]]
 
-    async def popular(self, page):
+    async def popular(self, page, *, year_from=None, year_to=None, genre=None):
+        # The feed carries neither genre nor year — an active genre/year filter
+        # can never be honestly satisfied, so exclude rather than show
+        # unfiltered results under a filter the user explicitly set.
+        if genre or year_from is not None or year_to is not None:
+            return []
         catalog = await self._catalog()
         # No download counter in the feed → "popular" = largest (richest) courses.
         ordered = sorted(catalog, key=lambda a: a.size, reverse=True)
@@ -308,8 +321,12 @@ class SourceRegistry:
         ]
         return await self._gather(coros)
 
-    async def popular(self, page) -> list[SourceItem]:
-        return await self._gather([s.popular(page) for s in self._sources.values()])
+    async def popular(self, page, *, year_from=None, year_to=None, genre=None) -> list[SourceItem]:
+        coros = [
+            s.popular(page, year_from=year_from, year_to=year_to, genre=genre)
+            for s in self._sources.values()
+        ]
+        return await self._gather(coros)
 
     async def resolve_torrent(self, source: str, source_id: str) -> Optional[str]:
         src = self._sources.get(source)

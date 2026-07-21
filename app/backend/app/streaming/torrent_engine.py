@@ -518,7 +518,15 @@ class TorrentEngine:
 
     def _on_metadata(self, dh: DownloadHandle) -> None:
         try:
-            dh.handle.set_sequential_download(True)
+            # NOT sequential_download(True): libtorrent's built-in sequential
+            # picker competes with the per-piece deadlines set below (ascending
+            # over the whole file for head-first delivery, PLUS short/boosted
+            # deadlines on the tail for has_tail()/moov-at-end MP4s) and tends to
+            # win, starving the tail until the sequential cursor naturally
+            # reaches it near the end of the file. That's what was gating
+            # playback until ~80% download on non-faststart sources. The
+            # deadline scheduler alone already gives head-first + urgent-tail
+            # delivery — it's libtorrent's actual streaming API.
             tf = dh.handle.torrent_file()
             if not tf:
                 return

@@ -561,17 +561,6 @@ export default function VideoPage() {
 						</div>
 					) : (
 						<div className={styles.videoWrap}>
-							{videoFiles.length > 1 && (
-								<select
-									className={styles.fileSelect}
-									value={selectedFile ?? videoFiles[0].index}
-									onChange={(e) => setSelectedFile(Number(e.target.value))}
-								>
-									{videoFiles.map((f) => (
-										<option key={f.index} value={f.index}>{f.name}</option>
-									))}
-								</select>
-							)}
 							<video
 								ref={videoRef}
 								className={styles.video}

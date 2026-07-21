@@ -78,7 +78,10 @@ async def list_movies(
         items: list[SourceItem] = await reg.search(
             query, page, year_from=year_from, year_to=year_to, genre=genre_name)
     else:
-        items = await reg.popular(page)
+        # Genre/year must filter the popular listing too, not just text search —
+        # previously these were silently dropped whenever the search box was
+        # empty, so picking a genre/year with no query text had no effect at all.
+        items = await reg.popular(page, year_from=year_from, year_to=year_to, genre=genre_name)
 
     # has_more BEFORE filtering — a rating filter emptying a page must not stop scroll.
     has_more = len(items) >= _PAGE
