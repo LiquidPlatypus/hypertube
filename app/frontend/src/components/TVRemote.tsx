@@ -7,6 +7,7 @@ import SearchBar from "./ui/SearchBar.tsx";
 import { useSearch } from "../utils/searchContext.tsx";
 import { useFilters } from "../utils/filterContext.tsx";
 import { useTranslation } from "../hooks/useTranslation.tsx";
+import { clearWatched } from "../utils/watchedSession.ts";
 
 import styles from "./TVRemote.module.css";
 
@@ -55,10 +56,11 @@ export default function TVRemote({
 			resetSearch();
 			resetFilters();
 			localStorage.removeItem("access_token");
+			clearWatched();
 			localStorage.setItem("just_logged_out", "true");
 			navigate("/auth/login");
 		} catch (error) {
-			console.error("Logout failed:", error);
+			/* logout best-effort — token is cleared client-side regardless */
 		}
 	};
 

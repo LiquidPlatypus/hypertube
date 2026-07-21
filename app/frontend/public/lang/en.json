@@ -57,6 +57,14 @@
 	"video.saving": "Saving...",
 	"video.save": "Save",
 	"video.cancel": "Cancel",
+	"video.subtitles": "Subtitles",
+	"video.subtitlesOff": "Off",
+	"video.noSubtitles": "No subtitles available for this video.",
+	"video.streamError": "Stream failed — try again",
+	"video.retry": "Retry",
+	"video.preparing": "Preparing torrent…",
+	"video.transcoding": "Transcoding…",
+	"video.downloading": "Downloading…",
 
 	"loading": "Loading...",
 	"send": "Send",
@@ -74,6 +82,8 @@
 	"filters.sort": "Sort",
 	"filters.reset": "Reset",
 	"filters.all": "All",
+
+	"thumbnail.watched": "Watched",
 
 	"passwordResetText": "An email will be sent to you with a link to reset your password.",
 	"newPassword": "Please enter your new password.",

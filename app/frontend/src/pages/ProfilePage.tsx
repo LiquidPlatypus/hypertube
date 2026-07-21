@@ -230,8 +230,8 @@ export default function ProfilInfo() {
 
 			setIsEditing(false);
 			setSelectedFile(null);
-		} catch (error) {
-			console.error("profile.errorUpdate", error);
+		} catch {
+			/* update failed — form stays in edit mode */
 		}
 	};
 

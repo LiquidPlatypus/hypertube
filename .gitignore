@@ -11,3 +11,13 @@ app/backend/app/__pycache__/
 app/backend/app/repositories/__pycache__/
 app/backend/app/downloads
 app/backend/app/.env
+
+# Downloaded movies + subtitles (bind-mounted into the backend). Hundreds of MB
+# per film — never commit; keep the directory itself so the mount point exists.
+movie_data/*
+!movie_data/.gitkeep
+
+# Runtime logs. They contain full bearer tokens (e.g. /api/verify-token/<jwt>),
+# so they must stay out of the repository.
+logs/*
+!logs/.gitkeep

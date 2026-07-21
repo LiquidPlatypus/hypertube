@@ -10,7 +10,7 @@ from datetime import timedelta
 from utils import create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES, GOOGLE_CLIENT_ID
 import tmdbsimple as tmdb
 import os
-import httpx
+import secrets
 
 router = APIRouter()
 
@@ -71,7 +71,9 @@ async def login(data: LoginRequest, storage: Storage = Depends(get_storage)):
 	"""
 	users_list = storage.get_all_users()
 	for user in users_list:
-		if user["username"] == data.username and storage.get_user_password(user["id"]) == data.password:
+		# Verify against the stored bcrypt hash — never an equality test, which
+		# would only work if the password were stored in clear text.
+		if user["username"] == data.username and storage.verify_user_password(user["id"], data.password):
 			access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
 			access_token = create_access_token(data={"sub": str(user["id"])}, expires_delta=access_token_expires)
 			return {"access_token": access_token, "token_type": "bearer"}
@@ -138,7 +140,11 @@ async def google_login(data: GoogleToken, storage: Storage = Depends(get_storage
 		for user in users:
 			if user["email"] == email:
 				raise SuccessException("Profile already create")
-		user = storage.add_user(username, email, google_id, firstname, lastname)
+		# Never store the Google subject id as the password: it is a public
+		# identifier, so it would become a valid login credential. The account
+		# authenticates through Google only.
+		user = storage.add_user(username, email, secrets.token_urlsafe(48), firstname, lastname)
+		storage.set_unusable_password(user["id"])
 		storage.add_profile_pic(user["id"], profile_pic)
 		raise SuccessException("Profile create now")
 	except SuccessException as e:
@@ -157,24 +163,7 @@ async def google_login(data: GoogleToken, storage: Storage = Depends(get_storage
 			detail="Invalid Google Token"
 		)
 
-@router.post("/api/auto-log")
-async def auto_log(storage: Storage = Depends(get_storage)):
-	"""
-	Print all profile value and return Login token
-	"""
-	username = "debug"
-	password = "debug"
-	email = "email@debug.com"
-	firstName = "debug"
-	lastName = "debug"
-	Ulist = storage.get_all_users()
-	for u in Ulist:
-		if u["email"] == email:
-			access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-			access_token = create_access_token(data={"sub": str(u["id"])}, expires_delta=access_token_expires)
-			return {"access_token": access_token, "token_type": "bearer"}			
-	user = storage.add_user(username, email, password, firstName, lastName)
-	print(f"username: {username}\npassword: {password}\nemail: {email}\nfirstname: {firstName}\nlastname: {lastName}")
-	access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-	access_token = create_access_token(data={"sub": str(user["id"])}, expires_delta=access_token_expires)
-	return {"access_token": access_token, "token_type": "bearer"}
+# NOTE: the former POST /api/auto-log has been removed. It was an unauthenticated
+# endpoint that created (or reused) a "debug" account and handed a valid bearer
+# token to any caller, and printed the credentials to the logs — a complete
+# authentication bypass.

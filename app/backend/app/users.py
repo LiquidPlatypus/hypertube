@@ -81,7 +81,8 @@ async def reset_password(data: PasswordForm, current_user=Depends(verif_access_t
     Return Value :
     True if information was correct and changed or else False
     """
-    if storage.get_user_password(current_user["id"]) == data.old_password:
+    # Verify the old password against its bcrypt hash, never by equality.
+    if storage.verify_user_password(current_user["id"], data.old_password):
         storage.modify_password(data.new_password, current_user["id"])
         return {"returnValue": True}
     return {"returnValue": False}

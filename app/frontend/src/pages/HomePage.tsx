@@ -9,17 +9,25 @@ import { getCurrentLang } from "../lang/i18n.tsx";
 
 import Thumbnail from "../components/ui/Thumbnail.tsx";
 import FiltersBar from "../components/ui/FiltersBar.tsx";
+import { isWatched } from "../utils/watchedSession.ts";
 
 import styles from "./HomePage.module.css";
 
 interface Movie {
 	id: number;
 	archive_id: string;
+	source: string;
+	media_kind: string;
 	title: string;
 	poster_url: string | null;
 	year: number | null;
 	rating: number | null;
 	watched: boolean;
+}
+
+interface MoviesResponse {
+	results: Movie[];
+	has_more: boolean;
 }
 
 export default function HomePage() {
@@ -90,27 +98,30 @@ export default function HomePage() {
 
 				const url = `/api/movies?${params.toString()}`;
 
+				const token = localStorage.getItem("access_token");
 				const response = await fetch(url, {
-					headers: { "Content-Type": "application/json" },
+					headers: {
+						"Content-Type": "application/json",
+						...(token ? { Authorization: `Bearer ${token}` } : {}),
+					},
 				});
 
 				if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
-				const data: Movie[] = await response.json();
+				const data: MoviesResponse = await response.json();
+				const batch = data.results ?? [];
 				if (pageNum === 1) resettingRef.current = false;
 
-				if (data.length === 0) {
-					setHasMore(false);
-				} else {
-					setResults((prev) => {
-						const merged = isNewSearch ? data : [...prev, ...data];
-						return Array.from(new Map(merged.map((m) => [m.archive_id, m])).values());
-					});
-					setHasMore(true);
-				}
-			} catch (err) {
-				setError("Erreur lors de la recherche de films.");
-				console.error("Error fetching movies:", err);
+				setResults((prev) => {
+					const merged = isNewSearch ? batch : [...prev, ...batch];
+					return Array.from(new Map(merged.map((m) => [m.archive_id, m])).values());
+				});
+				// Drive infinite scroll from the source-level has_more flag, not the
+				// (post-filter) batch length — a rating filter emptying a page must
+				// not stop the scroll while more source results remain.
+				setHasMore(Boolean(data.has_more));
+			} catch {
+				setError(t("error"));
 			} finally {
 				setLoading(false);
 				isFetchingRef.current = false;
@@ -185,11 +196,17 @@ export default function HomePage() {
 						return (
 							<li key={movie.archive_id} ref={isLast ? observerReference : null}>
 								<Thumbnail
-									thumbnailSrc={movie.poster_url || `https://archive.org/services/img/${movie.archive_id}`}
+									thumbnailSrc={
+										movie.poster_url
+											|| (movie.source === "archive_org"
+												? `https://archive.org/services/img/${movie.archive_id}`
+												: undefined)
+									}
 									thumbnailAlt={movie.title}
 									title={movie.title}
 									year={movie.year ? String(movie.year) : undefined}
 									rating={movie.rating ?? undefined}
+									watched={movie.watched || isWatched(movie.id)}
 									onClick={() => handleThumbnailClick(movie.archive_id)}
 								/>
 							</li>

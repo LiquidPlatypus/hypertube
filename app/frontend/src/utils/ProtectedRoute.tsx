@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
+import { clearWatched } from "./watchedSession.ts";
 
 interface ProtectedRouteProps {
 	children?: ReactNode; // <- Permet d'accepter des enfants
@@ -26,6 +27,7 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
 				await response.json();
 			} catch (error) {
 				localStorage.removeItem("access_token");
+				clearWatched();
 				navigate("/auth/login");
 			} finally {
 				setLoading(false);

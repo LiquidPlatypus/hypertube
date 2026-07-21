@@ -1,6 +1,8 @@
-from database import Storage, get_storage
+from database import Storage, get_storage, get_comments_for_movie
 from fastapi import HTTPException, Depends, APIRouter, Query
 from fastapi.responses import JSONResponse
+from models_db import get_db
+from sqlalchemy.orm import Session
 from utils import verif_access_token
 import datetime
 from model import CommentForm, ChunkCommentForm
@@ -56,5 +58,9 @@ async def get_comments(pos: int = Query(0, ge=0), movie_id: int = Query(None), s
 
 @router.delete("/api/comments/{id}")
 async def delete_comments(id: int, storage: Storage = Depends(get_storage), current_user=Depends(verif_access_token)):
-	storage.delete_comments(id)
+	result = storage.delete_comments(id, current_user["id"])
+	if result == "forbidden":
+		raise HTTPException(status_code=403, detail="Not your comment")
+	if result is None:
+		raise HTTPException(status_code=404, detail="Comment not found")
 	return {"ReturnValue": True}

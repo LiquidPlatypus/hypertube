@@ -27,9 +27,8 @@ export default function FiltersBar() {
 				if (!res.ok) throw new Error(`HTTP ${res.status}`);
 				const data = (await res.json()) as Genre[];
 				if (!cancelled) setGenres(data);
-			} catch (e) {
+			} catch {
 				if (!cancelled) setGenres([]);
-				console.error("Failed to load genres", e);
 			} finally {
 				if (!cancelled) setLoadingGenres(false);
 			}

@@ -45,6 +45,34 @@
 	transition: filter 0.25s ease;
 }
 
+.Image.Watched {
+	filter: brightness(0.55) grayscale(0.3);
+}
+
+.WatchedBadge {
+	position: absolute;
+	top: 8px;
+	right: 8px;
+	z-index: 2;
+	font-family: CommodoreRounded, serif;
+	font-size: 0.75rem;
+	font-weight: 600;
+	color: #eafff0;
+	background: rgba(28, 140, 60, 0.92);
+	padding: 0.15rem 0.5rem;
+	border-radius: 4px;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+	pointer-events: none;
+	white-space: nowrap;
+}
+
+@media (max-width: 500px) {
+	.WatchedBadge {
+		font-size: 0.55rem;
+		padding: 0.1rem 0.35rem;
+	}
+}
+
 .Thumbnail:hover .image {
 	filter: brightness(1.05) contrast(1.1);
 }
